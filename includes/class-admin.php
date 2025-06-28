@@ -786,9 +786,12 @@ class Admin {
 			wp_send_json_error( __( 'Invalid template ID.', 'layoutberg' ) );
 		}
 
+		// Check if usage should be incremented.
+		$increment_usage = isset( $_GET['increment_usage'] ) && $_GET['increment_usage'] == '1';
+
 		// Get template.
 		$template_manager = new Template_Manager();
-		$template = $template_manager->get_template( $template_id );
+		$template = $template_manager->get_template( $template_id, $increment_usage );
 
 		if ( is_wp_error( $template ) ) {
 			wp_send_json_error( $template->get_error_message() );

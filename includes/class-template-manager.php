@@ -134,9 +134,10 @@ class Template_Manager {
 	 *
 	 * @since 1.0.0
 	 * @param int $template_id Template ID.
+	 * @param bool $increment_usage Whether to increment usage count.
 	 * @return array|WP_Error Template data or error.
 	 */
-	public function get_template( $template_id ) {
+	public function get_template( $template_id, $increment_usage = false ) {
 		global $wpdb;
 
 		$template = $wpdb->get_row(
@@ -151,8 +152,10 @@ class Template_Manager {
 			return new \WP_Error( 'template_not_found', __( 'Template not found.', 'layoutberg' ) );
 		}
 
-		// Increment usage count.
-		$this->increment_usage_count( $template_id );
+		// Only increment usage count when explicitly requested (actual usage).
+		if ( $increment_usage ) {
+			$this->increment_usage_count( $template_id );
+		}
 
 		return $this->format_template( $template );
 	}

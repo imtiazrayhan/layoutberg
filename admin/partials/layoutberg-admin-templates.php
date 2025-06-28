@@ -1036,8 +1036,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			const modals = document.querySelectorAll('.layoutberg-modal');
 			modals.forEach(modal => hideModal(modal));
 			
-			// Redirect to post editor with template
-			window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
+			// Increment usage count before redirecting to editor
+			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
+				method: 'GET',
+				data: {
+					action: 'layoutberg_get_template',
+					template_id: templateId,
+					increment_usage: 1,
+					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
+				}
+			}).then(() => {
+				// Redirect to post editor with template (usage already incremented)
+				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
+			}).catch(() => {
+				// Redirect anyway even if usage increment fails
+				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
+			});
 		}
 	});
 	

@@ -257,9 +257,10 @@ class API_Handler {
 	 */
 	public function get_template( $request ) {
 		$template_id = $request->get_param( 'id' );
+		$increment_usage = $request->get_param( 'increment_usage' );
 
 		$template_manager = new Template_Manager();
-		$template = $template_manager->get_template( $template_id );
+		$template = $template_manager->get_template( $template_id, $increment_usage );
 
 		if ( is_wp_error( $template ) ) {
 			return $template;
