@@ -609,7 +609,13 @@ $categories = array(
 	border-top: 1px solid #ddd;
 	display: flex;
 	justify-content: flex-end;
-	gap: 10px;
+	align-items: center;
+	gap: 15px;
+}
+
+.layoutberg-modal-footer .button {
+	margin: 0;
+	min-width: 100px;
 }
 
 /* Form Fields */
