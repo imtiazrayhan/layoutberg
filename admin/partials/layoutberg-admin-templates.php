@@ -1043,10 +1043,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// Modal close handlers
 	document.addEventListener('click', function(e) {
-		if (e.target.classList.contains('layoutberg-modal-close')) {
+		// Check if clicked element or its parent has the close class
+		const closeButton = e.target.closest('.layoutberg-modal-close');
+		if (closeButton) {
 			console.log('Closing modal via close button');
-			const modal = e.target.closest('.layoutberg-modal');
+			const modal = closeButton.closest('.layoutberg-modal');
 			hideModal(modal);
+			return;
 		}
 		
 		// Close modal on background click
