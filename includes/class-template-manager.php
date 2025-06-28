@@ -258,6 +258,11 @@ class Template_Manager {
 			$format[]            = '%s';
 		}
 
+		if ( isset( $data['is_public'] ) ) {
+			$update_data['is_public'] = intval( $data['is_public'] );
+			$format[]                 = '%d';
+		}
+
 		if ( empty( $update_data ) ) {
 			return true; // Nothing to update.
 		}

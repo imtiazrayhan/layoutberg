@@ -688,7 +688,7 @@ jQuery(document).ready(function($) {
 	});
 	
 	// Preview template
-	$('.layoutberg-preview-template').on('click', function(e) {
+	$(document).on('click', '.layoutberg-preview-template', function(e) {
 		e.preventDefault();
 		var templateId = $(this).data('template-id');
 		
@@ -734,7 +734,7 @@ jQuery(document).ready(function($) {
 	});
 	
 	// Edit template
-	$('.edit-template').on('click', function(e) {
+	$(document).on('click', '.edit-template', function(e) {
 		e.preventDefault();
 		var templateId = $(this).data('template-id');
 		
@@ -756,7 +756,16 @@ jQuery(document).ready(function($) {
 					$('#template-name').val(response.data.name);
 					$('#template-description').val(response.data.description || '');
 					$('#template-category').val(response.data.category);
-					$('#template-tags').val(response.data.tags || '');
+					// Handle tags - convert array to comma-separated string
+					var tags = '';
+					if (response.data.tags) {
+						if (Array.isArray(response.data.tags)) {
+							tags = response.data.tags.join(', ');
+						} else {
+							tags = response.data.tags;
+						}
+					}
+					$('#template-tags').val(tags);
 					$('#template-public').prop('checked', response.data.is_public == 1);
 				}
 			}
@@ -771,9 +780,13 @@ jQuery(document).ready(function($) {
 			_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
 		};
 		
+		// Build data object from form
 		formData.forEach(function(item) {
 			data[item.name] = item.value;
 		});
+		
+		// Handle checkbox separately (it's not included if unchecked)
+		data.is_public = $('#template-public').is(':checked') ? '1' : '0';
 		
 		$.ajax({
 			url: ajaxurl,
@@ -785,6 +798,9 @@ jQuery(document).ready(function($) {
 				} else {
 					alert(response.data || 'Failed to update template');
 				}
+			},
+			error: function(xhr, status, error) {
+				alert('Error updating template: ' + error);
 			}
 		});
 	});
@@ -824,8 +840,11 @@ jQuery(document).ready(function($) {
 	});
 	
 	// Use template
-	$('.layoutberg-use-template, .layoutberg-use-template-modal').on('click', function() {
+	$(document).on('click', '.layoutberg-use-template, .layoutberg-use-template-modal', function() {
 		var templateId = $(this).data('template-id');
+		
+		// Close any open modals
+		$('.layoutberg-modal').hide();
 		
 		// Redirect to post editor with template
 		window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
