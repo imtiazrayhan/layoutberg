@@ -110,7 +110,7 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 -   [x] Implement settings page
 -   [x] Add API configuration interface
 -   [ ] Create generation defaults settings
--   [ ] Build usage statistics display
+-   [x] Build usage statistics display
 -   [ ] Add system status indicators
 -   [ ] Create template management interface
 
@@ -408,7 +408,7 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 
 ## Progress Tracking
 
-### Phase 1 Progress: 65/73 tasks (89%)
+### Phase 1 Progress: 66/73 tasks (90%)
 
 ### Phase 2 Progress: 0/52 tasks (0%)
 
@@ -416,7 +416,7 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 
 ### Phase 4 Progress: 0/41 tasks (0%)
 
-**Total Progress: 65/223 tasks (29%)**
+**Total Progress: 66/223 tasks (30%)**
 
 ---
 

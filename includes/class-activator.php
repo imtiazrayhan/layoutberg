@@ -35,6 +35,7 @@ class Activator {
 		// Create/upgrade database tables.
 		$upgrade = new Upgrade();
 		$upgrade->create_tables();
+		$upgrade->run();
 
 		// Set default options.
 		self::set_default_options();

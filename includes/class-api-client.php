@@ -234,7 +234,7 @@ class API_Client {
 		}
 
 		// Track usage.
-		$this->track_usage( $response );
+		$this->track_usage( $response, $prompt );
 
 		return array(
 			'content' => $response['content'],
@@ -480,8 +480,9 @@ class API_Client {
 	 *
 	 * @since 1.0.0
 	 * @param array $response_data API response data.
+	 * @param string $prompt The original prompt.
 	 */
-	private function track_usage( $response_data ) {
+	private function track_usage( $response_data, $prompt = '' ) {
 		// Handle both old format and new format
 		$usage = null;
 		if ( isset( $response_data['usage'] ) ) {
@@ -500,7 +501,7 @@ class API_Client {
 		// Calculate cost.
 		$cost = $this->calculate_cost( $tokens_used );
 
-		// Save to database.
+		// Save to generations table.
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'layoutberg_generations';
 
@@ -508,16 +509,17 @@ class API_Client {
 			$table_name,
 			array(
 				'user_id'     => $user_id,
+				'prompt'      => $prompt,
+				'response'    => isset( $response_data['content'] ) ? $response_data['content'] : '',
 				'model'       => $this->model,
 				'tokens_used' => $tokens_used,
-				'cost'        => $cost,
 				'status'      => 'completed',
 			),
-			array( '%d', '%s', '%d', '%f', '%s' )
+			array( '%d', '%s', '%s', '%s', '%d', '%s' )
 		);
 
 		// Update daily usage.
-		$this->update_daily_usage( $user_id, $tokens_used );
+		$this->update_daily_usage( $user_id, $tokens_used, $cost );
 	}
 
 	/**
@@ -546,8 +548,9 @@ class API_Client {
 	 * @since 1.0.0
 	 * @param int $user_id     User ID.
 	 * @param int $tokens_used Tokens used.
+	 * @param float $cost      Cost of generation.
 	 */
-	private function update_daily_usage( $user_id, $tokens_used ) {
+	private function update_daily_usage( $user_id, $tokens_used, $cost = 0 ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'layoutberg_usage';
 		$today      = current_time( 'Y-m-d' );
@@ -557,9 +560,11 @@ class API_Client {
 			$wpdb->prepare(
 				"UPDATE $table_name 
 				SET generations_count = generations_count + 1, 
-				    tokens_used = tokens_used + %d 
+				    tokens_used = tokens_used + %d,
+				    cost = cost + %f
 				WHERE user_id = %d AND date = %s",
 				$tokens_used,
+				$cost,
 				$user_id,
 				$today
 			)
@@ -574,8 +579,9 @@ class API_Client {
 					'date'              => $today,
 					'generations_count' => 1,
 					'tokens_used'       => $tokens_used,
+					'cost'              => $cost,
 				),
-				array( '%d', '%s', '%d', '%d' )
+				array( '%d', '%s', '%d', '%d', '%f' )
 			);
 		}
 	}

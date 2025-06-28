@@ -39,7 +39,7 @@ class Upgrade {
 	 * @access   private
 	 * @var      string    $current_db_version    Current database version.
 	 */
-	private $current_db_version = '1.0.0';
+	private $current_db_version = '1.1.0';
 
 	/**
 	 * Run upgrade routines.
@@ -90,9 +90,7 @@ class Upgrade {
 	 */
 	private function get_upgrades() {
 		return array(
-			// Example upgrades - add new ones here as needed
-			// '1.1.0' => 'upgrade_1_1_0',
-			// '1.2.0' => 'upgrade_1_2_0',
+			'1.1.0' => 'upgrade_1_1_0',
 		);
 	}
 
@@ -106,34 +104,38 @@ class Upgrade {
 	}
 
 	/**
-	 * Example upgrade method for version 1.1.0
+	 * Upgrade to version 1.1.0 - Fix usage table structure
 	 *
 	 * @since    1.1.0
 	 */
 	private function upgrade_1_1_0() {
 		global $wpdb;
 
-		// Example: Add a new column to the generations table
-		$table_name = $wpdb->prefix . 'layoutberg_generations';
+		// Recreate the usage table with the correct structure
+		$table_name = $wpdb->prefix . 'layoutberg_usage';
+		$charset_collate = $wpdb->get_charset_collate();
 		
-		// Check if column exists before adding
-		$column_exists = $wpdb->get_results( 
-			$wpdb->prepare(
-				"SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
-				WHERE TABLE_SCHEMA = %s 
-				AND TABLE_NAME = %s 
-				AND COLUMN_NAME = 'tokens_used'",
-				DB_NAME,
-				$table_name
-			)
-		);
-
-		if ( empty( $column_exists ) ) {
-			$wpdb->query(
-				"ALTER TABLE {$table_name} 
-				ADD COLUMN tokens_used INT UNSIGNED DEFAULT 0 AFTER response"
-			);
-		}
+		// Drop the old table if it exists
+		$wpdb->query( "DROP TABLE IF EXISTS $table_name" );
+		
+		// Create the new table with the correct structure
+		$sql = "CREATE TABLE $table_name (
+			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) UNSIGNED NOT NULL,
+			date date NOT NULL,
+			generations_count int UNSIGNED DEFAULT 0,
+			tokens_used int UNSIGNED DEFAULT 0,
+			cost decimal(10,6) DEFAULT 0.000000,
+			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			UNIQUE KEY user_date (user_id, date),
+			KEY user_id (user_id),
+			KEY date (date)
+		) $charset_collate;";
+		
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( $sql );
 	}
 
 	/**
@@ -257,17 +259,16 @@ class Upgrade {
 		$sql .= "CREATE TABLE $table_name (
 			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) UNSIGNED NOT NULL,
-			generation_id bigint(20) UNSIGNED NULL,
-			action varchar(50) NOT NULL,
+			date date NOT NULL,
+			generations_count int UNSIGNED DEFAULT 0,
 			tokens_used int UNSIGNED DEFAULT 0,
 			cost decimal(10,6) DEFAULT 0.000000,
-			date date NOT NULL,
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (id),
+			UNIQUE KEY user_date (user_id, date),
 			KEY user_id (user_id),
-			KEY date (date),
-			KEY action (action),
-			KEY user_date (user_id, date)
+			KEY date (date)
 		) $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
