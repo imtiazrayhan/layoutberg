@@ -408,22 +408,40 @@ $categories = array(
 
 .template-actions {
 	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, 0.7);
+	top: 10px;
+	right: 10px;
+	background: rgba(255, 255, 255, 0.95);
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 10px;
-	opacity: 0;
+	align-items: stretch;
+	gap: 5px;
+	padding: 8px;
+	border-radius: 4px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	opacity: 1;
 	transition: opacity 0.2s;
+	z-index: 10;
 }
 
-.layoutberg-template-card:hover .template-actions {
+.layoutberg-template-card:hover .template-actions,
+.template-actions:hover {
 	opacity: 1;
+}
+
+.template-actions .button {
+	font-size: 12px;
+	padding: 4px 8px;
+	height: auto;
+	line-height: 1.2;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+/* Show actions on touch devices */
+@media (hover: none) and (pointer: coarse) {
+	.template-actions {
+		opacity: 0.8;
+	}
 }
 
 .template-details {
@@ -691,6 +709,7 @@ jQuery(document).ready(function($) {
 	$(document).on('click', '.layoutberg-preview-template', function(e) {
 		e.preventDefault();
 		var templateId = $(this).data('template-id');
+		console.log('Preview button clicked for template ID:', templateId);
 		
 		// Show modal
 		$('#layoutberg-template-preview-modal').show();
@@ -704,7 +723,11 @@ jQuery(document).ready(function($) {
 				template_id: templateId,
 				_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
 			},
+			beforeSend: function() {
+				console.log('Sending AJAX request for preview template ID:', templateId);
+			},
 			success: function(response) {
+				console.log('Preview AJAX response:', response);
 				if (response.success && response.data) {
 					// Show template info and block structure
 					var previewHtml = '<div class="template-preview-info">';
@@ -729,6 +752,10 @@ jQuery(document).ready(function($) {
 					$('.template-preview-content').html(previewHtml);
 					$('.layoutberg-use-template-modal').data('template-id', templateId);
 				}
+			},
+			error: function(xhr, status, error) {
+				console.log('Preview AJAX error:', error, xhr.responseText);
+				$('.template-preview-content').html('<p>Error loading template: ' + error + '</p>');
 			}
 		});
 	});
@@ -737,6 +764,7 @@ jQuery(document).ready(function($) {
 	$(document).on('click', '.edit-template', function(e) {
 		e.preventDefault();
 		var templateId = $(this).data('template-id');
+		console.log('Edit button clicked for template ID:', templateId);
 		
 		// Show modal
 		$('#layoutberg-template-edit-modal').show();
@@ -750,7 +778,11 @@ jQuery(document).ready(function($) {
 				template_id: templateId,
 				_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
 			},
+			beforeSend: function() {
+				console.log('Sending AJAX request for edit template ID:', templateId);
+			},
 			success: function(response) {
+				console.log('Edit AJAX response:', response);
 				if (response.success && response.data) {
 					$('#template-id').val(response.data.id);
 					$('#template-name').val(response.data.name);
@@ -768,6 +800,11 @@ jQuery(document).ready(function($) {
 					$('#template-tags').val(tags);
 					$('#template-public').prop('checked', response.data.is_public == 1);
 				}
+			},
+			error: function(xhr, status, error) {
+				console.log('Edit AJAX error:', error, xhr.responseText);
+				alert('Error loading template data: ' + error);
+				$('#layoutberg-template-edit-modal').hide();
 			}
 		});
 	});
