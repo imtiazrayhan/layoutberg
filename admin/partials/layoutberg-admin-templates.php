@@ -545,6 +545,15 @@ $categories = array(
 	justify-content: center;
 }
 
+.layoutberg-modal[style*="display: none"] {
+	display: none !important;
+}
+
+.layoutberg-modal[style*="display: block"],
+.layoutberg-modal.show {
+	display: flex !important;
+}
+
 .layoutberg-modal-content {
 	background: #fff;
 	border-radius: 4px;
@@ -691,46 +700,145 @@ $categories = array(
 </style>
 
 <script>
-jQuery(document).ready(function($) {
-	// Filter handling
-	$('#filter-by-category').on('change', function() {
-		var category = $(this).val();
-		var url = new URL(window.location.href);
-		if (category) {
-			url.searchParams.set('category', category);
+document.addEventListener('DOMContentLoaded', function() {
+	// Helper function to make AJAX requests
+	function makeAjaxRequest(url, options) {
+		return new Promise((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+			const method = options.method || 'GET';
+			let requestUrl = url;
+			let requestData = null;
+			
+			if (method === 'GET' && options.data && typeof options.data === 'object') {
+				// For GET requests, append data to URL
+				const params = new URLSearchParams();
+				for (const key in options.data) {
+					params.append(key, options.data[key]);
+				}
+				requestUrl += (url.includes('?') ? '&' : '?') + params.toString();
+			} else if (method === 'POST' && options.data) {
+				if (options.data instanceof FormData) {
+					requestData = options.data;
+				} else if (typeof options.data === 'object') {
+					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+					const formData = new URLSearchParams();
+					for (const key in options.data) {
+						formData.append(key, options.data[key]);
+					}
+					requestData = formData.toString();
+				}
+			}
+			
+			xhr.open(method, requestUrl);
+			
+			xhr.onload = function() {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					try {
+						const response = JSON.parse(xhr.responseText);
+						resolve(response);
+					} catch (e) {
+						resolve(xhr.responseText);
+					}
+				} else {
+					reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+				}
+			};
+			
+			xhr.onerror = function() {
+				reject(new Error('Network error'));
+			};
+			
+			if (options.beforeSend) {
+				options.beforeSend();
+			}
+			
+			console.log('Making request to:', requestUrl);
+			console.log('Request method:', method);
+			console.log('Request data:', requestData);
+			
+			xhr.send(requestData);
+		});
+	}
+	
+	// Helper function to show modal
+	function showModal(modalId) {
+		console.log('Attempting to show modal:', modalId);
+		const modal = document.getElementById(modalId);
+		console.log('Modal element found:', modal);
+		
+		if (modal) {
+			console.log('Modal initial display:', getComputedStyle(modal).display);
+			console.log('Modal computed styles:', {
+				position: getComputedStyle(modal).position,
+				zIndex: getComputedStyle(modal).zIndex,
+				visibility: getComputedStyle(modal).visibility,
+				opacity: getComputedStyle(modal).opacity
+			});
+			
+			modal.style.display = 'flex';
+			modal.style.zIndex = '999999999';
+			modal.classList.add('show');
+			
+			console.log('Modal display after show:', getComputedStyle(modal).display);
+			console.log('Modal is visible:', modal.offsetWidth > 0 && modal.offsetHeight > 0);
+			
+			return modal;
 		} else {
-			url.searchParams.delete('category');
+			console.error('Modal not found:', modalId);
+			return null;
 		}
-		url.searchParams.delete('paged');
-		window.location.href = url.toString();
-	});
+	}
+	
+	// Helper function to hide modal
+	function hideModal(modal) {
+		if (modal) {
+			modal.style.display = 'none';
+			modal.classList.remove('show');
+		}
+	}
+	
+	// Filter handling
+	const filterSelect = document.getElementById('filter-by-category');
+	if (filterSelect) {
+		filterSelect.addEventListener('change', function() {
+			const category = this.value;
+			const url = new URL(window.location.href);
+			if (category) {
+				url.searchParams.set('category', category);
+			} else {
+				url.searchParams.delete('category');
+			}
+			url.searchParams.delete('paged');
+			window.location.href = url.toString();
+		});
+	}
 	
 	// Preview template
-	$(document).on('click', '.layoutberg-preview-template', function(e) {
-		e.preventDefault();
-		var templateId = $(this).data('template-id');
-		console.log('Preview button clicked for template ID:', templateId);
-		
-		// Show modal
-		$('#layoutberg-template-preview-modal').show();
-		
-		// Load template content
-		$.ajax({
-			url: ajaxurl,
-			type: 'GET',
-			data: {
-				action: 'layoutberg_get_template',
-				template_id: templateId,
-				_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
-			},
-			beforeSend: function() {
-				console.log('Sending AJAX request for preview template ID:', templateId);
-			},
-			success: function(response) {
+	document.addEventListener('click', function(e) {
+		if (e.target.classList.contains('layoutberg-preview-template')) {
+			e.preventDefault();
+			const templateId = e.target.getAttribute('data-template-id');
+			console.log('Preview button clicked for template ID:', templateId);
+			
+			const modal = showModal('layoutberg-template-preview-modal');
+			if (!modal) return;
+			
+			// Load template content
+			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
+				method: 'GET',
+				data: {
+					action: 'layoutberg_get_template',
+					template_id: templateId,
+					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
+				},
+				beforeSend: function() {
+					console.log('Sending AJAX request for preview template ID:', templateId);
+				}
+			}).then(response => {
 				console.log('Preview AJAX response:', response);
 				if (response.success && response.data) {
 					// Show template info and block structure
-					var previewHtml = '<div class="template-preview-info">';
+					let previewHtml = '<div class="template-preview-info">';
 					previewHtml += '<h3>' + response.data.name + '</h3>';
 					if (response.data.description) {
 						previewHtml += '<p class="template-description">' + response.data.description + '</p>';
@@ -749,47 +857,66 @@ jQuery(document).ready(function($) {
 					previewHtml += '<pre><code>' + response.data.content.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
 					previewHtml += '</div>';
 					
-					$('.template-preview-content').html(previewHtml);
-					$('.layoutberg-use-template-modal').data('template-id', templateId);
+					const previewContent = document.querySelector('.template-preview-content');
+					if (previewContent) {
+						previewContent.innerHTML = previewHtml;
+					}
+					
+					const useTemplateBtn = document.querySelector('.layoutberg-use-template-modal');
+					if (useTemplateBtn) {
+						useTemplateBtn.setAttribute('data-template-id', templateId);
+					}
 				}
-			},
-			error: function(xhr, status, error) {
-				console.log('Preview AJAX error:', error, xhr.responseText);
-				$('.template-preview-content').html('<p>Error loading template: ' + error + '</p>');
-			}
-		});
+			}).catch(error => {
+				console.log('Preview AJAX error:', error);
+				const previewContent = document.querySelector('.template-preview-content');
+				if (previewContent) {
+					previewContent.innerHTML = '<p>Error loading template: ' + error.message + '</p>';
+				}
+			});
+		}
 	});
 	
 	// Edit template
-	$(document).on('click', '.edit-template', function(e) {
-		e.preventDefault();
-		var templateId = $(this).data('template-id');
-		console.log('Edit button clicked for template ID:', templateId);
-		
-		// Show modal
-		$('#layoutberg-template-edit-modal').show();
-		
-		// Load template data
-		$.ajax({
-			url: ajaxurl,
-			type: 'GET',
-			data: {
-				action: 'layoutberg_get_template',
-				template_id: templateId,
-				_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
-			},
-			beforeSend: function() {
-				console.log('Sending AJAX request for edit template ID:', templateId);
-			},
-			success: function(response) {
+	document.addEventListener('click', function(e) {
+		if (e.target.classList.contains('edit-template')) {
+			e.preventDefault();
+			const templateId = e.target.getAttribute('data-template-id');
+			console.log('Edit button clicked for template ID:', templateId);
+			
+			const modal = showModal('layoutberg-template-edit-modal');
+			if (!modal) return;
+			
+			// Load template data
+			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
+				method: 'GET',
+				data: {
+					action: 'layoutberg_get_template',
+					template_id: templateId,
+					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
+				},
+				beforeSend: function() {
+					console.log('Sending AJAX request for edit template ID:', templateId);
+				}
+			}).then(response => {
 				console.log('Edit AJAX response:', response);
 				if (response.success && response.data) {
-					$('#template-id').val(response.data.id);
-					$('#template-name').val(response.data.name);
-					$('#template-description').val(response.data.description || '');
-					$('#template-category').val(response.data.category);
+					const fields = {
+						'template-id': response.data.id,
+						'template-name': response.data.name,
+						'template-description': response.data.description || '',
+						'template-category': response.data.category
+					};
+					
+					for (const [fieldId, value] of Object.entries(fields)) {
+						const field = document.getElementById(fieldId);
+						if (field) {
+							field.value = value;
+						}
+					}
+					
 					// Handle tags - convert array to comma-separated string
-					var tags = '';
+					let tags = '';
 					if (response.data.tags) {
 						if (Array.isArray(response.data.tags)) {
 							tags = response.data.tags.join(', ');
@@ -797,105 +924,123 @@ jQuery(document).ready(function($) {
 							tags = response.data.tags;
 						}
 					}
-					$('#template-tags').val(tags);
-					$('#template-public').prop('checked', response.data.is_public == 1);
+					
+					const tagsField = document.getElementById('template-tags');
+					if (tagsField) {
+						tagsField.value = tags;
+					}
+					
+					const publicField = document.getElementById('template-public');
+					if (publicField) {
+						publicField.checked = response.data.is_public == 1;
+					}
 				}
-			},
-			error: function(xhr, status, error) {
-				console.log('Edit AJAX error:', error, xhr.responseText);
-				alert('Error loading template data: ' + error);
-				$('#layoutberg-template-edit-modal').hide();
-			}
-		});
+			}).catch(error => {
+				console.log('Edit AJAX error:', error);
+				alert('Error loading template data: ' + error.message);
+				hideModal(modal);
+			});
+		}
 	});
 	
 	// Save template changes
-	$('#save-template-changes').on('click', function() {
-		var formData = $('#layoutberg-edit-template-form').serializeArray();
-		var data = {
-			action: 'layoutberg_update_template',
-			_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
-		};
-		
-		// Build data object from form
-		formData.forEach(function(item) {
-			data[item.name] = item.value;
-		});
-		
-		// Handle checkbox separately (it's not included if unchecked)
-		data.is_public = $('#template-public').is(':checked') ? '1' : '0';
-		
-		$.ajax({
-			url: ajaxurl,
-			type: 'POST',
-			data: data,
-			success: function(response) {
+	const saveBtn = document.getElementById('save-template-changes');
+	if (saveBtn) {
+		saveBtn.addEventListener('click', function() {
+			const form = document.getElementById('layoutberg-edit-template-form');
+			const formData = new FormData(form);
+			
+			const data = {
+				action: 'layoutberg_update_template',
+				_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
+			};
+			
+			// Convert FormData to regular object
+			for (const [key, value] of formData.entries()) {
+				data[key] = value;
+			}
+			
+			// Handle checkbox separately
+			const publicField = document.getElementById('template-public');
+			data.is_public = publicField && publicField.checked ? '1' : '0';
+			
+			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
+				method: 'POST',
+				data: data
+			}).then(response => {
 				if (response.success) {
 					location.reload();
 				} else {
 					alert(response.data || 'Failed to update template');
 				}
-			},
-			error: function(xhr, status, error) {
-				alert('Error updating template: ' + error);
-			}
+			}).catch(error => {
+				alert('Error updating template: ' + error.message);
+			});
 		});
-	});
+	}
 	
 	// Import template
-	$('.layoutberg-import-template').on('click', function(e) {
-		e.preventDefault();
-		$('#layoutberg-template-import-modal').show();
-	});
+	const importBtn = document.querySelector('.layoutberg-import-template');
+	if (importBtn) {
+		importBtn.addEventListener('click', function(e) {
+			e.preventDefault();
+			showModal('layoutberg-template-import-modal');
+		});
+	}
 	
-	$('#import-template').on('click', function() {
-		var fileInput = $('#import-file')[0];
-		if (!fileInput.files.length) {
-			alert('Please select a file to import');
-			return;
-		}
-		
-		var formData = new FormData();
-		formData.append('action', 'layoutberg_import_template');
-		formData.append('_wpnonce', '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>');
-		formData.append('import_file', fileInput.files[0]);
-		
-		$.ajax({
-			url: ajaxurl,
-			type: 'POST',
-			data: formData,
-			processData: false,
-			contentType: false,
-			success: function(response) {
+	const importSubmitBtn = document.getElementById('import-template');
+	if (importSubmitBtn) {
+		importSubmitBtn.addEventListener('click', function() {
+			const fileInput = document.getElementById('import-file');
+			if (!fileInput.files.length) {
+				alert('Please select a file to import');
+				return;
+			}
+			
+			const formData = new FormData();
+			formData.append('action', 'layoutberg_import_template');
+			formData.append('_wpnonce', '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>');
+			formData.append('import_file', fileInput.files[0]);
+			
+			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
+				method: 'POST',
+				data: formData
+			}).then(response => {
 				if (response.success) {
 					location.reload();
 				} else {
 					alert(response.data || 'Failed to import template');
 				}
-			}
+			});
 		});
-	});
+	}
 	
 	// Use template
-	$(document).on('click', '.layoutberg-use-template, .layoutberg-use-template-modal', function() {
-		var templateId = $(this).data('template-id');
-		
-		// Close any open modals
-		$('.layoutberg-modal').hide();
-		
-		// Redirect to post editor with template
-		window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
+	document.addEventListener('click', function(e) {
+		if (e.target.classList.contains('layoutberg-use-template') || e.target.classList.contains('layoutberg-use-template-modal')) {
+			const templateId = e.target.getAttribute('data-template-id');
+			
+			// Close any open modals
+			const modals = document.querySelectorAll('.layoutberg-modal');
+			modals.forEach(modal => hideModal(modal));
+			
+			// Redirect to post editor with template
+			window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
+		}
 	});
 	
-	// Modal close
-	$('.layoutberg-modal-close').on('click', function() {
-		$(this).closest('.layoutberg-modal').hide();
-	});
-	
-	// Close modal on background click
-	$('.layoutberg-modal').on('click', function(e) {
-		if (e.target === this) {
-			$(this).hide();
+	// Modal close handlers
+	document.addEventListener('click', function(e) {
+		if (e.target.classList.contains('layoutberg-modal-close')) {
+			console.log('Closing modal via close button');
+			const modal = e.target.closest('.layoutberg-modal');
+			hideModal(modal);
+		}
+		
+		// Close modal on background click
+		if (e.target.classList.contains('layoutberg-modal')) {
+			console.log('Closing modal via background click');
+			hideModal(e.target);
 		}
 	});
 });
