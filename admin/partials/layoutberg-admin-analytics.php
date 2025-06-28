@@ -181,7 +181,7 @@ foreach ( $hourly_stats as $hour ) {
 					<p><?php esc_html_e( 'Track your AI layout generation usage and statistics', 'layoutberg' ); ?></p>
 				</div>
 			</div>
-			<div class="layoutberg-header-actions">
+			<div class="layoutberg-header-actions" style="display: flex; gap: 1rem; align-items: center;">
 				<select id="period-selector" class="layoutberg-select" style="width: 150px;">
 					<option value="week" <?php selected( $period, 'week' ); ?>><?php esc_html_e( 'Last 7 Days', 'layoutberg' ); ?></option>
 					<option value="month" <?php selected( $period, 'month' ); ?>><?php esc_html_e( 'This Month', 'layoutberg' ); ?></option>
@@ -198,6 +198,19 @@ foreach ( $hourly_stats as $hour ) {
 
 	<!-- Main Content -->
 	<div class="layoutberg-container">
+		<!-- Data Accuracy Notice -->
+		<div class="layoutberg-alert layoutberg-alert-info layoutberg-mb-4">
+			<span class="dashicons dashicons-info"></span>
+			<div>
+				<strong><?php esc_html_e( 'Data Accuracy Notice', 'layoutberg' ); ?></strong>
+				<p><?php esc_html_e( 'The usage data shown here is tracked locally and may not be 100% accurate. For precise usage statistics and billing information, please refer to your OpenAI dashboard.', 'layoutberg' ); ?></p>
+				<a href="https://platform.openai.com/usage" target="_blank" class="layoutberg-btn layoutberg-btn-sm layoutberg-btn-secondary layoutberg-mt-2">
+					<span class="dashicons dashicons-external"></span>
+					<?php esc_html_e( 'View OpenAI Dashboard', 'layoutberg' ); ?>
+				</a>
+			</div>
+		</div>
+
 		<!-- Overview Stats -->
 		<div class="layoutberg-grid layoutberg-grid-4 layoutberg-mb-4">
 			<!-- Total Generations -->

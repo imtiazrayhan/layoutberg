@@ -482,6 +482,65 @@ if ( ! empty( $options['api_key'] ) ) {
 	font-weight: 600;
 	color: var(--lberg-primary);
 }
+
+/* Fix toggle switch appearance */
+.layoutberg-toggle input[type="checkbox"] {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.layoutberg-toggle {
+	position: relative;
+	display: inline-block;
+	width: 48px;
+	height: 24px;
+}
+
+.layoutberg-toggle-slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: var(--lberg-gray-300);
+	transition: .4s;
+	border-radius: 24px;
+}
+
+.layoutberg-toggle-slider:before {
+	position: absolute;
+	content: "";
+	height: 16px;
+	width: 16px;
+	left: 4px;
+	bottom: 4px;
+	background-color: white;
+	transition: .4s;
+	border-radius: 50%;
+}
+
+.layoutberg-toggle input:checked + .layoutberg-toggle-slider {
+	background-color: var(--lberg-primary);
+}
+
+.layoutberg-toggle input:checked + .layoutberg-toggle-slider:before {
+	transform: translateX(0);
+	-webkit-transform: translateX(0);
+	-ms-transform: translateX(0);
+	right: 4px;
+	left: auto;
+}
+
+/* Remove any browser default styling */
+.layoutberg-toggle input[type="checkbox"]:focus + .layoutberg-toggle-slider {
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
 </style>
 
 <script>

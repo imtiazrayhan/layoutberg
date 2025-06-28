@@ -143,29 +143,6 @@ $templates_count = $wpdb->get_var(
 			</div>
 		<?php endif; ?>
 
-		<!-- Welcome Message -->
-		<div class="layoutberg-card layoutberg-fade-in">
-			<div class="layoutberg-flex layoutberg-items-center layoutberg-gap-3">
-				<div style="flex: 1;">
-					<h2 class="layoutberg-card-title">
-						<?php
-						/* translators: %s: User display name */
-						printf( esc_html__( 'Welcome back, %s!', 'layoutberg' ), esc_html( $current_user->display_name ) );
-						?>
-					</h2>
-					<p class="layoutberg-card-subtitle">
-						<?php esc_html_e( 'Ready to create amazing layouts with AI? Start by creating a new page or post and use the LayoutBerg block.', 'layoutberg' ); ?>
-					</p>
-				</div>
-				<div>
-					<a href="https://docs.layoutberg.com" target="_blank" class="layoutberg-btn layoutberg-btn-secondary">
-						<span class="dashicons dashicons-book"></span>
-						<?php esc_html_e( 'Documentation', 'layoutberg' ); ?>
-					</a>
-				</div>
-			</div>
-		</div>
-
 		<!-- Stats Grid -->
 		<div class="layoutberg-grid layoutberg-grid-4 layoutberg-mb-4">
 			<!-- Today's Generations -->
@@ -186,13 +163,6 @@ $templates_count = $wpdb->get_var(
 				<p class="layoutberg-stat-label"><?php esc_html_e( 'This Month', 'layoutberg' ); ?></p>
 				<?php if ( $month_usage && $month_usage->total_generations > 0 ) : ?>
 					<span class="layoutberg-stat-trend up">+12%</span>
-				<?php endif; ?>
-				<?php if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) : ?>
-					<div style="margin-top: 10px; font-size: 11px;">
-						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-upgrade-db' ); ?>" style="color: #007cba;">DB upgrade</a> | 
-						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-test-usage' ); ?>" style="color: #007cba;">Test</a> |
-						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-reset-data' ); ?>" style="color: #d63638;">Reset</a>
-					</div>
 				<?php endif; ?>
 			</div>
 
@@ -324,9 +294,6 @@ $templates_count = $wpdb->get_var(
 		<div class="layoutberg-card layoutberg-mt-4 layoutberg-fade-in">
 			<div class="layoutberg-card-header">
 				<h3 class="layoutberg-card-title"><?php esc_html_e( 'Getting Started', 'layoutberg' ); ?></h3>
-				<button class="layoutberg-btn layoutberg-btn-secondary layoutberg-btn-sm" id="layoutberg-dismiss-guide">
-					<?php esc_html_e( 'Dismiss', 'layoutberg' ); ?>
-				</button>
 			</div>
 			
 			<div class="layoutberg-grid layoutberg-grid-3">
