@@ -39,7 +39,7 @@ class Upgrade {
 	 * @access   private
 	 * @var      string    $current_db_version    Current database version.
 	 */
-	private $current_db_version = '1.1.0';
+	private $current_db_version = '1.2.0';
 
 	/**
 	 * Run upgrade routines.
@@ -91,6 +91,7 @@ class Upgrade {
 	private function get_upgrades() {
 		return array(
 			'1.1.0' => 'upgrade_1_1_0',
+			'1.2.0' => 'upgrade_1_2_0',
 		);
 	}
 
@@ -136,6 +137,35 @@ class Upgrade {
 		
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
+	}
+
+	/**
+	 * Upgrade to version 1.2.0 - Fix templates table schema
+	 *
+	 * @since    1.2.0
+	 */
+	private function upgrade_1_2_0() {
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'layoutberg_templates';
+		
+		// Check if user_id column exists and created_by doesn't
+		if ( $this->column_exists( 'layoutberg_templates', 'user_id' ) && 
+		     ! $this->column_exists( 'layoutberg_templates', 'created_by' ) ) {
+			
+			// Rename user_id to created_by
+			$wpdb->query( "ALTER TABLE $table_name CHANGE COLUMN user_id created_by bigint(20) UNSIGNED NOT NULL" );
+		}
+		
+		// Add tags column if it doesn't exist
+		if ( ! $this->column_exists( 'layoutberg_templates', 'tags' ) ) {
+			$wpdb->query( "ALTER TABLE $table_name ADD COLUMN tags text NULL AFTER category" );
+		}
+		
+		// Add metadata column if it doesn't exist
+		if ( ! $this->column_exists( 'layoutberg_templates', 'metadata' ) ) {
+			$wpdb->query( "ALTER TABLE $table_name ADD COLUMN metadata longtext NULL AFTER thumbnail_url" );
+		}
 	}
 
 	/**
@@ -221,21 +251,23 @@ class Upgrade {
 		$table_name = $wpdb->prefix . 'layoutberg_templates';
 		$sql .= "CREATE TABLE $table_name (
 			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-			user_id bigint(20) UNSIGNED NOT NULL,
+			created_by bigint(20) UNSIGNED NOT NULL,
 			name varchar(255) NOT NULL,
 			slug varchar(255) NOT NULL,
 			description text NULL,
 			category varchar(100) NOT NULL DEFAULT 'custom',
+			tags text NULL,
 			content longtext NOT NULL,
 			prompt text NULL,
 			thumbnail_url varchar(500) NULL,
+			metadata longtext NULL,
 			is_public tinyint(1) NOT NULL DEFAULT 0,
 			usage_count int UNSIGNED NOT NULL DEFAULT 0,
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (id),
 			UNIQUE KEY slug (slug),
-			KEY user_id (user_id),
+			KEY created_by (created_by),
 			KEY category (category),
 			KEY is_public (is_public)
 		) $charset_collate;";

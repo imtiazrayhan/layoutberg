@@ -175,6 +175,9 @@ class LayoutBerg {
 		$this->loader->add_action( 'wp_ajax_layoutberg_generate', $admin, 'ajax_generate_layout' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_save_template', $admin, 'ajax_save_template' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_get_templates', $admin, 'ajax_get_templates' );
+		$this->loader->add_action( 'wp_ajax_layoutberg_get_template', $admin, 'ajax_get_template' );
+		$this->loader->add_action( 'wp_ajax_layoutberg_update_template', $admin, 'ajax_update_template' );
+		$this->loader->add_action( 'wp_ajax_layoutberg_import_template', $admin, 'ajax_import_template' );
 
 		// Settings save.
 		$this->loader->add_action( 'admin_init', $admin, 'register_settings' );

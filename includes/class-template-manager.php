@@ -383,18 +383,20 @@ class Template_Manager {
 	 */
 	private function format_template( $template ) {
 		return array(
-			'id'          => intval( $template['id'] ),
-			'name'        => $template['name'],
-			'slug'        => $template['slug'],
-			'description' => $template['description'],
-			'content'     => $template['content'],
-			'category'    => $template['category'],
-			'tags'        => ! empty( $template['tags'] ) ? json_decode( $template['tags'], true ) : array(),
-			'usage_count' => intval( $template['usage_count'] ),
-			'created_by'  => intval( $template['created_by'] ),
-			'created_at'  => $template['created_at'],
-			'updated_at'  => $template['updated_at'],
-			'author'      => get_userdata( $template['created_by'] )->display_name ?? __( 'Unknown', 'layoutberg' ),
+			'id'            => intval( $template['id'] ),
+			'name'          => $template['name'],
+			'slug'          => $template['slug'],
+			'description'   => $template['description'],
+			'content'       => $template['content'],
+			'category'      => $template['category'],
+			'tags'          => ! empty( $template['tags'] ) ? json_decode( $template['tags'], true ) : array(),
+			'thumbnail_url' => $template['thumbnail_url'] ?? '',
+			'is_public'     => intval( $template['is_public'] ?? 0 ),
+			'usage_count'   => intval( $template['usage_count'] ),
+			'created_by'    => intval( $template['created_by'] ),
+			'created_at'    => $template['created_at'],
+			'updated_at'    => $template['updated_at'],
+			'author'        => get_userdata( $template['created_by'] )->display_name ?? __( 'Unknown', 'layoutberg' ),
 		);
 	}
 
@@ -470,5 +472,61 @@ class Template_Manager {
 				$template_id
 			)
 		);
+	}
+
+	/**
+	 * Get templates count.
+	 *
+	 * @since 1.0.0
+	 * @param array $args Query arguments.
+	 * @return int Total templates count.
+	 */
+	public function get_templates_count( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array(
+			'category' => '',
+			'search'   => '',
+			'user_id'  => 0,
+		);
+
+		$args = wp_parse_args( $args, $defaults );
+
+		// Build WHERE clause.
+		$where_clauses = array( '1=1' );
+		$prepare_args  = array();
+
+		if ( ! empty( $args['category'] ) ) {
+			$where_clauses[] = 'category = %s';
+			$prepare_args[]   = $args['category'];
+		}
+
+		if ( ! empty( $args['search'] ) ) {
+			$where_clauses[] = '(name LIKE %s OR description LIKE %s OR tags LIKE %s)';
+			$search_term     = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+			$prepare_args[]   = $search_term;
+			$prepare_args[]   = $search_term;
+			$prepare_args[]   = $search_term;
+		}
+
+		if ( ! empty( $args['user_id'] ) ) {
+			$where_clauses[] = 'created_by = %d';
+			$prepare_args[]   = $args['user_id'];
+		}
+
+		$where = implode( ' AND ', $where_clauses );
+
+		// Get total count.
+		$count_query = "SELECT COUNT(*) FROM {$this->table_name} WHERE {$where}";
+		
+		if ( ! empty( $prepare_args ) ) {
+			$total_items = $wpdb->get_var(
+				$wpdb->prepare( $count_query, $prepare_args )
+			);
+		} else {
+			$total_items = $wpdb->get_var( $count_query );
+		}
+
+		return intval( $total_items );
 	}
 }

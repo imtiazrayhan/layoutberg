@@ -761,4 +761,128 @@ class Admin {
 
 		return $screen->is_block_editor();
 	}
+
+	/**
+	 * AJAX handler to get a single template.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_get_template() {
+		// Check nonce.
+		if ( ! check_ajax_referer( 'layoutberg_nonce', '_wpnonce', false ) ) {
+			wp_send_json_error( __( 'Invalid security token.', 'layoutberg' ) );
+		}
+
+		// Check permissions.
+		if ( ! current_user_can( 'layoutberg_manage_templates' ) ) {
+			wp_send_json_error( __( 'You do not have permission to view templates.', 'layoutberg' ) );
+		}
+
+		// Get template ID.
+		$template_id = isset( $_GET['template_id'] ) ? absint( $_GET['template_id'] ) : 0;
+		if ( ! $template_id ) {
+			wp_send_json_error( __( 'Invalid template ID.', 'layoutberg' ) );
+		}
+
+		// Get template.
+		$template_manager = $this->container->get( 'template_manager' );
+		$template = $template_manager->get_template( $template_id );
+
+		if ( is_wp_error( $template ) ) {
+			wp_send_json_error( $template->get_error_message() );
+		}
+
+		wp_send_json_success( $template );
+	}
+
+	/**
+	 * AJAX handler to update a template.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_update_template() {
+		// Check nonce.
+		if ( ! check_ajax_referer( 'layoutberg_nonce', '_wpnonce', false ) ) {
+			wp_send_json_error( __( 'Invalid security token.', 'layoutberg' ) );
+		}
+
+		// Check permissions.
+		if ( ! current_user_can( 'layoutberg_manage_templates' ) ) {
+			wp_send_json_error( __( 'You do not have permission to update templates.', 'layoutberg' ) );
+		}
+
+		// Get template data.
+		$template_id = isset( $_POST['template_id'] ) ? absint( $_POST['template_id'] ) : 0;
+		if ( ! $template_id ) {
+			wp_send_json_error( __( 'Invalid template ID.', 'layoutberg' ) );
+		}
+
+		$data = array(
+			'name'        => isset( $_POST['name'] ) ? sanitize_text_field( $_POST['name'] ) : '',
+			'description' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : '',
+			'category'    => isset( $_POST['category'] ) ? sanitize_text_field( $_POST['category'] ) : 'custom',
+			'tags'        => isset( $_POST['tags'] ) ? array_map( 'trim', explode( ',', sanitize_text_field( $_POST['tags'] ) ) ) : array(),
+			'is_public'   => isset( $_POST['is_public'] ) && $_POST['is_public'] === '1' ? 1 : 0,
+		);
+
+		// Update template.
+		$template_manager = $this->container->get( 'template_manager' );
+		$result = $template_manager->update_template( $template_id, $data );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( $result->get_error_message() );
+		}
+
+		wp_send_json_success( __( 'Template updated successfully.', 'layoutberg' ) );
+	}
+
+	/**
+	 * AJAX handler to import a template.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_import_template() {
+		// Check nonce.
+		if ( ! check_ajax_referer( 'layoutberg_nonce', '_wpnonce', false ) ) {
+			wp_send_json_error( __( 'Invalid security token.', 'layoutberg' ) );
+		}
+
+		// Check permissions.
+		if ( ! current_user_can( 'layoutberg_manage_templates' ) ) {
+			wp_send_json_error( __( 'You do not have permission to import templates.', 'layoutberg' ) );
+		}
+
+		// Check file upload.
+		if ( ! isset( $_FILES['import_file'] ) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK ) {
+			wp_send_json_error( __( 'No file uploaded or upload error.', 'layoutberg' ) );
+		}
+
+		// Validate file type.
+		$file_type = wp_check_filetype( $_FILES['import_file']['name'] );
+		if ( $file_type['ext'] !== 'json' ) {
+			wp_send_json_error( __( 'Invalid file type. Please upload a JSON file.', 'layoutberg' ) );
+		}
+
+		// Read file content.
+		$content = file_get_contents( $_FILES['import_file']['tmp_name'] );
+		if ( ! $content ) {
+			wp_send_json_error( __( 'Failed to read file content.', 'layoutberg' ) );
+		}
+
+		// Parse JSON.
+		$template_data = json_decode( $content, true );
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			wp_send_json_error( __( 'Invalid JSON format.', 'layoutberg' ) );
+		}
+
+		// Import template.
+		$template_manager = $this->container->get( 'template_manager' );
+		$template_id = $template_manager->import_template( $template_data );
+
+		if ( is_wp_error( $template_id ) ) {
+			wp_send_json_error( $template_id->get_error_message() );
+		}
+
+		wp_send_json_success( __( 'Template imported successfully.', 'layoutberg' ) );
+	}
 }
