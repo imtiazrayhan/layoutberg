@@ -552,6 +552,8 @@ $categories = array(
 .layoutberg-modal[style*="display: block"],
 .layoutberg-modal.show {
 	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
 }
 
 .layoutberg-modal-content {
@@ -777,6 +779,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			
 			modal.style.display = 'flex';
 			modal.style.zIndex = '999999999';
+			modal.style.visibility = 'visible';
+			modal.style.opacity = '1';
 			modal.classList.add('show');
 			
 			console.log('Modal display after show:', getComputedStyle(modal).display);
@@ -793,6 +797,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	function hideModal(modal) {
 		if (modal) {
 			modal.style.display = 'none';
+			modal.style.visibility = 'hidden';
+			modal.style.opacity = '0';
 			modal.classList.remove('show');
 		}
 	}
