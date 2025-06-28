@@ -40,6 +40,15 @@ class Block_Generator {
 	private $cache_manager;
 
 	/**
+	 * Block serializer instance.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    Block_Serializer
+	 */
+	private $block_serializer;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -47,6 +56,7 @@ class Block_Generator {
 	public function __construct() {
 		$this->api_client    = new API_Client();
 		$this->cache_manager = new Cache_Manager();
+		$this->block_serializer = new Block_Serializer();
 	}
 
 	/**
@@ -87,14 +97,18 @@ class Block_Generator {
 			return $validated;
 		}
 
+		// Serialize blocks for editor.
+		$serialized = $this->block_serializer->serialize_for_editor( $validated );
+
 		// Prepare response.
 		$response = array(
-			'blocks'   => $validated,
-			'html'     => $this->blocks_to_html( $validated ),
-			'raw'      => $result['content'],
-			'usage'    => $result['usage'],
-			'model'    => $result['model'],
-			'metadata' => array(
+			'blocks'     => $validated,
+			'serialized' => $serialized,
+			'html'       => $this->blocks_to_html( $validated ),
+			'raw'        => $result['content'],
+			'usage'      => $result['usage'],
+			'model'      => $result['model'],
+			'metadata'   => array(
 				'prompt'     => $prompt,
 				'options'    => $options,
 				'generated'  => current_time( 'mysql' ),
@@ -115,9 +129,16 @@ class Block_Generator {
 	 * @return array|WP_Error Parsed blocks or error.
 	 */
 	private function parse_generated_content( $content ) {
-		// Remove any markdown code blocks if present.
-		$content = preg_replace( '/```[\s\S]*?```/', '', $content );
-		$content = trim( $content );
+		// Log raw response for debugging.
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'LayoutBerg Raw AI Response: ' . $content );
+		}
+
+		// Extract block content from various response formats.
+		$content = $this->extract_block_content( $content );
+		
+		// Clean and normalize the content.
+		$content = $this->clean_generated_content( $content );
 
 		// Check if content looks like valid block markup.
 		if ( ! preg_match( '/<!-- wp:/', $content ) ) {
@@ -137,12 +158,167 @@ class Block_Generator {
 			);
 		}
 
-		// Filter out empty blocks.
-		$blocks = array_filter( $blocks, function( $block ) {
-			return ! empty( $block['blockName'] );
-		});
+		// Filter out empty blocks and clean up.
+		$blocks = $this->clean_parsed_blocks( $blocks );
+
+		if ( empty( $blocks ) ) {
+			return new \WP_Error(
+				'no_valid_blocks_after_cleanup',
+				__( 'No valid blocks remaining after cleanup.', 'layoutberg' )
+			);
+		}
 
 		return $blocks;
+	}
+
+	/**
+	 * Extract block content from AI response.
+	 *
+	 * @since 1.0.0
+	 * @param string $content Raw AI response.
+	 * @return string Extracted block content.
+	 */
+	private function extract_block_content( $content ) {
+		// Remove any markdown code blocks.
+		if ( preg_match( '/```(?:html|wp|wordpress)?\s*([\s\S]*?)```/i', $content, $matches ) ) {
+			$content = $matches[1];
+		}
+		
+		// Remove any JSON wrapper if present.
+		if ( preg_match( '/^\s*\{[\s\S]*"content"\s*:\s*"([\s\S]+)"\s*\}\s*$/i', $content, $matches ) ) {
+			$content = stripslashes( $matches[1] );
+		}
+		
+		// Remove any explanatory text before the first block comment.
+		if ( preg_match( '/(<!-- wp:[\s\S]+)$/i', $content, $matches ) ) {
+			$content = $matches[1];
+		}
+		
+		// Remove any trailing explanatory text after the last block comment.
+		if ( preg_match( '/^([\s\S]+<!-- \/wp:[^>]+-->)/i', $content, $matches ) ) {
+			$content = $matches[1];
+		}
+		
+		return trim( $content );
+	}
+
+	/**
+	 * Clean generated content.
+	 *
+	 * @since 1.0.0
+	 * @param string $content Content to clean.
+	 * @return string Cleaned content.
+	 */
+	private function clean_generated_content( $content ) {
+		// Fix common AI formatting issues.
+		
+		// Fix escaped quotes in JSON attributes.
+		$content = preg_replace_callback(
+			'/<!-- wp:([^{]+)(\{[^}]+\})/',
+			function( $matches ) {
+				$block_name = $matches[1];
+				$attrs = $matches[2];
+				// Unescape quotes within the JSON.
+				$attrs = str_replace( '\\"', '"', $attrs );
+				// Ensure proper JSON formatting.
+				$attrs = preg_replace( '/([{,])\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:/', '$1"$2":', $attrs );
+				return '<!-- wp:' . $block_name . $attrs;
+			},
+			$content
+		);
+		
+		// Fix line breaks within block comments.
+		$content = preg_replace( '/<!-- wp:([^>]+)\n([^>]+)-->/', '<!-- wp:$1 $2-->', $content );
+		
+		// Normalize whitespace.
+		$content = preg_replace( '/\r\n|\r/', "\n", $content );
+		
+		// Remove extra whitespace between blocks.
+		$content = preg_replace( '/-->\s+<!-- wp:/', "-->\n\n<!-- wp:", $content );
+		
+		return trim( $content );
+	}
+
+	/**
+	 * Clean parsed blocks.
+	 *
+	 * @since 1.0.0
+	 * @param array $blocks Parsed blocks.
+	 * @return array Cleaned blocks.
+	 */
+	private function clean_parsed_blocks( $blocks ) {
+		$cleaned = array();
+		
+		foreach ( $blocks as $block ) {
+			// Skip empty blocks.
+			if ( empty( $block['blockName'] ) ) {
+				continue;
+			}
+			
+			// Fix block attributes.
+			if ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) {
+				$block['attrs'] = $this->fix_block_attributes( $block['attrs'] );
+			}
+			
+			// Clean innerHTML.
+			if ( isset( $block['innerHTML'] ) ) {
+				$block['innerHTML'] = $this->clean_inner_html( $block['innerHTML'] );
+			}
+			
+			// Recursively clean inner blocks.
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$block['innerBlocks'] = $this->clean_parsed_blocks( $block['innerBlocks'] );
+			}
+			
+			$cleaned[] = $block;
+		}
+		
+		return $cleaned;
+	}
+
+	/**
+	 * Fix block attributes.
+	 *
+	 * @since 1.0.0
+	 * @param array $attrs Block attributes.
+	 * @return array Fixed attributes.
+	 */
+	private function fix_block_attributes( $attrs ) {
+		// Convert string boolean values to actual booleans.
+		foreach ( $attrs as $key => $value ) {
+			if ( $value === 'true' ) {
+				$attrs[ $key ] = true;
+			} elseif ( $value === 'false' ) {
+				$attrs[ $key ] = false;
+			} elseif ( is_string( $value ) && is_numeric( $value ) ) {
+				// Convert numeric strings to numbers where appropriate.
+				if ( strpos( $value, '.' ) !== false ) {
+					$attrs[ $key ] = floatval( $value );
+				} else {
+					$attrs[ $key ] = intval( $value );
+				}
+			}
+		}
+		
+		return $attrs;
+	}
+
+	/**
+	 * Clean inner HTML content.
+	 *
+	 * @since 1.0.0
+	 * @param string $html HTML content.
+	 * @return string Cleaned HTML.
+	 */
+	private function clean_inner_html( $html ) {
+		// Remove excessive whitespace while preserving structure.
+		$html = preg_replace( '/>\s+</', '><', $html );
+		$html = preg_replace( '/\s+/', ' ', $html );
+		
+		// Ensure proper encoding.
+		$html = wp_kses_post( $html );
+		
+		return trim( $html );
 	}
 
 	/**
@@ -155,15 +331,35 @@ class Block_Generator {
 	private function validate_blocks( $blocks ) {
 		$allowed_blocks = $this->get_allowed_blocks();
 		$validated      = array();
+		$validation_errors = array();
 
-		foreach ( $blocks as $block ) {
+		foreach ( $blocks as $index => $block ) {
 			// Check if block is allowed.
 			if ( ! in_array( $block['blockName'], $allowed_blocks, true ) ) {
+				$validation_errors[] = sprintf(
+					__( 'Block "%s" at position %d is not allowed.', 'layoutberg' ),
+					$block['blockName'],
+					$index + 1
+				);
 				continue; // Skip disallowed blocks.
+			}
+
+			// Validate block structure.
+			$structure_validation = $this->validate_block_structure( $block );
+			if ( is_wp_error( $structure_validation ) ) {
+				$validation_errors[] = $structure_validation->get_error_message();
+				continue;
 			}
 
 			// Validate block attributes.
 			$block = $this->validate_block_attributes( $block );
+
+			// Validate nesting rules.
+			$nesting_validation = $this->validate_block_nesting( $block );
+			if ( is_wp_error( $nesting_validation ) ) {
+				$validation_errors[] = $nesting_validation->get_error_message();
+				continue;
+			}
 
 			// Recursively validate inner blocks.
 			if ( ! empty( $block['innerBlocks'] ) ) {
@@ -174,17 +370,155 @@ class Block_Generator {
 				$block['innerBlocks'] = $inner_validated;
 			}
 
+			// Additional block-specific validation.
+			$specific_validation = $this->validate_specific_block( $block );
+			if ( is_wp_error( $specific_validation ) ) {
+				$validation_errors[] = $specific_validation->get_error_message();
+				continue;
+			}
+
 			$validated[] = $block;
+		}
+
+		// Log validation errors in debug mode.
+		if ( ! empty( $validation_errors ) && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'LayoutBerg Validation Errors: ' . implode( '; ', $validation_errors ) );
 		}
 
 		if ( empty( $validated ) ) {
 			return new \WP_Error(
 				'no_valid_blocks',
-				__( 'No valid blocks found in the generated content.', 'layoutberg' )
+				__( 'No valid blocks found in the generated content.', 'layoutberg' ) . 
+				( ! empty( $validation_errors ) ? ' ' . implode( ' ', $validation_errors ) : '' )
 			);
 		}
 
 		return $validated;
+	}
+
+	/**
+	 * Validate block structure.
+	 *
+	 * @since 1.0.0
+	 * @param array $block Block to validate.
+	 * @return true|WP_Error True if valid, error otherwise.
+	 */
+	private function validate_block_structure( $block ) {
+		// Check required block properties.
+		if ( ! isset( $block['blockName'] ) || empty( $block['blockName'] ) ) {
+			return new \WP_Error( 'missing_block_name', __( 'Block is missing required blockName property.', 'layoutberg' ) );
+		}
+
+		// Validate block name format.
+		if ( ! preg_match( '/^[a-z0-9-]+\/[a-z0-9-]+$/', $block['blockName'] ) ) {
+			return new \WP_Error( 'invalid_block_name', sprintf( __( 'Invalid block name format: %s', 'layoutberg' ), $block['blockName'] ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate block nesting rules.
+	 *
+	 * @since 1.0.0
+	 * @param array $block Block to validate.
+	 * @return true|WP_Error True if valid, error otherwise.
+	 */
+	private function validate_block_nesting( $block ) {
+		$nesting_rules = array(
+			'core/buttons' => array( 'core/button' ),
+			'core/columns' => array( 'core/column' ),
+			'core/list' => array( 'core/list-item' ),
+			'core/social-links' => array( 'core/social-link' ),
+			'core/navigation' => array( 'core/navigation-link', 'core/navigation-submenu' ),
+		);
+
+		// Check if block has nesting rules.
+		if ( isset( $nesting_rules[ $block['blockName'] ] ) && ! empty( $block['innerBlocks'] ) ) {
+			$allowed_children = $nesting_rules[ $block['blockName'] ];
+			
+			foreach ( $block['innerBlocks'] as $inner_block ) {
+				if ( ! empty( $inner_block['blockName'] ) && ! in_array( $inner_block['blockName'], $allowed_children, true ) ) {
+					return new \WP_Error(
+						'invalid_nesting',
+						sprintf(
+							__( 'Block "%s" cannot contain "%s". Allowed children: %s', 'layoutberg' ),
+							$block['blockName'],
+							$inner_block['blockName'],
+							implode( ', ', $allowed_children )
+						)
+					);
+				}
+			}
+		}
+
+		// Check for blocks that shouldn't have inner blocks.
+		$no_inner_blocks = array( 'core/image', 'core/spacer', 'core/separator', 'core/html' );
+		if ( in_array( $block['blockName'], $no_inner_blocks, true ) && ! empty( $block['innerBlocks'] ) ) {
+			return new \WP_Error(
+				'unexpected_inner_blocks',
+				sprintf( __( 'Block "%s" should not contain inner blocks.', 'layoutberg' ), $block['blockName'] )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate specific block types.
+	 *
+	 * @since 1.0.0
+	 * @param array $block Block to validate.
+	 * @return true|WP_Error True if valid, error otherwise.
+	 */
+	private function validate_specific_block( $block ) {
+		switch ( $block['blockName'] ) {
+			case 'core/columns':
+				// Validate columns have column children.
+				if ( empty( $block['innerBlocks'] ) ) {
+					return new \WP_Error( 'columns_missing_columns', __( 'Columns block must contain at least one column.', 'layoutberg' ) );
+				}
+				break;
+
+			case 'core/column':
+				// Validate column width if specified.
+				if ( isset( $block['attrs']['width'] ) ) {
+					$width = $block['attrs']['width'];
+					if ( ! is_numeric( str_replace( '%', '', $width ) ) ) {
+						return new \WP_Error( 'invalid_column_width', __( 'Column width must be a valid percentage.', 'layoutberg' ) );
+					}
+				}
+				break;
+
+			case 'core/heading':
+				// Validate heading level.
+				if ( isset( $block['attrs']['level'] ) ) {
+					$level = intval( $block['attrs']['level'] );
+					if ( $level < 1 || $level > 6 ) {
+						return new \WP_Error( 'invalid_heading_level', __( 'Heading level must be between 1 and 6.', 'layoutberg' ) );
+					}
+				}
+				break;
+
+			case 'core/image':
+				// Validate image has alt text for accessibility.
+				if ( empty( $block['attrs']['alt'] ) && strpos( $block['innerHTML'], 'alt=' ) === false ) {
+					// Add a warning but don't fail validation.
+					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+						error_log( 'LayoutBerg Warning: Image block missing alt text for accessibility.' );
+					}
+				}
+				break;
+
+			case 'core/button':
+				// Validate button has link text.
+				if ( empty( $block['innerHTML'] ) || strpos( $block['innerHTML'], '</a>' ) === false ) {
+					return new \WP_Error( 'button_missing_text', __( 'Button block must contain link text.', 'layoutberg' ) );
+				}
+				break;
+		}
+
+		return true;
 	}
 
 	/**

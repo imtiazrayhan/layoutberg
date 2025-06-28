@@ -52,6 +52,15 @@ class LayoutBerg {
 	protected $loader;
 
 	/**
+	 * The dependency injection container.
+	 *
+	 * @since  1.0.0
+	 * @access protected
+	 * @var    Container
+	 */
+	protected $container;
+
+	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * @since 1.0.0
@@ -59,6 +68,7 @@ class LayoutBerg {
 	private function __construct() {
 		$this->version = LAYOUTBERG_VERSION;
 		$this->load_dependencies();
+		$this->check_for_upgrades();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 		$this->define_block_hooks();
@@ -85,6 +95,9 @@ class LayoutBerg {
 	 * @access private
 	 */
 	private function load_dependencies() {
+		// Load the container class first.
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-container.php';
+
 		// Load the loader class.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-loader.php';
 
@@ -110,8 +123,28 @@ class LayoutBerg {
 		// Load security manager.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-security-manager.php';
 
-		// Create loader instance.
-		$this->loader = new Loader();
+		// Load upgrade handler.
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-upgrade.php';
+
+		// Get container instance and loader.
+		$this->container = Container::get_instance();
+		$this->loader = $this->container->make( 'DotCamp\LayoutBerg\Loader' );
+	}
+
+	/**
+	 * Check for database upgrades.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 */
+	private function check_for_upgrades() {
+		// Only run on admin requests
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		$upgrade = new Upgrade();
+		$upgrade->run();
 	}
 
 	/**
@@ -121,7 +154,7 @@ class LayoutBerg {
 	 * @access private
 	 */
 	private function define_admin_hooks() {
-		$admin = new Admin( $this->get_version() );
+		$admin = $this->container->make( 'DotCamp\LayoutBerg\Admin' );
 
 		// Admin scripts and styles.
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
@@ -152,7 +185,7 @@ class LayoutBerg {
 	 * @access private
 	 */
 	private function define_public_hooks() {
-		$public = new PublicFacing( $this->get_version() );
+		$public = $this->container->make( 'DotCamp\LayoutBerg\PublicFacing' );
 
 		// Public scripts and styles.
 		$this->loader->add_action( 'wp_enqueue_scripts', $public, 'enqueue_styles' );
@@ -183,7 +216,7 @@ class LayoutBerg {
 	 * @access private
 	 */
 	private function define_api_hooks() {
-		$api_handler = new API_Handler();
+		$api_handler = $this->container->make( 'DotCamp\LayoutBerg\API_Handler' );
 
 		// Register REST routes.
 		$this->loader->add_action( 'rest_api_init', $api_handler, 'register_routes' );
@@ -369,5 +402,15 @@ class LayoutBerg {
 	 */
 	public function get_version() {
 		return $this->version;
+	}
+
+	/**
+	 * Get the dependency injection container.
+	 *
+	 * @since  1.0.0
+	 * @return Container The dependency injection container.
+	 */
+	public function get_container() {
+		return $this->container;
 	}
 }

@@ -14,6 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Get current settings.
 $options = get_option( 'layoutberg_options', array() );
+
+// Handle API key display.
+$api_key_display = '';
+if ( ! empty( $options['api_key'] ) ) {
+	$security = new \DotCamp\LayoutBerg\Security_Manager();
+	$decrypted = $security->decrypt_api_key( $options['api_key'] );
+	if ( $decrypted ) {
+		// Mask the API key for display.
+		$api_key_display = substr( $decrypted, 0, 7 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
+	}
+}
 ?>
 
 <div class="wrap layoutberg-settings">
@@ -49,9 +60,10 @@ $options = get_option( 'layoutberg_options', array() );
 								type="password" 
 								id="layoutberg_api_key" 
 								name="layoutberg_options[api_key]" 
-								value="<?php echo esc_attr( $options['api_key'] ?? '' ); ?>" 
+								value="<?php echo esc_attr( $api_key_display ); ?>" 
 								class="regular-text"
 								placeholder="sk-..."
+								data-encrypted="<?php echo ! empty( $options['api_key'] ) ? 'true' : 'false'; ?>"
 							/>
 							<p class="description">
 								<?php 
@@ -403,9 +415,17 @@ jQuery(document).ready(function($) {
 	$('#test-api-key').on('click', function() {
 		var $button = $(this);
 		var $status = $('#api-key-status');
-		var apiKey = $('#layoutberg_api_key').val();
+		var $input = $('#layoutberg_api_key');
+		var apiKey = $input.val();
+		var isEncrypted = $input.data('encrypted') === true || $input.data('encrypted') === 'true';
 
-		if (!apiKey) {
+		// Check if API key field is empty or just contains masked value
+		if (!apiKey || (isEncrypted && apiKey.indexOf('*') !== -1)) {
+			// If it's a masked value, we'll test the stored key
+			apiKey = '';
+		}
+
+		if (!apiKey && !isEncrypted) {
 			$status.removeClass('success').addClass('error').text('<?php esc_html_e( 'Please enter an API key', 'layoutberg' ); ?>');
 			return;
 		}
@@ -420,7 +440,7 @@ jQuery(document).ready(function($) {
 				xhr.setRequestHeader('X-WP-Nonce', layoutbergAdmin.restNonce);
 			},
 			data: {
-				api_key: apiKey
+				api_key: apiKey || 'use_stored' // Send 'use_stored' to indicate we should use the stored key
 			},
 			success: function(response) {
 				$status.addClass('success').text('<?php esc_html_e( 'Valid API key!', 'layoutberg' ); ?>');

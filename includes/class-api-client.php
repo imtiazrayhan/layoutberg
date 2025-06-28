@@ -67,6 +67,33 @@ class API_Client {
 	private $temperature;
 
 	/**
+	 * Maximum retry attempts.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    int
+	 */
+	private $max_retries = 3;
+
+	/**
+	 * Retry delay in seconds.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    int
+	 */
+	private $retry_delay = 2;
+
+	/**
+	 * Request timeout in seconds.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    int
+	 */
+	private $timeout = 60;
+
+	/**
 	 * Security manager instance.
 	 *
 	 * @since  1.0.0
@@ -76,12 +103,22 @@ class API_Client {
 	private $security;
 
 	/**
+	 * Prompt engineer instance.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    Prompt_Engineer
+	 */
+	private $prompt_engineer;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
 	 */
 	public function __construct() {
 		$this->security = new Security_Manager();
+		$this->prompt_engineer = new Prompt_Engineer();
 		$this->load_settings();
 	}
 
@@ -122,11 +159,21 @@ class API_Client {
 			return new \WP_Error( 'no_api_key', __( 'OpenAI API key is not configured.', 'layoutberg' ) );
 		}
 
-		// Build system prompt.
-		$system_prompt = $this->build_system_prompt( $options );
+		// Check rate limits
+		$rate_limit_check = $this->check_rate_limit();
+		if ( is_wp_error( $rate_limit_check ) ) {
+			return $rate_limit_check;
+		}
 
-		// Build user prompt.
-		$user_prompt = $this->enhance_prompt( $prompt, $options );
+		// Build system prompt using prompt engineer.
+		$system_prompt = $this->prompt_engineer->build_system_prompt( $options );
+
+		// Validate and enhance user prompt.
+		$validation = $this->prompt_engineer->validate_prompt( $prompt );
+		if ( is_wp_error( $validation ) ) {
+			return $validation;
+		}
+		$user_prompt = $this->prompt_engineer->enhance_user_prompt( $prompt, $options );
 
 		// Prepare request body.
 		$request_body = array(
@@ -145,61 +192,180 @@ class API_Client {
 			'temperature' => $this->temperature,
 		);
 
-		// Log request in debug mode.
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'LayoutBerg API Request: ' . wp_json_encode( $request_body ) );
-		}
+		// Make API request with retry logic.
+		$response = $this->make_api_request_with_retry( $request_body );
 
-		// Make API request.
-		$response = wp_remote_post(
-			$this->api_endpoint,
-			array(
-				'timeout' => 60,
-				'headers' => array(
-					'Authorization' => 'Bearer ' . $this->api_key,
-					'Content-Type'  => 'application/json',
-				),
-				'body'    => wp_json_encode( $request_body ),
-			)
-		);
-
-		// Handle errors.
 		if ( is_wp_error( $response ) ) {
-			$this->security->log_security_event( 'api_error', array( 'error' => $response->get_error_message() ) );
 			return $response;
 		}
 
-		// Get response body.
-		$body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $body, true );
-
-		// Log response in debug mode.
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'LayoutBerg API Response: ' . $body );
-		}
-
-		// Check for API errors.
-		if ( isset( $data['error'] ) ) {
-			$error_message = isset( $data['error']['message'] ) ? $data['error']['message'] : __( 'Unknown API error.', 'layoutberg' );
-			$this->security->log_security_event( 'api_error', array( 'error' => $error_message ) );
-			return new \WP_Error( 'api_error', $error_message );
-		}
-
-		// Extract generated content.
-		if ( ! isset( $data['choices'][0]['message']['content'] ) ) {
-			return new \WP_Error( 'invalid_response', __( 'Invalid API response format.', 'layoutberg' ) );
-		}
-
-		$generated_content = $data['choices'][0]['message']['content'];
-
 		// Track usage.
-		$this->track_usage( $data );
+		$this->track_usage( $response );
 
 		return array(
-			'content' => $generated_content,
-			'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
+			'content' => $response['content'],
+			'usage'   => isset( $response['usage'] ) ? $response['usage'] : array(),
 			'model'   => $this->model,
 		);
+	}
+
+	/**
+	 * Make API request with retry logic.
+	 *
+	 * @since 1.0.0
+	 * @param array $request_body Request body.
+	 * @return array|WP_Error Response data or error.
+	 */
+	private function make_api_request_with_retry( $request_body ) {
+		$attempt = 0;
+		$last_error = null;
+
+		while ( $attempt < $this->max_retries ) {
+			$attempt++;
+
+			// Log request in debug mode.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( sprintf( 'LayoutBerg API Request (Attempt %d/%d): %s', $attempt, $this->max_retries, wp_json_encode( $request_body ) ) );
+			}
+
+			// Make API request.
+			$response = wp_remote_post(
+				$this->api_endpoint,
+				array(
+					'timeout' => $this->timeout,
+					'headers' => array(
+						'Authorization' => 'Bearer ' . $this->api_key,
+						'Content-Type'  => 'application/json',
+					),
+					'body'    => wp_json_encode( $request_body ),
+				)
+			);
+
+			// Handle connection errors.
+			if ( is_wp_error( $response ) ) {
+				$last_error = $response;
+				$this->security->log_security_event( 'api_connection_error', array( 
+					'error' => $response->get_error_message(),
+					'attempt' => $attempt,
+				) );
+
+				// Don't retry on certain errors
+				if ( in_array( $response->get_error_code(), array( 'http_request_failed' ), true ) ) {
+					if ( $attempt < $this->max_retries ) {
+						sleep( $this->retry_delay * $attempt ); // Exponential backoff
+						continue;
+					}
+				}
+				
+				return $response;
+			}
+
+			// Get response code and body.
+			$response_code = wp_remote_retrieve_response_code( $response );
+			$body = wp_remote_retrieve_body( $response );
+			$data = json_decode( $body, true );
+
+			// Log response in debug mode.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( sprintf( 'LayoutBerg API Response (Attempt %d/%d): %s', $attempt, $this->max_retries, $body ) );
+			}
+
+			// Handle rate limiting (429) and server errors (5xx).
+			if ( in_array( $response_code, array( 429, 500, 502, 503, 504 ), true ) ) {
+				$error_message = $this->get_error_message_from_response( $data, $response_code );
+				$last_error = new \WP_Error( 'api_error_' . $response_code, $error_message );
+				
+				$this->security->log_security_event( 'api_rate_limit_or_server_error', array(
+					'error' => $error_message,
+					'code' => $response_code,
+					'attempt' => $attempt,
+				) );
+
+				if ( $attempt < $this->max_retries ) {
+					// For rate limiting, check if we have a retry-after header
+					$retry_after = wp_remote_retrieve_header( $response, 'retry-after' );
+					$wait_time = $retry_after ? intval( $retry_after ) : ( $this->retry_delay * $attempt );
+					
+					sleep( $wait_time );
+					continue;
+				}
+			}
+
+			// Handle client errors (4xx except 429).
+			if ( $response_code >= 400 && $response_code < 500 && $response_code !== 429 ) {
+				$error_message = $this->get_error_message_from_response( $data, $response_code );
+				$this->security->log_security_event( 'api_client_error', array(
+					'error' => $error_message,
+					'code' => $response_code,
+				) );
+				return new \WP_Error( 'api_error_' . $response_code, $error_message );
+			}
+
+			// Handle API errors in response.
+			if ( isset( $data['error'] ) ) {
+				$error_message = $this->get_error_message_from_response( $data );
+				$error_type = isset( $data['error']['type'] ) ? $data['error']['type'] : 'unknown';
+				
+				// Retry on certain error types
+				if ( in_array( $error_type, array( 'server_error', 'engine_error' ), true ) && $attempt < $this->max_retries ) {
+					$last_error = new \WP_Error( 'api_error', $error_message );
+					sleep( $this->retry_delay * $attempt );
+					continue;
+				}
+				
+				$this->security->log_security_event( 'api_error', array( 'error' => $error_message, 'type' => $error_type ) );
+				return new \WP_Error( 'api_error', $error_message );
+			}
+
+			// Extract generated content.
+			if ( ! isset( $data['choices'][0]['message']['content'] ) ) {
+				return new \WP_Error( 'invalid_response', __( 'Invalid API response format.', 'layoutberg' ) );
+			}
+
+			// Success!
+			return array(
+				'content' => $data['choices'][0]['message']['content'],
+				'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
+				'raw_response' => $data,
+			);
+		}
+
+		// All retries exhausted.
+		if ( $last_error ) {
+			return $last_error;
+		}
+
+		return new \WP_Error( 'max_retries_exceeded', __( 'Maximum retry attempts exceeded.', 'layoutberg' ) );
+	}
+
+	/**
+	 * Get error message from API response.
+	 *
+	 * @since 1.0.0
+	 * @param array $data Response data.
+	 * @param int   $status_code HTTP status code.
+	 * @return string Error message.
+	 */
+	private function get_error_message_from_response( $data, $status_code = 0 ) {
+		// Check for error message in response
+		if ( isset( $data['error']['message'] ) ) {
+			return $data['error']['message'];
+		}
+
+		// Provide default messages based on status code
+		switch ( $status_code ) {
+			case 401:
+				return __( 'Invalid API key. Please check your OpenAI API key.', 'layoutberg' );
+			case 429:
+				return __( 'Rate limit exceeded. Please try again later.', 'layoutberg' );
+			case 500:
+			case 502:
+			case 503:
+			case 504:
+				return __( 'OpenAI server error. Please try again later.', 'layoutberg' );
+			default:
+				return __( 'Unknown API error occurred.', 'layoutberg' );
+		}
 	}
 
 	/**
@@ -282,11 +448,18 @@ class API_Client {
 	 * @param array $response_data API response data.
 	 */
 	private function track_usage( $response_data ) {
-		if ( ! isset( $response_data['usage'] ) ) {
+		// Handle both old format and new format
+		$usage = null;
+		if ( isset( $response_data['usage'] ) ) {
+			$usage = $response_data['usage'];
+		} elseif ( isset( $response_data['raw_response']['usage'] ) ) {
+			$usage = $response_data['raw_response']['usage'];
+		}
+
+		if ( ! $usage ) {
 			return;
 		}
 
-		$usage      = $response_data['usage'];
 		$user_id    = get_current_user_id();
 		$tokens_used = isset( $usage['total_tokens'] ) ? intval( $usage['total_tokens'] ) : 0;
 
@@ -432,5 +605,156 @@ class API_Client {
 				'cost_per_1k' => 0.01,
 			),
 		);
+	}
+
+	/**
+	 * Check rate limits for current user.
+	 *
+	 * @since 1.0.0
+	 * @return bool|WP_Error True if within limits, WP_Error if exceeded.
+	 */
+	private function check_rate_limit() {
+		$user_id = get_current_user_id();
+		
+		// Get user tier
+		$user_tier = $this->get_user_tier();
+		
+		// Get rate limits from options
+		$options = get_option( 'layoutberg_options', array() );
+		$rate_limits = isset( $options['rate_limit'] ) ? $options['rate_limit'] : array(
+			'free' => array(
+				'hour' => 5,
+				'day'  => 10,
+			),
+			'pro' => array(
+				'hour' => 20,
+				'day'  => 100,
+			),
+			'business' => array(
+				'hour' => 50,
+				'day'  => 500,
+			),
+		);
+
+		// Get limits for user tier
+		$tier_limits = isset( $rate_limits[ $user_tier ] ) ? $rate_limits[ $user_tier ] : $rate_limits['free'];
+		
+		// Check hourly limit
+		$hourly_count = $this->get_generation_count( $user_id, 'hour' );
+		if ( $hourly_count >= $tier_limits['hour'] ) {
+			return new \WP_Error( 
+				'rate_limit_hourly', 
+				sprintf( 
+					__( 'Hourly rate limit exceeded. You have used %d of %d generations this hour.', 'layoutberg' ),
+					$hourly_count,
+					$tier_limits['hour']
+				)
+			);
+		}
+
+		// Check daily limit
+		$daily_count = $this->get_generation_count( $user_id, 'day' );
+		if ( $daily_count >= $tier_limits['day'] ) {
+			return new \WP_Error( 
+				'rate_limit_daily', 
+				sprintf( 
+					__( 'Daily rate limit exceeded. You have used %d of %d generations today.', 'layoutberg' ),
+					$daily_count,
+					$tier_limits['day']
+				)
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get user tier.
+	 *
+	 * @since 1.0.0
+	 * @return string User tier (free, pro, or business).
+	 */
+	private function get_user_tier() {
+		// Check for license
+		$license = get_option( 'layoutberg_license_key' );
+		if ( empty( $license ) ) {
+			return 'free';
+		}
+
+		// Check license type
+		$license_data = get_option( 'layoutberg_license_data' );
+		if ( isset( $license_data['tier'] ) ) {
+			return $license_data['tier'];
+		}
+
+		// Default to free if no tier found
+		return 'free';
+	}
+
+	/**
+	 * Get generation count for a user within a time period.
+	 *
+	 * @since 1.0.0
+	 * @param int    $user_id User ID.
+	 * @param string $period  Time period (hour or day).
+	 * @return int Generation count.
+	 */
+	private function get_generation_count( $user_id, $period = 'day' ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'layoutberg_generations';
+
+		if ( 'hour' === $period ) {
+			$time_ago = date( 'Y-m-d H:i:s', strtotime( '-1 hour' ) );
+		} else {
+			$time_ago = date( 'Y-m-d 00:00:00' );
+		}
+
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM $table_name 
+				WHERE user_id = %d 
+				AND created_at >= %s 
+				AND status = 'completed'",
+				$user_id,
+				$time_ago
+			)
+		);
+
+		return intval( $count );
+	}
+
+	/**
+	 * Count tokens in text (approximate).
+	 *
+	 * @since 1.0.0
+	 * @param string $text Text to count tokens for.
+	 * @return int Approximate token count.
+	 */
+	public function count_tokens( $text ) {
+		// Simple approximation: 1 token ≈ 4 characters
+		// This is a rough estimate; actual tokenization is more complex
+		return ceil( strlen( $text ) / 4 );
+	}
+
+	/**
+	 * Estimate cost for a generation.
+	 *
+	 * @since 1.0.0
+	 * @param string $prompt Prompt text.
+	 * @param array  $options Generation options.
+	 * @return float Estimated cost in USD.
+	 */
+	public function estimate_cost( $prompt, $options = array() ) {
+		// Count prompt tokens
+		$prompt_tokens = $this->count_tokens( $prompt );
+		
+		// Estimate completion tokens (use max_tokens or default)
+		$max_tokens = isset( $options['max_tokens'] ) ? $options['max_tokens'] : $this->max_tokens;
+		
+		// Total tokens
+		$total_tokens = $prompt_tokens + $max_tokens;
+		
+		// Calculate cost
+		return $this->calculate_cost( $total_tokens );
 	}
 }

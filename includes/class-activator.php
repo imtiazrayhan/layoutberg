@@ -29,8 +29,12 @@ class Activator {
 	 * @since 1.0.0
 	 */
 	public static function activate() {
-		// Create database tables.
-		self::create_tables();
+		// Load required files
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-upgrade.php';
+
+		// Create/upgrade database tables.
+		$upgrade = new Upgrade();
+		$upgrade->create_tables();
 
 		// Set default options.
 		self::set_default_options();
@@ -51,81 +55,6 @@ class Activator {
 		set_transient( 'layoutberg_activated', true, 30 );
 	}
 
-	/**
-	 * Create plugin database tables.
-	 *
-	 * @since 1.0.0
-	 */
-	private static function create_tables() {
-		global $wpdb;
-
-		$charset_collate = $wpdb->get_charset_collate();
-
-		// Settings table.
-		$table_settings = $wpdb->prefix . 'layoutberg_settings';
-		$sql_settings   = "CREATE TABLE IF NOT EXISTS $table_settings (
-			id INT AUTO_INCREMENT PRIMARY KEY,
-			setting_key VARCHAR(255) UNIQUE,
-			setting_value LONGTEXT,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-		) $charset_collate;";
-
-		// Generation history table.
-		$table_generations = $wpdb->prefix . 'layoutberg_generations';
-		$sql_generations   = "CREATE TABLE IF NOT EXISTS $table_generations (
-			id INT AUTO_INCREMENT PRIMARY KEY,
-			user_id BIGINT,
-			prompt TEXT,
-			model VARCHAR(50),
-			tokens_used INT,
-			cost DECIMAL(10,4),
-			response LONGTEXT,
-			status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			INDEX idx_user_id (user_id),
-			INDEX idx_created_at (created_at)
-		) $charset_collate;";
-
-		// Templates table.
-		$table_templates = $wpdb->prefix . 'layoutberg_templates';
-		$sql_templates   = "CREATE TABLE IF NOT EXISTS $table_templates (
-			id INT AUTO_INCREMENT PRIMARY KEY,
-			name VARCHAR(255),
-			slug VARCHAR(255) UNIQUE,
-			description TEXT,
-			content LONGTEXT,
-			category VARCHAR(100),
-			tags TEXT,
-			usage_count INT DEFAULT 0,
-			created_by BIGINT,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			INDEX idx_category (category),
-			INDEX idx_created_by (created_by)
-		) $charset_collate;";
-
-		// Usage tracking table.
-		$table_usage = $wpdb->prefix . 'layoutberg_usage';
-		$sql_usage   = "CREATE TABLE IF NOT EXISTS $table_usage (
-			id INT AUTO_INCREMENT PRIMARY KEY,
-			user_id BIGINT,
-			date DATE,
-			generations_count INT DEFAULT 0,
-			tokens_used INT DEFAULT 0,
-			UNIQUE KEY user_date (user_id, date),
-			INDEX idx_date (date)
-		) $charset_collate;";
-
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-		dbDelta( $sql_settings );
-		dbDelta( $sql_generations );
-		dbDelta( $sql_templates );
-		dbDelta( $sql_usage );
-
-		// Store database version.
-		update_option( 'layoutberg_db_version', '1.0.0' );
-	}
 
 	/**
 	 * Set default plugin options.

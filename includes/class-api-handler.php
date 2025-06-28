@@ -303,6 +303,22 @@ class API_Handler {
 	public function validate_api_key( $request ) {
 		$api_key = $request->get_param( 'api_key' );
 
+		// If 'use_stored' is passed, use the stored API key.
+		if ( 'use_stored' === $api_key ) {
+			$options = get_option( 'layoutberg_options', array() );
+			if ( ! empty( $options['api_key'] ) ) {
+				$security = new Security_Manager();
+				$decrypted = $security->decrypt_api_key( $options['api_key'] );
+				if ( $decrypted ) {
+					$api_key = $decrypted;
+				} else {
+					return new \WP_Error( 'decrypt_failed', __( 'Failed to decrypt stored API key.', 'layoutberg' ) );
+				}
+			} else {
+				return new \WP_Error( 'no_api_key', __( 'No API key configured.', 'layoutberg' ) );
+			}
+		}
+
 		// Use static method to avoid instantiation issues.
 		$result = API_Client::validate_api_key( $api_key );
 
