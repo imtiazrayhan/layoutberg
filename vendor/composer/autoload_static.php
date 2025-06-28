@@ -27,7 +27,6 @@ class ComposerStaticInit368b02ba2351bf8dd90abc62e70e7405
         'D' => 
         array (
             'DotCamp\\LayoutBerg\\Tests\\' => 25,
-            'DotCamp\\LayoutBerg\\' => 19,
             'Doctrine\\Instantiator\\' => 22,
             'DeepCopy\\' => 9,
         ),
@@ -53,10 +52,6 @@ class ComposerStaticInit368b02ba2351bf8dd90abc62e70e7405
         'DotCamp\\LayoutBerg\\Tests\\' => 
         array (
             0 => __DIR__ . '/../..' . '/tests/phpunit',
-        ),
-        'DotCamp\\LayoutBerg\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/includes',
         ),
         'Doctrine\\Instantiator\\' => 
         array (
@@ -138,6 +133,22 @@ class ComposerStaticInit368b02ba2351bf8dd90abc62e70e7405
         'Doctrine\\Instantiator\\Exception\\UnexpectedValueException' => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator/Exception/UnexpectedValueException.php',
         'Doctrine\\Instantiator\\Instantiator' => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator/Instantiator.php',
         'Doctrine\\Instantiator\\InstantiatorInterface' => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator/InstantiatorInterface.php',
+        'DotCamp\\LayoutBerg\\API_Client' => __DIR__ . '/../..' . '/includes/class-api-client.php',
+        'DotCamp\\LayoutBerg\\API_Handler' => __DIR__ . '/../..' . '/includes/class-api-handler.php',
+        'DotCamp\\LayoutBerg\\Activator' => __DIR__ . '/../..' . '/includes/class-activator.php',
+        'DotCamp\\LayoutBerg\\Admin' => __DIR__ . '/../..' . '/includes/class-admin.php',
+        'DotCamp\\LayoutBerg\\Block_Generator' => __DIR__ . '/../..' . '/includes/class-block-generator.php',
+        'DotCamp\\LayoutBerg\\Block_Serializer' => __DIR__ . '/../..' . '/includes/class-block-serializer.php',
+        'DotCamp\\LayoutBerg\\Cache_Manager' => __DIR__ . '/../..' . '/includes/class-cache-manager.php',
+        'DotCamp\\LayoutBerg\\Container' => __DIR__ . '/../..' . '/includes/class-container.php',
+        'DotCamp\\LayoutBerg\\Deactivator' => __DIR__ . '/../..' . '/includes/class-deactivator.php',
+        'DotCamp\\LayoutBerg\\LayoutBerg' => __DIR__ . '/../..' . '/includes/class-layoutberg.php',
+        'DotCamp\\LayoutBerg\\Loader' => __DIR__ . '/../..' . '/includes/class-loader.php',
+        'DotCamp\\LayoutBerg\\Prompt_Engineer' => __DIR__ . '/../..' . '/includes/class-prompt-engineer.php',
+        'DotCamp\\LayoutBerg\\PublicFacing' => __DIR__ . '/../..' . '/includes/class-public.php',
+        'DotCamp\\LayoutBerg\\Security_Manager' => __DIR__ . '/../..' . '/includes/class-security-manager.php',
+        'DotCamp\\LayoutBerg\\Template_Manager' => __DIR__ . '/../..' . '/includes/class-template-manager.php',
+        'DotCamp\\LayoutBerg\\Upgrade' => __DIR__ . '/../..' . '/includes/class-upgrade.php',
         'Hamcrest\\Arrays\\IsArray' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArray.php',
         'Hamcrest\\Arrays\\IsArrayContaining' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContaining.php',
         'Hamcrest\\Arrays\\IsArrayContainingInAnyOrder' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContainingInAnyOrder.php',

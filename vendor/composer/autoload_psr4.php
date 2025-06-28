@@ -10,7 +10,6 @@ return array(
     'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => array($vendorDir . '/dealerdirect/phpcodesniffer-composer-installer/src'),
     'Mockery\\' => array($vendorDir . '/mockery/mockery/library/Mockery'),
     'DotCamp\\LayoutBerg\\Tests\\' => array($baseDir . '/tests/phpunit'),
-    'DotCamp\\LayoutBerg\\' => array($baseDir . '/includes'),
     'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src/Doctrine/Instantiator'),
     'DeepCopy\\' => array($vendorDir . '/myclabs/deep-copy/src/DeepCopy'),
     'Brain\\Monkey\\' => array($vendorDir . '/brain/monkey/src'),
