@@ -266,9 +266,22 @@ class Admin {
 	public function sanitize_settings( $input ) {
 		$sanitized = array();
 
-		// Sanitize API key.
+		// Sanitize and encrypt API key.
 		if ( isset( $input['api_key'] ) ) {
-			$sanitized['api_key'] = sanitize_text_field( $input['api_key'] );
+			$api_key = sanitize_text_field( $input['api_key'] );
+			
+			// Check if the API key is masked (contains asterisks).
+			if ( strpos( $api_key, '*' ) !== false ) {
+				// Keep the existing encrypted key.
+				$existing_options = get_option( 'layoutberg_options', array() );
+				if ( isset( $existing_options['api_key'] ) ) {
+					$sanitized['api_key'] = $existing_options['api_key'];
+				}
+			} elseif ( ! empty( $api_key ) ) {
+				// New API key - encrypt it.
+				$security = new Security_Manager();
+				$sanitized['api_key'] = $security->encrypt_api_key( $api_key );
+			}
 		}
 
 		// Sanitize model.
@@ -283,6 +296,35 @@ class Admin {
 		if ( isset( $input['max_tokens'] ) ) {
 			$sanitized['max_tokens'] = absint( $input['max_tokens'] );
 		}
+
+		// Handle other settings that might be present in the form.
+		// Temperature.
+		if ( isset( $input['temperature'] ) ) {
+			$sanitized['temperature'] = floatval( $input['temperature'] );
+			$sanitized['temperature'] = max( 0, min( 2, $sanitized['temperature'] ) );
+		}
+		
+		// Cache settings.
+		$sanitized['cache_enabled'] = isset( $input['cache_enabled'] ) && $input['cache_enabled'] == '1';
+		
+		if ( isset( $input['cache_duration'] ) ) {
+			$sanitized['cache_duration'] = absint( $input['cache_duration'] );
+		}
+		
+		// Style defaults.
+		if ( isset( $input['style_defaults'] ) && is_array( $input['style_defaults'] ) ) {
+			$sanitized['style_defaults'] = array(
+				'style'   => sanitize_text_field( $input['style_defaults']['style'] ?? 'modern' ),
+				'colors'  => sanitize_text_field( $input['style_defaults']['colors'] ?? 'brand' ),
+				'layout'  => sanitize_text_field( $input['style_defaults']['layout'] ?? 'single-column' ),
+				'density' => sanitize_text_field( $input['style_defaults']['density'] ?? 'balanced' ),
+			);
+		}
+		
+		// Advanced settings.
+		$sanitized['allow_custom_blocks'] = isset( $input['allow_custom_blocks'] ) && $input['allow_custom_blocks'] == '1';
+		$sanitized['analytics_enabled'] = isset( $input['analytics_enabled'] ) && $input['analytics_enabled'] == '1';
+		$sanitized['debug_mode'] = isset( $input['debug_mode'] ) && $input['debug_mode'] == '1';
 
 		// Merge with existing options.
 		$options = get_option( 'layoutberg_options', array() );
@@ -305,7 +347,18 @@ class Admin {
 	 */
 	public function render_api_key_field() {
 		$options = get_option( 'layoutberg_options', array() );
-		$api_key = isset( $options['api_key'] ) ? $options['api_key'] : '';
+		$encrypted_key = isset( $options['api_key'] ) ? $options['api_key'] : '';
+		
+		// Decrypt the API key for display.
+		$api_key = '';
+		if ( ! empty( $encrypted_key ) ) {
+			$security = new Security_Manager();
+			$decrypted = $security->decrypt_api_key( $encrypted_key );
+			if ( $decrypted ) {
+				// Mask the API key for security.
+				$api_key = substr( $decrypted, 0, 7 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
+			}
+		}
 		?>
 		<input 
 			type="password" 
@@ -313,6 +366,7 @@ class Admin {
 			name="layoutberg_options[api_key]" 
 			value="<?php echo esc_attr( $api_key ); ?>" 
 			class="regular-text"
+			placeholder="sk-..."
 		/>
 		<p class="description">
 			<?php 

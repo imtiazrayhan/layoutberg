@@ -414,7 +414,7 @@ jQuery(document).ready(function($) {
 		$status.removeClass('success error').text('<?php esc_html_e( 'Testing...', 'layoutberg' ); ?>');
 
 		$.ajax({
-			url: layoutbergAdmin.restUrl + 'layoutberg/v1/validate-key',
+			url: layoutbergAdmin.apiUrl + '/validate-key',
 			method: 'POST',
 			beforeSend: function(xhr) {
 				xhr.setRequestHeader('X-WP-Nonce', layoutbergAdmin.restNonce);
