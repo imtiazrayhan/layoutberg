@@ -452,13 +452,9 @@ class Input_Sanitizer {
 	private function sanitize_max_tokens( $max_tokens, $model = 'gpt-3.5-turbo' ) {
 		$max_tokens = intval( $max_tokens );
 		
-		// Set max based on model
-		$max_limit = 4096; // Default for GPT-3.5
-		if ( $model === 'gpt-4' ) {
-			$max_limit = 8192;
-		} elseif ( $model === 'gpt-4-turbo' ) {
-			$max_limit = 128000; // GPT-4 Turbo supports 128k
-		}
+		// All current models have the same completion token limit
+		// Context window is different from completion tokens
+		$max_limit = 4096; // Max completion tokens for all models
 		
 		return max( 500, min( $max_limit, $max_tokens ) );
 	}

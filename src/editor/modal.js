@@ -48,36 +48,14 @@ const LayoutBergModal = ({
 }) => {
     const [showAdvanced, setShowAdvanced] = useState(false);
     
-    // Get max tokens based on selected model
-    const getMaxTokensForModel = (model) => {
-        switch (model) {
-            case 'gpt-4':
-                return 8192;
-            case 'gpt-4-turbo':
-                return 128000; // GPT-4 Turbo supports up to 128k tokens
-            case 'gpt-3.5-turbo':
-            default:
-                return 4096;
-        }
-    };
-    
-    const maxTokensLimit = getMaxTokensForModel(settings.model);
+    // All models have the same completion token limit
+    const maxTokensLimit = 4096;
 
     const updateSetting = (key, value) => {
-        let newSettings = {
+        onSettingsChange({
             ...settings,
             [key]: value
-        };
-        
-        // If model changed, adjust maxTokens if needed
-        if (key === 'model') {
-            const newMaxLimit = getMaxTokensForModel(value);
-            if (settings.maxTokens > newMaxLimit) {
-                newSettings.maxTokens = newMaxLimit;
-            }
-        }
-        
-        onSettingsChange(newSettings);
+        });
     };
 
 
@@ -277,7 +255,7 @@ const LayoutBergModal = ({
                                         min={500}
                                         max={maxTokensLimit}
                                         step={100}
-                                        help={sprintf(__('Higher values allow more complex layouts but cost more (max %d for %s)', 'layoutberg'), maxTokensLimit, settings.model)}
+                                        help={__('Higher values allow more complex layouts but cost more. All models support up to 4096 completion tokens.', 'layoutberg')}
                                     />
                                 </VStack>
                             </Fragment>
