@@ -243,6 +243,8 @@ class API_Handler {
 			'description' => $request->get_param( 'description' ),
 			'category'    => $request->get_param( 'category' ),
 			'tags'        => $request->get_param( 'tags' ),
+			'prompt'      => $request->get_param( 'prompt' ),
+			'is_public'   => $request->get_param( 'is_public' ),
 		);
 
 		$template_manager = new Template_Manager();
@@ -252,7 +254,11 @@ class API_Handler {
 			return $result;
 		}
 
-		return rest_ensure_response( $result );
+		return rest_ensure_response( array( 
+			'id' => $result,
+			'name' => $template_data['name'],
+			'message' => __( 'Template saved successfully!', 'layoutberg' ) 
+		) );
 	}
 
 	/**
@@ -528,6 +534,16 @@ class API_Handler {
 				'items'    => array(
 					'type' => 'string',
 				),
+			),
+			'prompt' => array(
+				'required'          => false,
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_textarea_field',
+			),
+			'is_public' => array(
+				'required' => false,
+				'type'     => 'boolean',
+				'default'  => false,
 			),
 		);
 	}

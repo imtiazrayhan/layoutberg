@@ -73,7 +73,7 @@ const SaveTemplateModal = ({
 
         try {
             const response = await apiFetch({
-                path: '/wp/v2/layoutberg-templates',
+                path: '/layoutberg/v1/templates',
                 method: 'POST',
                 data: {
                     ...templateData,

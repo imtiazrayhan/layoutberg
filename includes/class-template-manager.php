@@ -183,6 +183,8 @@ class Template_Manager {
 			'content'     => wp_kses_post( $data['content'] ),
 			'category'    => isset( $data['category'] ) ? sanitize_text_field( $data['category'] ) : 'general',
 			'tags'        => isset( $data['tags'] ) ? wp_json_encode( array_map( 'sanitize_text_field', $data['tags'] ) ) : '',
+			'prompt'      => isset( $data['prompt'] ) ? sanitize_textarea_field( $data['prompt'] ) : '',
+			'is_public'   => isset( $data['is_public'] ) ? (int) $data['is_public'] : 0,
 			'created_by'  => get_current_user_id(),
 		);
 
@@ -190,7 +192,7 @@ class Template_Manager {
 		$result = $wpdb->insert(
 			$this->table_name,
 			$insert_data,
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%d' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
 		);
 
 		if ( false === $result ) {
