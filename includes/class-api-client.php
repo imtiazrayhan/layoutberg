@@ -95,7 +95,12 @@ class API_Client {
 
 		// Get and decrypt API key.
 		$encrypted_key = isset( $options['api_key'] ) ? $options['api_key'] : '';
-		$this->api_key = $this->security->decrypt_api_key( $encrypted_key );
+		if ( ! empty( $encrypted_key ) ) {
+			$decrypted = $this->security->decrypt_api_key( $encrypted_key );
+			$this->api_key = $decrypted !== false ? $decrypted : '';
+		} else {
+			$this->api_key = '';
+		}
 
 		// Get other settings.
 		$this->model       = isset( $options['model'] ) ? $options['model'] : 'gpt-3.5-turbo';
@@ -375,7 +380,7 @@ class API_Client {
 	 * @param string $api_key API key to validate.
 	 * @return bool|WP_Error True if valid, WP_Error on failure.
 	 */
-	public function validate_api_key( $api_key ) {
+	public static function validate_api_key( $api_key ) {
 		// Make a simple API call to validate the key.
 		$response = wp_remote_get(
 			'https://api.openai.com/v1/models',

@@ -217,12 +217,18 @@ class LayoutBerg {
 	 */
 	public function register_blocks() {
 		// Register AI Layout block.
+		// TODO: Uncomment when block assets are built.
+		// For now, skip block registration to prevent errors.
+		return;
+		
+		/*
 		register_block_type(
 			LAYOUTBERG_PLUGIN_DIR . 'build/blocks/ai-layout',
 			array(
 				'render_callback' => array( $this, 'render_ai_layout_block' ),
 			)
 		);
+		*/
 	}
 
 	/**
@@ -244,6 +250,11 @@ class LayoutBerg {
 	 * @since 1.0.0
 	 */
 	public function enqueue_block_editor_assets() {
+		// TODO: Uncomment when build assets exist.
+		// For now, skip enqueueing to prevent 404 errors.
+		return;
+		
+		/*
 		// Enqueue editor script.
 		wp_enqueue_script(
 			'layoutberg-editor',
@@ -259,7 +270,7 @@ class LayoutBerg {
 			LAYOUTBERG_PLUGIN_URL . 'build/editor.css',
 			array( 'wp-edit-blocks' ),
 			$this->version
-		);
+		);*/
 
 		// Localize script.
 		wp_localize_script(

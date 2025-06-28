@@ -303,8 +303,8 @@ class API_Handler {
 	public function validate_api_key( $request ) {
 		$api_key = $request->get_param( 'api_key' );
 
-		$api_client = new API_Client();
-		$result     = $api_client->validate_api_key( $api_key );
+		// Use static method to avoid instantiation issues.
+		$result = API_Client::validate_api_key( $api_key );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
