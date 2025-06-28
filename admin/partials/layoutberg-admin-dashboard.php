@@ -33,13 +33,16 @@ $today_usage = $wpdb->get_row(
 );
 
 // Get this month's usage.
+$first_day_of_month = $this_month . '-01';
+$last_day_of_month = date( 'Y-m-t', strtotime( $first_day_of_month ) );
 $month_usage = $wpdb->get_row(
 	$wpdb->prepare(
 		"SELECT SUM(generations_count) as total_generations, SUM(tokens_used) as total_tokens 
 		FROM $table_usage 
-		WHERE user_id = %d AND date LIKE %s",
+		WHERE user_id = %d AND date >= %s AND date <= %s",
 		$user_id,
-		$wpdb->esc_like( $this_month ) . '%'
+		$first_day_of_month,
+		$last_day_of_month
 	)
 );
 
