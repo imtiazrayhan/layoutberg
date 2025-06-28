@@ -24,7 +24,7 @@ $options = get_option( 'layoutberg_options', array() );
 	<form method="post" action="options.php">
 		<?php
 		settings_fields( 'layoutberg_settings' );
-		do_settings_sections( 'layoutberg_settings' );
+		// We're using custom tabbed interface instead of do_settings_sections
 		?>
 
 		<div class="layoutberg-settings-tabs">

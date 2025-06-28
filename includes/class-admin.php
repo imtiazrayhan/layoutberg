@@ -212,48 +212,9 @@ class Admin {
 			)
 		);
 
-		// API Settings Section.
-		add_settings_section(
-			'layoutberg_api_settings',
-			__( 'API Configuration', 'layoutberg' ),
-			array( $this, 'render_api_settings_section' ),
-			'layoutberg_settings'
-		);
-
-		// API Key field.
-		add_settings_field(
-			'api_key',
-			__( 'OpenAI API Key', 'layoutberg' ),
-			array( $this, 'render_api_key_field' ),
-			'layoutberg_settings',
-			'layoutberg_api_settings'
-		);
-
-		// Model selection field.
-		add_settings_field(
-			'model',
-			__( 'AI Model', 'layoutberg' ),
-			array( $this, 'render_model_field' ),
-			'layoutberg_settings',
-			'layoutberg_api_settings'
-		);
-
-		// Generation Settings Section.
-		add_settings_section(
-			'layoutberg_generation_settings',
-			__( 'Generation Settings', 'layoutberg' ),
-			array( $this, 'render_generation_settings_section' ),
-			'layoutberg_settings'
-		);
-
-		// Max tokens field.
-		add_settings_field(
-			'max_tokens',
-			__( 'Max Tokens', 'layoutberg' ),
-			array( $this, 'render_max_tokens_field' ),
-			'layoutberg_settings',
-			'layoutberg_generation_settings'
-		);
+		// We're using a custom tabbed interface in the settings page,
+		// so we don't need to register individual fields here.
+		// The register_setting is still needed for the options.php handler.
 	}
 
 	/**
@@ -335,6 +296,7 @@ class Admin {
 	 * Render API settings section.
 	 *
 	 * @since 1.0.0
+	 * @deprecated No longer used - using custom tabbed interface
 	 */
 	public function render_api_settings_section() {
 		echo '<p>' . esc_html__( 'Configure your OpenAI API settings.', 'layoutberg' ) . '</p>';
@@ -343,7 +305,8 @@ class Admin {
 	/**
 	 * Render API key field.
 	 *
-	 * @since 1.0.0
+	 * @since 1.0.0  
+	 * @deprecated No longer used - using custom tabbed interface
 	 */
 	public function render_api_key_field() {
 		$options = get_option( 'layoutberg_options', array() );
@@ -384,6 +347,7 @@ class Admin {
 	 * Render model field.
 	 *
 	 * @since 1.0.0
+	 * @deprecated No longer used - using custom tabbed interface
 	 */
 	public function render_model_field() {
 		$options = get_option( 'layoutberg_options', array() );
@@ -410,6 +374,7 @@ class Admin {
 	 * Render generation settings section.
 	 *
 	 * @since 1.0.0
+	 * @deprecated No longer used - using custom tabbed interface
 	 */
 	public function render_generation_settings_section() {
 		echo '<p>' . esc_html__( 'Configure layout generation settings.', 'layoutberg' ) . '</p>';
@@ -419,6 +384,7 @@ class Admin {
 	 * Render max tokens field.
 	 *
 	 * @since 1.0.0
+	 * @deprecated No longer used - using custom tabbed interface
 	 */
 	public function render_max_tokens_field() {
 		$options    = get_option( 'layoutberg_options', array() );
