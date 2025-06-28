@@ -69,6 +69,11 @@ class Prompt_Engineer {
 			$prompt .= "\n\n" . $this->get_style_instructions( $options['style'] );
 		}
 		
+		// Add layout-specific instructions.
+		if ( isset( $options['layout'] ) ) {
+			$prompt .= "\n\n" . $this->get_layout_instructions( $options['layout'] );
+		}
+		
 		// Add responsive design instructions.
 		$prompt .= "\n\n" . $this->get_responsive_instructions();
 		
@@ -173,6 +178,14 @@ COMMON MISTAKES TO AVOID:
 - Include rounded corners via additional CSS classes
 - Implement asymmetric column layouts",
 			
+			'classic' => "Apply classic/timeless design principles:
+- Use structured, grid-based layouts
+- Implement professional color schemes (blues, grays, earth tones)
+- Add balanced, symmetrical layouts
+- Include traditional typography pairings
+- Use formal, professional placeholder text
+- Implement clear visual hierarchy",
+			
 			'minimal' => "Apply minimalist design principles:
 - Use maximum whitespace between sections
 - Stick to monochromatic color schemes
@@ -181,24 +194,61 @@ COMMON MISTAKES TO AVOID:
 - Use thin separators or none at all
 - Focus on content hierarchy",
 			
-			'corporate' => "Apply corporate design principles:
-- Use structured, grid-based layouts
-- Implement professional color schemes (blues, grays)
-- Add testimonial and team sections
-- Include call-to-action blocks prominently
-- Use formal, professional placeholder text
-- Implement clear navigation structure",
-			
-			'creative' => "Apply creative design principles:
+			'bold' => "Apply bold/dynamic design principles:
 - Use asymmetric and overlapping layouts
-- Implement bold color combinations
-- Add creative use of media blocks
-- Include unique spacing patterns
-- Use expressive typography combinations
-- Implement non-traditional column arrangements",
+- Implement bold, vibrant color combinations
+- Add dramatic contrast between elements
+- Include large, impactful typography
+- Use strong visual elements and patterns
+- Implement eye-catching gradient backgrounds",
 		);
 		
 		return isset( $style_guides[ $style ] ) ? $style_guides[ $style ] : $style_guides['modern'];
+	}
+
+	/**
+	 * Get layout-specific instructions.
+	 *
+	 * @since 1.0.0
+	 * @param string $layout Layout preference.
+	 * @return string Layout instructions.
+	 */
+	private function get_layout_instructions( $layout ) {
+		$layout_guides = array(
+			'single-column' => "Apply single column layout structure:
+- Use full-width sections that stack vertically
+- Center all content with consistent max-width
+- Add generous spacing between sections
+- Use group blocks with wide or full alignment
+- Ensure clear visual separation between sections
+- Focus on vertical rhythm and flow",
+			
+			'sidebar' => "Apply sidebar layout structure:
+- Create a two-column layout with main content and sidebar
+- Use columns block with 2/3 + 1/3 or 3/4 + 1/4 ratio
+- Place primary content in the larger column
+- Add complementary content in sidebar (navigation, related info, CTAs)
+- Ensure sidebar remains visible on desktop but stacks on mobile
+- Maintain visual hierarchy between main and sidebar content",
+			
+			'grid' => "Apply grid-based layout structure:
+- Use columns blocks with equal-width columns
+- Create card-based layouts with consistent spacing
+- Implement 2, 3, or 4 column grids based on content
+- Ensure uniform height and styling for grid items
+- Add proper gaps between grid elements
+- Make grid responsive (stack on smaller screens)",
+			
+			'asymmetric' => "Apply asymmetric layout structure:
+- Use varied column widths and arrangements
+- Create visual interest with offset sections
+- Mix full-width and constrained-width sections
+- Implement overlapping or staggered elements
+- Use negative space creatively
+- Break traditional alignment patterns",
+		);
+		
+		return isset( $layout_guides[ $layout ] ) ? $layout_guides[ $layout ] : $layout_guides['single-column'];
 	}
 
 	/**

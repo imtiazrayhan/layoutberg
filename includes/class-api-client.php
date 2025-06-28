@@ -162,6 +162,7 @@ class API_Client {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log( 'LayoutBerg API_Client::generate_layout called' );
 			error_log( 'API key present: ' . ( ! empty( $this->api_key ) ? 'yes' : 'no' ) );
+			error_log( 'Options received: ' . print_r( $options, true ) );
 		}
 		
 		// Check if API key is set.
@@ -171,8 +172,35 @@ class API_Client {
 
 		// Rate limiting removed - unlimited generations allowed
 
+		// Override settings with options if provided
+		if ( isset( $options['model'] ) ) {
+			$this->model = $options['model'];
+		}
+		if ( isset( $options['temperature'] ) ) {
+			$this->temperature = floatval( $options['temperature'] );
+		}
+		if ( isset( $options['max_tokens'] ) ) {
+			$this->max_tokens = intval( $options['max_tokens'] );
+		}
+
+		// Debug logging after override
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'Using model: ' . $this->model );
+			error_log( 'Using temperature: ' . $this->temperature );
+			error_log( 'Using max_tokens: ' . $this->max_tokens );
+			error_log( 'Style: ' . ( isset( $options['style'] ) ? $options['style'] : 'not set' ) );
+			error_log( 'Layout: ' . ( isset( $options['layout'] ) ? $options['layout'] : 'not set' ) );
+		}
+
 		// Build system prompt using prompt engineer.
 		$system_prompt = $this->prompt_engineer->build_system_prompt( $options );
+
+		// Debug log system prompt
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'System prompt length: ' . strlen( $system_prompt ) );
+			// Log first 500 chars to see if style/layout instructions are included
+			error_log( 'System prompt preview: ' . substr( $system_prompt, 0, 500 ) . '...' );
+		}
 
 		// Validate and enhance user prompt.
 		$validation = $this->prompt_engineer->validate_prompt( $prompt );
