@@ -169,11 +169,7 @@ class API_Client {
 			return new \WP_Error( 'no_api_key', __( 'OpenAI API key is not configured.', 'layoutberg' ) );
 		}
 
-		// Check rate limits
-		$rate_limit_check = $this->check_rate_limit();
-		if ( is_wp_error( $rate_limit_check ) ) {
-			return $rate_limit_check;
-		}
+		// Rate limiting removed - unlimited generations allowed
 
 		// Build system prompt using prompt engineer.
 		$system_prompt = $this->prompt_engineer->build_system_prompt( $options );

@@ -159,18 +159,7 @@ class API_Handler {
 				$options['replace_mode'] = true;
 			}
 
-			// Check rate limits.
-			$security = new Security_Manager();
-			$user_id  = get_current_user_id();
-			
-			// Increased rate limit for development/testing
-			if ( ! $security->check_rate_limit( $user_id, 'generate', 100, HOUR_IN_SECONDS ) ) {
-				return new \WP_Error(
-					'rate_limit_exceeded',
-					__( 'Rate limit exceeded. Please try again later.', 'layoutberg' ),
-					array( 'status' => 429 )
-				);
-			}
+			// Rate limiting removed - unlimited generations allowed
 
 			// Generate layout.
 			$generator = new Block_Generator();

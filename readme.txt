@@ -51,14 +51,14 @@ LayoutBerg revolutionizes WordPress content creation by bringing the power of AI
 * An OpenAI API key (get one at platform.openai.com)
 * Gutenberg editor enabled
 
-= Pro Features (Coming Soon) =
+= Features =
 
-* 100+ generations per month
-* Access to GPT-4 models
-* Priority support
+* Unlimited layout generations
+* Access to all AI models (GPT-3.5, GPT-4, GPT-4 Turbo)
+* Real-time preview in editor
 * Advanced style controls
-* Custom block preferences
-* Team collaboration features
+* Template management system
+* Native Gutenberg integration
 
 == Installation ==
 
