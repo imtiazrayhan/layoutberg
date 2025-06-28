@@ -187,10 +187,11 @@ $templates_count = $wpdb->get_var(
 				<?php if ( $month_usage && $month_usage->total_generations > 0 ) : ?>
 					<span class="layoutberg-stat-trend up">+12%</span>
 				<?php endif; ?>
-				<?php if ( defined( 'WP_DEBUG' ) && WP_DEBUG && ( ! $month_usage || $month_usage->total_generations == 0 ) ) : ?>
+				<?php if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) : ?>
 					<div style="margin-top: 10px; font-size: 11px;">
-						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-upgrade-db' ); ?>" style="color: #007cba;">Run DB upgrade</a> | 
-						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-test-usage' ); ?>" style="color: #007cba;">Test tracking</a>
+						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-upgrade-db' ); ?>" style="color: #007cba;">DB upgrade</a> | 
+						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-test-usage' ); ?>" style="color: #007cba;">Test</a> |
+						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-reset-data' ); ?>" style="color: #d63638;">Reset</a>
 					</div>
 				<?php endif; ?>
 			</div>

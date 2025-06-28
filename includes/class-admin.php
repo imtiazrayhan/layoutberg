@@ -253,6 +253,16 @@ class Admin {
 			'layoutberg-test-usage',
 			array( $this, 'display_test_usage_page' )
 		);
+		
+		// Temporary: Add hidden reset data page
+		add_submenu_page(
+			null, // Hidden from menu
+			__( 'Reset Data', 'layoutberg' ),
+			__( 'Reset Data', 'layoutberg' ),
+			'manage_options',
+			'layoutberg-reset-data',
+			array( $this, 'display_reset_data_page' )
+		);
 	}
 
 	/**
@@ -307,6 +317,15 @@ class Admin {
 	 */
 	public function display_test_usage_page() {
 		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-test-usage.php';
+	}
+
+	/**
+	 * Display the reset data page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function display_reset_data_page() {
+		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-reset-data.php';
 	}
 
 	/**

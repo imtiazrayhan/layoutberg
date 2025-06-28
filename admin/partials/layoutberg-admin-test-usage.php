@@ -24,6 +24,26 @@ $table_generations = $wpdb->prefix . 'layoutberg_generations';
 $today = current_time( 'Y-m-d' );
 $message = '';
 
+// If reset button clicked
+if ( isset( $_POST['reset_data'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'reset_data' ) ) {
+	// Delete all data for current user
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM $table_usage WHERE user_id = %d",
+			$user_id
+		)
+	);
+	
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM $table_generations WHERE user_id = %d",
+			$user_id
+		)
+	);
+	
+	$message = 'All usage data has been reset successfully!';
+}
+
 // If test button clicked
 if ( isset( $_POST['test_tracking'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'test_tracking' ) ) {
 	// Insert test generation record
@@ -149,6 +169,17 @@ $columns = $wpdb->get_results( "SHOW COLUMNS FROM $table_usage" );
 			<?php wp_nonce_field( 'test_tracking' ); ?>
 			<p>
 				<input type="submit" name="test_tracking" class="button button-primary" value="Add Test Generation">
+			</p>
+		</form>
+	</div>
+	
+	<div class="card" style="margin-top: 20px; border-color: #d63638;">
+		<h2 style="color: #d63638;">Reset Data</h2>
+		<p><strong>Warning:</strong> This will delete all usage data and generation history for your user account.</p>
+		<form method="post" onsubmit="return confirm('Are you sure you want to reset all usage data? This cannot be undone.');">
+			<?php wp_nonce_field( 'reset_data' ); ?>
+			<p>
+				<input type="submit" name="reset_data" class="button button-secondary" value="Reset All Data" style="color: #d63638; border-color: #d63638;">
 			</p>
 		</form>
 	</div>
