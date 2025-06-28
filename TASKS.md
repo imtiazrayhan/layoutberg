@@ -98,9 +98,9 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 
 #### 4.1 Editor Integration
 
--   [ ] Create Gutenberg toolbar button
--   [ ] Add keyboard shortcut (Ctrl+Shift+L)
--   [ ] Implement generation modal
+-   [x] Create Gutenberg toolbar button
+-   [x] Add keyboard shortcut (Ctrl+Shift+L)
+-   [x] Implement generation modal
 -   [ ] Create preview interface
 -   [ ] Add device preview toggles
 -   [ ] Implement variation selector
@@ -410,7 +410,7 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 
 ## Progress Tracking
 
-### Phase 1 Progress: 47/76 tasks (62%)
+### Phase 1 Progress: 50/76 tasks (66%)
 
 ### Phase 2 Progress: 0/52 tasks (0%)
 
@@ -418,7 +418,7 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 
 ### Phase 4 Progress: 0/41 tasks (0%)
 
-**Total Progress: 47/226 tasks (21%)**
+**Total Progress: 50/226 tasks (22%)**
 
 ---
 

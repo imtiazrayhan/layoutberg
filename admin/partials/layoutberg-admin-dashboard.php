@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin dashboard page.
+ * Main admin dashboard display
  *
  * @package    LayoutBerg
  * @subpackage Admin/Partials
@@ -12,38 +12,41 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Get current user data.
+$current_user = wp_get_current_user();
+$user_id = get_current_user_id();
+
 // Get usage statistics.
 global $wpdb;
-$user_id = get_current_user_id();
-$today   = current_time( 'Y-m-d' );
+$table_usage = $wpdb->prefix . 'layoutberg_usage';
+$table_generations = $wpdb->prefix . 'layoutberg_generations';
+$today = current_time( 'Y-m-d' );
+$this_month = current_time( 'Y-m' );
 
 // Get today's usage.
 $today_usage = $wpdb->get_row(
 	$wpdb->prepare(
-		"SELECT generations_count, tokens_used 
-		FROM {$wpdb->prefix}layoutberg_usage 
-		WHERE user_id = %d AND date = %s",
+		"SELECT generations_count, tokens_used FROM $table_usage WHERE user_id = %d AND date = %s",
 		$user_id,
 		$today
 	)
 );
 
 // Get this month's usage.
-$month_start = date( 'Y-m-01' );
 $month_usage = $wpdb->get_row(
 	$wpdb->prepare(
-		"SELECT SUM(generations_count) as generations, SUM(tokens_used) as tokens 
-		FROM {$wpdb->prefix}layoutberg_usage 
-		WHERE user_id = %d AND date >= %s",
+		"SELECT SUM(generations_count) as total_generations, SUM(tokens_used) as total_tokens 
+		FROM $table_usage 
+		WHERE user_id = %d AND date LIKE %s",
 		$user_id,
-		$month_start
+		$this_month . '%'
 	)
 );
 
 // Get recent generations.
 $recent_generations = $wpdb->get_results(
 	$wpdb->prepare(
-		"SELECT * FROM {$wpdb->prefix}layoutberg_generations 
+		"SELECT * FROM $table_generations 
 		WHERE user_id = %d 
 		ORDER BY created_at DESC 
 		LIMIT 5",
@@ -51,328 +54,328 @@ $recent_generations = $wpdb->get_results(
 	)
 );
 
-// Get popular templates.
-$popular_templates = $wpdb->get_results(
-	"SELECT * FROM {$wpdb->prefix}layoutberg_templates 
-	ORDER BY usage_count DESC 
-	LIMIT 5"
-);
-
-// Check API key status.
+// Get API key status.
 $options = get_option( 'layoutberg_options', array() );
 $has_api_key = ! empty( $options['api_key'] );
+
+// Get saved templates count.
+$table_templates = $wpdb->prefix . 'layoutberg_templates';
+$templates_count = $wpdb->get_var(
+	$wpdb->prepare(
+		"SELECT COUNT(*) FROM $table_templates WHERE created_by = %d",
+		$user_id
+	)
+);
 ?>
 
-<div class="wrap layoutberg-dashboard">
-	<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-
-	<?php if ( ! $has_api_key ) : ?>
-		<div class="notice notice-warning">
-			<p>
-				<strong><?php esc_html_e( 'Welcome to LayoutBerg!', 'layoutberg' ); ?></strong>
-				<?php 
-				printf(
-					/* translators: %s: Settings page URL */
-					esc_html__( 'To start generating AI-powered layouts, please %s.', 'layoutberg' ),
-					'<a href="' . esc_url( admin_url( 'admin.php?page=layoutberg-settings' ) ) . '">' . esc_html__( 'configure your OpenAI API key', 'layoutberg' ) . '</a>'
-				);
-				?>
-			</p>
-		</div>
-	<?php endif; ?>
-
-	<div class="layoutberg-dashboard-grid">
-		<!-- Quick Actions -->
-		<div class="layoutberg-card">
-			<h2><?php esc_html_e( 'Quick Actions', 'layoutberg' ); ?></h2>
-			<div class="layoutberg-quick-actions">
-				<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=page' ) ); ?>" class="button button-primary">
-					<span class="dashicons dashicons-plus-alt"></span>
-					<?php esc_html_e( 'Create New Page', 'layoutberg' ); ?>
-				</a>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-templates' ) ); ?>" class="button">
-					<span class="dashicons dashicons-layout"></span>
-					<?php esc_html_e( 'Browse Templates', 'layoutberg' ); ?>
-				</a>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-settings' ) ); ?>" class="button">
-					<span class="dashicons dashicons-admin-settings"></span>
+<div class="layoutberg-admin-page">
+	<!-- Header -->
+	<div class="layoutberg-header">
+		<div class="layoutberg-header-content">
+			<div class="layoutberg-title">
+				<div class="layoutberg-logo">LB</div>
+				<div>
+					<h1><?php esc_html_e( 'LayoutBerg Dashboard', 'layoutberg' ); ?></h1>
+					<p><?php esc_html_e( 'AI-powered layout designer for WordPress', 'layoutberg' ); ?></p>
+				</div>
+			</div>
+			<div class="layoutberg-header-actions">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-settings' ) ); ?>" class="layoutberg-btn layoutberg-btn-secondary">
+					<span class="dashicons dashicons-admin-generic"></span>
 					<?php esc_html_e( 'Settings', 'layoutberg' ); ?>
 				</a>
+				<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=page' ) ); ?>" class="layoutberg-btn layoutberg-btn-primary">
+					<span class="dashicons dashicons-plus-alt"></span>
+					<?php esc_html_e( 'Create New Layout', 'layoutberg' ); ?>
+				</a>
 			</div>
 		</div>
+	</div>
 
-		<!-- Usage Statistics -->
-		<div class="layoutberg-card">
-			<h2><?php esc_html_e( 'Usage Statistics', 'layoutberg' ); ?></h2>
-			<div class="layoutberg-stats">
-				<div class="stat-item">
-					<span class="stat-value"><?php echo esc_html( $today_usage->generations_count ?? 0 ); ?></span>
-					<span class="stat-label"><?php esc_html_e( 'Generations Today', 'layoutberg' ); ?></span>
+	<!-- Main Content -->
+	<div class="layoutberg-container">
+		<!-- Alert if no API key -->
+		<?php if ( ! $has_api_key ) : ?>
+			<div class="layoutberg-alert layoutberg-alert-warning layoutberg-mb-4">
+				<span class="dashicons dashicons-warning"></span>
+				<div>
+					<strong><?php esc_html_e( 'API Key Required', 'layoutberg' ); ?></strong>
+					<p class="layoutberg-mt-1"><?php esc_html_e( 'Please configure your OpenAI API key to start generating layouts.', 'layoutberg' ); ?></p>
 				</div>
-				<div class="stat-item">
-					<span class="stat-value"><?php echo esc_html( $month_usage->generations ?? 0 ); ?></span>
-					<span class="stat-label"><?php esc_html_e( 'This Month', 'layoutberg' ); ?></span>
-				</div>
-				<div class="stat-item">
-					<span class="stat-value"><?php echo esc_html( number_format( $month_usage->tokens ?? 0 ) ); ?></span>
-					<span class="stat-label"><?php esc_html_e( 'Tokens Used', 'layoutberg' ); ?></span>
-				</div>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-settings' ) ); ?>" class="layoutberg-btn layoutberg-btn-warning layoutberg-btn-sm">
+					<?php esc_html_e( 'Configure Now', 'layoutberg' ); ?>
+				</a>
 			</div>
-		</div>
+		<?php endif; ?>
 
-		<!-- Recent Generations -->
-		<div class="layoutberg-card layoutberg-card-wide">
-			<h2><?php esc_html_e( 'Recent Generations', 'layoutberg' ); ?></h2>
-			<?php if ( ! empty( $recent_generations ) ) : ?>
-				<table class="wp-list-table widefat fixed striped">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Prompt', 'layoutberg' ); ?></th>
-							<th><?php esc_html_e( 'Model', 'layoutberg' ); ?></th>
-							<th><?php esc_html_e( 'Tokens', 'layoutberg' ); ?></th>
-							<th><?php esc_html_e( 'Status', 'layoutberg' ); ?></th>
-							<th><?php esc_html_e( 'Date', 'layoutberg' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $recent_generations as $generation ) : ?>
-							<tr>
-								<td><?php echo esc_html( wp_trim_words( $generation->prompt, 10 ) ); ?></td>
-								<td><?php echo esc_html( $generation->model ); ?></td>
-								<td><?php echo esc_html( number_format( $generation->tokens_used ) ); ?></td>
-								<td>
-									<span class="status-<?php echo esc_attr( $generation->status ); ?>">
-										<?php echo esc_html( ucfirst( $generation->status ) ); ?>
-									</span>
-								</td>
-								<td><?php echo esc_html( human_time_diff( strtotime( $generation->created_at ) ) ); ?> ago</td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-			<?php else : ?>
-				<p><?php esc_html_e( 'No generations yet. Start creating amazing layouts!', 'layoutberg' ); ?></p>
-			<?php endif; ?>
-		</div>
-
-		<!-- Popular Templates -->
-		<div class="layoutberg-card">
-			<h2><?php esc_html_e( 'Popular Templates', 'layoutberg' ); ?></h2>
-			<?php if ( ! empty( $popular_templates ) ) : ?>
-				<ul class="layoutberg-template-list">
-					<?php foreach ( $popular_templates as $template ) : ?>
-						<li>
-							<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-templates&action=view&id=' . $template->id ) ); ?>">
-								<?php echo esc_html( $template->name ); ?>
-							</a>
-							<span class="usage-count"><?php echo esc_html( sprintf( __( '%d uses', 'layoutberg' ), $template->usage_count ) ); ?></span>
-						</li>
-					<?php endforeach; ?>
-				</ul>
-			<?php else : ?>
-				<p><?php esc_html_e( 'No templates created yet.', 'layoutberg' ); ?></p>
-			<?php endif; ?>
-		</div>
-
-		<!-- Getting Started Guide -->
-		<div class="layoutberg-card">
-			<h2><?php esc_html_e( 'Getting Started', 'layoutberg' ); ?></h2>
-			<ol class="layoutberg-steps">
-				<li>
-					<strong><?php esc_html_e( 'Configure API Key', 'layoutberg' ); ?></strong>
-					<p><?php esc_html_e( 'Add your OpenAI API key in settings.', 'layoutberg' ); ?></p>
-				</li>
-				<li>
-					<strong><?php esc_html_e( 'Create or Edit a Page', 'layoutberg' ); ?></strong>
-					<p><?php esc_html_e( 'Open the WordPress block editor.', 'layoutberg' ); ?></p>
-				</li>
-				<li>
-					<strong><?php esc_html_e( 'Click LayoutBerg Button', 'layoutberg' ); ?></strong>
-					<p><?php esc_html_e( 'Find it in the editor toolbar.', 'layoutberg' ); ?></p>
-				</li>
-				<li>
-					<strong><?php esc_html_e( 'Enter Your Prompt', 'layoutberg' ); ?></strong>
-					<p><?php esc_html_e( 'Describe the layout you want.', 'layoutberg' ); ?></p>
-				</li>
-				<li>
-					<strong><?php esc_html_e( 'Generate & Apply', 'layoutberg' ); ?></strong>
-					<p><?php esc_html_e( 'Review and apply the generated layout.', 'layoutberg' ); ?></p>
-				</li>
-			</ol>
-		</div>
-
-		<!-- Support -->
-		<div class="layoutberg-card">
-			<h2><?php esc_html_e( 'Need Help?', 'layoutberg' ); ?></h2>
-			<ul class="layoutberg-links">
-				<li>
-					<a href="https://docs.dotcamp.com/layoutberg" target="_blank">
+		<!-- Welcome Message -->
+		<div class="layoutberg-card layoutberg-fade-in">
+			<div class="layoutberg-flex layoutberg-items-center layoutberg-gap-3">
+				<div style="flex: 1;">
+					<h2 class="layoutberg-card-title">
+						<?php
+						/* translators: %s: User display name */
+						printf( esc_html__( 'Welcome back, %s!', 'layoutberg' ), esc_html( $current_user->display_name ) );
+						?>
+					</h2>
+					<p class="layoutberg-card-subtitle">
+						<?php esc_html_e( 'Ready to create amazing layouts with AI? Start by creating a new page or post and use the LayoutBerg block.', 'layoutberg' ); ?>
+					</p>
+				</div>
+				<div>
+					<a href="https://docs.layoutberg.com" target="_blank" class="layoutberg-btn layoutberg-btn-secondary">
 						<span class="dashicons dashicons-book"></span>
 						<?php esc_html_e( 'Documentation', 'layoutberg' ); ?>
 					</a>
-				</li>
-				<li>
-					<a href="https://wordpress.org/support/plugin/layoutberg" target="_blank">
-						<span class="dashicons dashicons-sos"></span>
-						<?php esc_html_e( 'Support Forum', 'layoutberg' ); ?>
+				</div>
+			</div>
+		</div>
+
+		<!-- Stats Grid -->
+		<div class="layoutberg-grid layoutberg-grid-4 layoutberg-mb-4">
+			<!-- Today's Generations -->
+			<div class="layoutberg-stat-card layoutberg-fade-in">
+				<div class="layoutberg-stat-icon primary">
+					<span class="dashicons dashicons-calendar-alt"></span>
+				</div>
+				<p class="layoutberg-stat-value"><?php echo esc_html( $today_usage ? $today_usage->generations_count : 0 ); ?></p>
+				<p class="layoutberg-stat-label"><?php esc_html_e( 'Today\'s Generations', 'layoutberg' ); ?></p>
+			</div>
+
+			<!-- Monthly Generations -->
+			<div class="layoutberg-stat-card layoutberg-fade-in">
+				<div class="layoutberg-stat-icon success">
+					<span class="dashicons dashicons-chart-area"></span>
+				</div>
+				<p class="layoutberg-stat-value"><?php echo esc_html( $month_usage ? $month_usage->total_generations : 0 ); ?></p>
+				<p class="layoutberg-stat-label"><?php esc_html_e( 'This Month', 'layoutberg' ); ?></p>
+				<?php if ( $month_usage && $month_usage->total_generations > 0 ) : ?>
+					<span class="layoutberg-stat-trend up">+12%</span>
+				<?php endif; ?>
+			</div>
+
+			<!-- Saved Templates -->
+			<div class="layoutberg-stat-card layoutberg-fade-in">
+				<div class="layoutberg-stat-icon warning">
+					<span class="dashicons dashicons-archive"></span>
+				</div>
+				<p class="layoutberg-stat-value"><?php echo esc_html( $templates_count ); ?></p>
+				<p class="layoutberg-stat-label"><?php esc_html_e( 'Saved Templates', 'layoutberg' ); ?></p>
+			</div>
+
+			<!-- API Status -->
+			<div class="layoutberg-stat-card layoutberg-fade-in">
+				<div class="layoutberg-stat-icon <?php echo $has_api_key ? 'success' : 'danger'; ?>">
+					<span class="dashicons dashicons-<?php echo $has_api_key ? 'yes-alt' : 'dismiss'; ?>"></span>
+				</div>
+				<p class="layoutberg-stat-value"><?php echo $has_api_key ? esc_html__( 'Active', 'layoutberg' ) : esc_html__( 'Inactive', 'layoutberg' ); ?></p>
+				<p class="layoutberg-stat-label"><?php esc_html_e( 'API Status', 'layoutberg' ); ?></p>
+			</div>
+		</div>
+
+		<!-- Two Column Layout -->
+		<div class="layoutberg-grid layoutberg-grid-2">
+			<!-- Quick Actions -->
+			<div class="layoutberg-card layoutberg-fade-in">
+				<div class="layoutberg-card-header">
+					<h3 class="layoutberg-card-title"><?php esc_html_e( 'Quick Actions', 'layoutberg' ); ?></h3>
+				</div>
+				
+				<div class="layoutberg-grid layoutberg-grid-2 layoutberg-gap-2">
+					<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=page' ) ); ?>" class="layoutberg-btn layoutberg-btn-primary layoutberg-btn-lg" style="width: 100%; justify-content: center;">
+						<span class="dashicons dashicons-layout"></span>
+						<?php esc_html_e( 'New Page Layout', 'layoutberg' ); ?>
 					</a>
-				</li>
-				<li>
-					<a href="https://dotcamp.com/layoutberg/pro" target="_blank">
-						<span class="dashicons dashicons-star-filled"></span>
-						<?php esc_html_e( 'Upgrade to Pro', 'layoutberg' ); ?>
+					
+					<a href="<?php echo esc_url( admin_url( 'post-new.php' ) ); ?>" class="layoutberg-btn layoutberg-btn-primary layoutberg-btn-lg" style="width: 100%; justify-content: center;">
+						<span class="dashicons dashicons-welcome-write-blog"></span>
+						<?php esc_html_e( 'New Blog Post', 'layoutberg' ); ?>
 					</a>
-				</li>
-			</ul>
+					
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-templates' ) ); ?>" class="layoutberg-btn layoutberg-btn-secondary layoutberg-btn-lg" style="width: 100%; justify-content: center;">
+						<span class="dashicons dashicons-category"></span>
+						<?php esc_html_e( 'Browse Templates', 'layoutberg' ); ?>
+					</a>
+					
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-analytics' ) ); ?>" class="layoutberg-btn layoutberg-btn-secondary layoutberg-btn-lg" style="width: 100%; justify-content: center;">
+						<span class="dashicons dashicons-chart-bar"></span>
+						<?php esc_html_e( 'View Analytics', 'layoutberg' ); ?>
+					</a>
+				</div>
+
+				<div class="layoutberg-mt-3">
+					<h4 class="layoutberg-mb-2"><?php esc_html_e( 'Popular Templates', 'layoutberg' ); ?></h4>
+					<div class="layoutberg-grid layoutberg-gap-1">
+						<?php
+						$templates = array(
+							'hero' => __( 'Hero Section', 'layoutberg' ),
+							'features' => __( 'Features Grid', 'layoutberg' ),
+							'testimonials' => __( 'Testimonials', 'layoutberg' ),
+							'pricing' => __( 'Pricing Table', 'layoutberg' ),
+						);
+						foreach ( $templates as $key => $name ) :
+						?>
+							<button class="layoutberg-btn layoutberg-btn-secondary layoutberg-btn-sm" data-template="<?php echo esc_attr( $key ); ?>">
+								<?php echo esc_html( $name ); ?>
+							</button>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			</div>
+
+			<!-- Recent Generations -->
+			<div class="layoutberg-card layoutberg-fade-in">
+				<div class="layoutberg-card-header">
+					<h3 class="layoutberg-card-title"><?php esc_html_e( 'Recent Generations', 'layoutberg' ); ?></h3>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-history' ) ); ?>" class="layoutberg-btn layoutberg-btn-secondary layoutberg-btn-sm">
+						<?php esc_html_e( 'View All', 'layoutberg' ); ?>
+					</a>
+				</div>
+				
+				<?php if ( ! empty( $recent_generations ) ) : ?>
+					<div class="layoutberg-list">
+						<?php foreach ( $recent_generations as $generation ) : ?>
+							<div class="layoutberg-list-item" style="padding: 1rem 0; border-bottom: 1px solid var(--lberg-gray-200);">
+								<div class="layoutberg-flex layoutberg-items-center layoutberg-justify-between">
+									<div>
+										<p style="margin: 0; font-weight: 500;">
+											<?php echo esc_html( substr( $generation->prompt, 0, 50 ) . '...' ); ?>
+										</p>
+										<p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--lberg-gray-600);">
+											<?php
+											/* translators: %s: Time ago */
+											printf( esc_html__( '%s ago', 'layoutberg' ), human_time_diff( strtotime( $generation->created_at ) ) );
+											?>
+										</p>
+									</div>
+									<div class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
+										<span class="layoutberg-badge layoutberg-badge-<?php echo esc_attr( $generation->status === 'completed' ? 'success' : 'danger' ); ?>">
+											<?php echo esc_html( ucfirst( $generation->status ) ); ?>
+										</span>
+										<span style="font-size: 0.75rem; color: var(--lberg-gray-500);">
+											<?php echo esc_html( number_format( $generation->tokens_used ) ); ?> tokens
+										</span>
+									</div>
+								</div>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php else : ?>
+					<div class="layoutberg-empty-state">
+						<div class="layoutberg-empty-icon">
+							<span class="dashicons dashicons-clock"></span>
+						</div>
+						<h4 class="layoutberg-empty-title"><?php esc_html_e( 'No generations yet', 'layoutberg' ); ?></h4>
+						<p class="layoutberg-empty-description"><?php esc_html_e( 'Start creating layouts to see your history here.', 'layoutberg' ); ?></p>
+						<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=page' ) ); ?>" class="layoutberg-btn layoutberg-btn-primary">
+							<?php esc_html_e( 'Create Your First Layout', 'layoutberg' ); ?>
+						</a>
+					</div>
+				<?php endif; ?>
+			</div>
+		</div>
+
+		<!-- Getting Started Guide -->
+		<div class="layoutberg-card layoutberg-mt-4 layoutberg-fade-in">
+			<div class="layoutberg-card-header">
+				<h3 class="layoutberg-card-title"><?php esc_html_e( 'Getting Started', 'layoutberg' ); ?></h3>
+				<button class="layoutberg-btn layoutberg-btn-secondary layoutberg-btn-sm" id="layoutberg-dismiss-guide">
+					<?php esc_html_e( 'Dismiss', 'layoutberg' ); ?>
+				</button>
+			</div>
+			
+			<div class="layoutberg-grid layoutberg-grid-3">
+				<div class="layoutberg-text-center">
+					<div class="layoutberg-stat-icon primary layoutberg-mb-2" style="margin: 0 auto 1rem; width: 64px; height: 64px;">
+						<span class="dashicons dashicons-admin-network" style="font-size: 2rem;"></span>
+					</div>
+					<h4><?php esc_html_e( '1. Configure API Key', 'layoutberg' ); ?></h4>
+					<p style="color: var(--lberg-gray-600); font-size: 0.875rem;">
+						<?php esc_html_e( 'Add your OpenAI API key in the settings to enable AI-powered layout generation.', 'layoutberg' ); ?>
+					</p>
+				</div>
+				
+				<div class="layoutberg-text-center">
+					<div class="layoutberg-stat-icon success layoutberg-mb-2" style="margin: 0 auto 1rem; width: 64px; height: 64px;">
+						<span class="dashicons dashicons-edit-page" style="font-size: 2rem;"></span>
+					</div>
+					<h4><?php esc_html_e( '2. Create New Page', 'layoutberg' ); ?></h4>
+					<p style="color: var(--lberg-gray-600); font-size: 0.875rem;">
+						<?php esc_html_e( 'Create a new page or post and add the LayoutBerg AI Layout block.', 'layoutberg' ); ?>
+					</p>
+				</div>
+				
+				<div class="layoutberg-text-center">
+					<div class="layoutberg-stat-icon warning layoutberg-mb-2" style="margin: 0 auto 1rem; width: 64px; height: 64px;">
+						<span class="dashicons dashicons-admin-customizer" style="font-size: 2rem;"></span>
+					</div>
+					<h4><?php esc_html_e( '3. Generate Layout', 'layoutberg' ); ?></h4>
+					<p style="color: var(--lberg-gray-600); font-size: 0.875rem;">
+						<?php esc_html_e( 'Describe your desired layout in natural language and let AI create it for you.', 'layoutberg' ); ?>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Resources -->
+		<div class="layoutberg-card layoutberg-mt-4 layoutberg-fade-in">
+			<h3 class="layoutberg-card-title layoutberg-mb-3"><?php esc_html_e( 'Resources & Support', 'layoutberg' ); ?></h3>
+			
+			<div class="layoutberg-grid layoutberg-grid-4">
+				<a href="https://docs.layoutberg.com" target="_blank" class="layoutberg-btn layoutberg-btn-secondary" style="width: 100%; justify-content: center;">
+					<span class="dashicons dashicons-media-document"></span>
+					<?php esc_html_e( 'Documentation', 'layoutberg' ); ?>
+				</a>
+				
+				<a href="https://layoutberg.com/tutorials" target="_blank" class="layoutberg-btn layoutberg-btn-secondary" style="width: 100%; justify-content: center;">
+					<span class="dashicons dashicons-video-alt3"></span>
+					<?php esc_html_e( 'Video Tutorials', 'layoutberg' ); ?>
+				</a>
+				
+				<a href="https://layoutberg.com/support" target="_blank" class="layoutberg-btn layoutberg-btn-secondary" style="width: 100%; justify-content: center;">
+					<span class="dashicons dashicons-sos"></span>
+					<?php esc_html_e( 'Get Support', 'layoutberg' ); ?>
+				</a>
+				
+				<a href="https://layoutberg.com/community" target="_blank" class="layoutberg-btn layoutberg-btn-secondary" style="width: 100%; justify-content: center;">
+					<span class="dashicons dashicons-groups"></span>
+					<?php esc_html_e( 'Community', 'layoutberg' ); ?>
+				</a>
+			</div>
 		</div>
 	</div>
 </div>
 
 <style>
-.layoutberg-dashboard-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-	gap: 20px;
-	margin-top: 20px;
+/* Additional Dashboard-specific styles */
+.layoutberg-list-item:last-child {
+	border-bottom: none !important;
 }
 
-.layoutberg-card {
-	background: #fff;
-	border: 1px solid #ccd0d4;
-	border-radius: 4px;
-	padding: 20px;
-	box-shadow: 0 1px 1px rgba(0,0,0,.04);
-}
-
-.layoutberg-card-wide {
-	grid-column: span 2;
-}
-
-.layoutberg-card h2 {
-	margin-top: 0;
-	margin-bottom: 15px;
-	font-size: 18px;
-}
-
-.layoutberg-quick-actions {
-	display: flex;
-	gap: 10px;
-	flex-wrap: wrap;
-}
-
-.layoutberg-quick-actions .button {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-}
-
-.layoutberg-stats {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 15px;
-	text-align: center;
-}
-
-.stat-item {
-	display: flex;
-	flex-direction: column;
-}
-
-.stat-value {
-	font-size: 32px;
-	font-weight: 600;
-	color: #2271b1;
-}
-
-.stat-label {
-	font-size: 12px;
-	color: #646970;
-	margin-top: 5px;
-}
-
-.layoutberg-template-list {
-	list-style: none;
-	padding: 0;
-	margin: 0;
-}
-
-.layoutberg-template-list li {
-	padding: 8px 0;
-	border-bottom: 1px solid #f0f0f1;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.layoutberg-template-list li:last-child {
-	border-bottom: none;
-}
-
-.usage-count {
-	font-size: 12px;
-	color: #646970;
-}
-
-.layoutberg-steps {
-	margin: 0;
-	padding-left: 20px;
-}
-
-.layoutberg-steps li {
-	margin-bottom: 15px;
-}
-
-.layoutberg-steps strong {
-	display: block;
-	margin-bottom: 5px;
-}
-
-.layoutberg-steps p {
-	margin: 0;
-	color: #646970;
-	font-size: 13px;
-}
-
-.layoutberg-links {
-	list-style: none;
-	padding: 0;
-	margin: 0;
-}
-
-.layoutberg-links li {
-	margin-bottom: 10px;
-}
-
-.layoutberg-links a {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	text-decoration: none;
-}
-
-.layoutberg-links a:hover {
-	color: #2271b1;
-}
-
-.status-completed {
-	color: #00a32a;
-}
-
-.status-failed {
-	color: #d63638;
-}
-
-.status-pending {
-	color: #f0b849;
-}
-
-@media (max-width: 782px) {
-	.layoutberg-card-wide {
-		grid-column: span 1;
-	}
-	
-	.layoutberg-stats {
-		grid-template-columns: 1fr;
-	}
+.layoutberg-list-item:hover {
+	background: var(--lberg-gray-50);
+	margin: 0 -1rem;
+	padding: 1rem;
 }
 </style>
+
+<script>
+jQuery(document).ready(function($) {
+	// Dismiss guide
+	$('#layoutberg-dismiss-guide').on('click', function() {
+		$(this).closest('.layoutberg-card').fadeOut();
+		// Save dismissal in user meta
+		$.post(ajaxurl, {
+			action: 'layoutberg_dismiss_guide',
+			_ajax_nonce: '<?php echo wp_create_nonce( 'layoutberg_dismiss_guide' ); ?>'
+		});
+	});
+
+	// Template quick actions
+	$('[data-template]').on('click', function() {
+		var template = $(this).data('template');
+		// Redirect to new page with template parameter
+		window.location.href = '<?php echo esc_url( admin_url( 'post-new.php?post_type=page&layoutberg_template=' ) ); ?>' + template;
+	});
+});
+</script>

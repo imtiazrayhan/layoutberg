@@ -137,8 +137,26 @@ class API_Handler {
 	 * @return WP_REST_Response|WP_Error Response object.
 	 */
 	public function generate_layout( $request ) {
-		$prompt  = $request->get_param( 'prompt' );
-		$options = $request->get_param( 'options' );
+		$prompt           = $request->get_param( 'prompt' );
+		$settings         = $request->get_param( 'settings' );
+		$replace_selected = $request->get_param( 'replace_selected' );
+
+		// Normalize options for backward compatibility.
+		$options = array();
+		if ( ! empty( $settings ) ) {
+			$options = array(
+				'style'       => $settings['style'] ?? 'modern',
+				'layout'      => $settings['layout'] ?? 'single-column',
+				'model'       => $settings['model'] ?? 'gpt-3.5-turbo',
+				'temperature' => $settings['temperature'] ?? 0.7,
+				'max_tokens'  => $settings['maxTokens'] ?? 2000,
+			);
+		}
+
+		// Add replace mode context.
+		if ( $replace_selected ) {
+			$options['replace_mode'] = true;
+		}
 
 		// Check rate limits.
 		$security = new Security_Manager();
@@ -160,7 +178,19 @@ class API_Handler {
 			return $result;
 		}
 
-		return rest_ensure_response( $result );
+		// Format response for the editor.
+		$response = array(
+			'success' => true,
+			'data'    => array(
+				'blocks'       => $result,
+				'prompt'       => $prompt,
+				'settings'     => $settings,
+				'timestamp'    => current_time( 'mysql' ),
+				'replace_mode' => $replace_selected,
+			),
+		);
+
+		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -385,6 +415,24 @@ class API_Handler {
 					return ! empty( $param );
 				},
 			),
+			'settings' => array(
+				'required' => false,
+				'type'     => 'object',
+				'default'  => array(),
+				'properties' => array(
+					'model'       => array( 'type' => 'string' ),
+					'temperature' => array( 'type' => 'number' ),
+					'maxTokens'   => array( 'type' => 'integer' ),
+					'style'       => array( 'type' => 'string' ),
+					'layout'      => array( 'type' => 'string' ),
+				),
+			),
+			'replace_selected' => array(
+				'required' => false,
+				'type'     => 'boolean',
+				'default'  => false,
+			),
+			// Keep backward compatibility with old 'options' parameter.
 			'options' => array(
 				'required' => false,
 				'type'     => 'object',

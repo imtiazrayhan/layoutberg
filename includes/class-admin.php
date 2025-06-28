@@ -102,6 +102,79 @@ class Admin {
 
 		// Set script translations.
 		wp_set_script_translations( 'layoutberg-admin', 'layoutberg' );
+
+		// Enqueue editor script for Gutenberg.
+		if ( $this->is_block_editor() ) {
+			$this->enqueue_editor_scripts();
+		}
+	}
+
+	/**
+	 * Register the JavaScript for the block editor.
+	 *
+	 * @since 1.0.0
+	 */
+	public function enqueue_editor_scripts() {
+		// Check if build file exists.
+		$editor_asset_file = LAYOUTBERG_PLUGIN_DIR . 'build/editor.asset.php';
+		$editor_asset = file_exists( $editor_asset_file ) 
+			? include $editor_asset_file 
+			: array( 'dependencies' => array(), 'version' => $this->version );
+
+		wp_enqueue_script(
+			'layoutberg-editor',
+			LAYOUTBERG_PLUGIN_URL . 'build/editor.js',
+			$editor_asset['dependencies'],
+			$editor_asset['version'],
+			true
+		);
+
+		wp_enqueue_style(
+			'layoutberg-editor',
+			LAYOUTBERG_PLUGIN_URL . 'build/editor.css',
+			array( 'wp-edit-blocks' ),
+			$this->version
+		);
+
+		// Localize script for the editor.
+		wp_localize_script(
+			'layoutberg-editor',
+			'layoutbergEditor',
+			array(
+				'apiUrl'    => rest_url( 'layoutberg/v1' ),
+				'restNonce' => wp_create_nonce( 'wp_rest' ),
+				'settings'  => $this->get_default_settings(),
+				'strings'   => array(
+					'generating'     => __( 'Generating layout...', 'layoutberg' ),
+					'generated'      => __( 'Layout generated successfully!', 'layoutberg' ),
+					'error'          => __( 'An error occurred. Please try again.', 'layoutberg' ),
+					'promptRequired' => __( 'Please enter a prompt to generate a layout.', 'layoutberg' ),
+					'replaceMode'    => __( 'Replace selected blocks', 'layoutberg' ),
+					'insertMode'     => __( 'Insert new layout', 'layoutberg' ),
+				),
+			)
+		);
+
+		// Set script translations.
+		wp_set_script_translations( 'layoutberg-editor', 'layoutberg' );
+	}
+
+	/**
+	 * Get default settings for the editor.
+	 *
+	 * @since 1.0.0
+	 * @return array Default settings.
+	 */
+	private function get_default_settings() {
+		$options = get_option( 'layoutberg_options', array() );
+		
+		return array(
+			'model'       => $options['model'] ?? 'gpt-3.5-turbo',
+			'temperature' => $options['temperature'] ?? 0.7,
+			'maxTokens'   => $options['max_tokens'] ?? 2000,
+			'style'       => $options['style_defaults']['style'] ?? 'modern',
+			'layout'      => $options['style_defaults']['layout'] ?? 'single-column',
+		);
 	}
 
 	/**

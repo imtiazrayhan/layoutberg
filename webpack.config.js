@@ -6,8 +6,8 @@ module.exports = {
 	entry: {
 		// Admin scripts
 		'admin/index': path.resolve( process.cwd(), 'src/admin/index.js' ),
-		// Editor scripts
-		'editor/index': path.resolve( process.cwd(), 'src/editor/index.js' ),
+		// Editor scripts (main entry for Gutenberg)
+		'editor': path.resolve( process.cwd(), 'src/editor/index.js' ),
 		// Blocks
 		'blocks/ai-layout/index': path.resolve( process.cwd(), 'src/blocks/ai-layout/index.js' ),
 		// Public scripts

@@ -1,0 +1,352 @@
+/**
+ * LayoutBerg Editor Styles
+ * Custom styles for Gutenberg editor integration
+ */
+
+/* Toolbar Button Styles */
+.layoutberg-toolbar-button {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.layoutberg-toolbar-button:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+}
+
+.layoutberg-toolbar-button:focus {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+}
+
+/* Sidebar Styles */
+.layoutberg-sidebar-card {
+    margin-bottom: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.layoutberg-sidebar-description {
+    margin: 8px 0 16px 0;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.layoutberg-generate-button {
+    width: 100%;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    margin-bottom: 8px;
+}
+
+.layoutberg-generate-button:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.layoutberg-sidebar-note {
+    margin: 8px 0 0 0;
+    font-size: 12px;
+    color: #9ca3af;
+    text-align: center;
+}
+
+.layoutberg-sidebar-panel .components-panel__body {
+    border: 1px solid #e5e7eb;
+    margin-bottom: 8px;
+}
+
+.layoutberg-tips {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.layoutberg-tip {
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 6px;
+    border-left: 3px solid #6366f1;
+}
+
+.layoutberg-tip strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #374151;
+    font-size: 13px;
+}
+
+.layoutberg-tip p {
+    margin: 0;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+/* Modal Styles */
+.layoutberg-generation-modal {
+    max-width: 800px !important;
+    width: 95vw !important;
+}
+
+.layoutberg-generation-modal .components-modal__header {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    padding: 20px 24px;
+    border-bottom: none;
+}
+
+.layoutberg-generation-modal .components-modal__header h1 {
+    color: white;
+    margin: 0;
+    font-weight: 600;
+}
+
+.layoutberg-generation-modal .components-modal__content {
+    padding: 24px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.layoutberg-modal-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+}
+
+.layoutberg-quick-prompts {
+    gap: 8px;
+}
+
+.layoutberg-quick-prompt-button {
+    width: 100%;
+    height: auto;
+    white-space: normal;
+    text-align: center;
+    padding: 12px 8px;
+    min-height: 48px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.layoutberg-quick-prompt-button:hover {
+    border-color: #6366f1;
+    background: #f8faff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1);
+}
+
+.layoutberg-prompt-input textarea {
+    min-height: 120px !important;
+    resize: vertical;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    line-height: 1.5;
+}
+
+.layoutberg-prompt-input textarea:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 1px #6366f1;
+}
+
+/* Card Enhancements */
+.components-card {
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+}
+
+.components-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.components-card__header {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 20px;
+}
+
+.components-card__body {
+    padding: 20px;
+}
+
+/* Range Control Enhancements */
+.components-range-control__marks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.components-range-control__track {
+    background: linear-gradient(to right, #6366f1, #8b5cf6);
+}
+
+.components-range-control__thumb {
+    background: white;
+    border: 2px solid #6366f1;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+}
+
+/* Notice Enhancements */
+.layoutberg-modal-error,
+.layoutberg-modal-info {
+    margin: 0 0 16px 0;
+    border-radius: 6px;
+}
+
+.layoutberg-modal-error {
+    border-left: 4px solid #ef4444;
+}
+
+.layoutberg-modal-info {
+    border-left: 4px solid #3b82f6;
+}
+
+/* Button Enhancements */
+.components-button.is-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.components-button.is-primary:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+}
+
+.components-button.is-primary:disabled {
+    background: #9ca3af;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Spinner in button */
+.components-button .components-spinner {
+    margin-right: 8px;
+}
+
+/* Grid Layout */
+.components-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.components-grid[data-columns="2"] {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.components-grid[data-columns="3"] {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .layoutberg-generation-modal {
+        width: 95vw !important;
+        max-width: none !important;
+        margin: 10px !important;
+    }
+    
+    .layoutberg-generation-modal .components-modal__content {
+        padding: 16px;
+    }
+    
+    .components-grid[data-columns="3"] {
+        grid-template-columns: 1fr;
+    }
+    
+    .components-grid[data-columns="2"] {
+        grid-template-columns: 1fr;
+    }
+    
+    .layoutberg-quick-prompt-button {
+        min-height: 44px;
+        padding: 8px;
+    }
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.layoutberg-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Focus States */
+.layoutberg-quick-prompt-button:focus,
+.layoutberg-generate-button:focus,
+.layoutberg-toolbar-button:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
+
+/* Loading States */
+.layoutberg-generating .components-card {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.layoutberg-generating .layoutberg-prompt-input {
+    opacity: 0.5;
+}
+
+/* Success States */
+.layoutberg-success-notice {
+    background: #ecfdf5;
+    border: 1px solid #10b981;
+    color: #047857;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .layoutberg-sidebar-card,
+    .components-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .layoutberg-tip {
+        background: #374151;
+        border-left-color: #6366f1;
+    }
+    
+    .layoutberg-tip strong {
+        color: #f3f4f6;
+    }
+    
+    .layoutberg-tip p {
+        color: #d1d5db;
+    }
+    
+    .components-card__header {
+        background: #374151;
+        border-bottom-color: #4b5563;
+    }
+}
