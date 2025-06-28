@@ -10,7 +10,7 @@
  * @since 1.0.0
  */
 
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { registerPlugin } from '@wordpress/plugins';
 import { PluginDocumentSettingPanel, PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/edit-post';
 import { Fragment } from '@wordpress/element';
@@ -41,15 +41,18 @@ import './editor.css';
 import LayoutBergToolbarButton from './toolbar-button';
 import LayoutBergSidebar from './sidebar';
 import LayoutBergModal from './modal';
+import SaveTemplateModal from './save-template-modal';
 
 /**
  * Main LayoutBerg Editor Plugin
  */
 const LayoutBergEditor = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generationError, setGenerationError] = useState(null);
     const [prompt, setPrompt] = useState('');
+    const [lastGeneratedBlocks, setLastGeneratedBlocks] = useState('');
     const [settings, setSettings] = useState({
         model: 'gpt-3.5-turbo',
         temperature: 0.7,
@@ -61,11 +64,13 @@ const LayoutBergEditor = () => {
     const { insertBlocks, replaceBlocks } = useDispatch(blockEditorStore);
     const { createNotice } = useDispatch('core/notices');
     
-    const { selectedBlocks, hasSelectedBlocks } = useSelect((select) => {
+    const { selectedBlocks, hasSelectedBlocks, allBlocks } = useSelect((select) => {
         const selectedBlockIds = select(blockEditorStore).getSelectedBlockClientIds();
+        const blocks = select(blockEditorStore).getBlocks();
         return {
             selectedBlocks: selectedBlockIds,
-            hasSelectedBlocks: selectedBlockIds.length > 0
+            hasSelectedBlocks: selectedBlockIds.length > 0,
+            allBlocks: blocks
         };
     }, []);
 
@@ -110,6 +115,9 @@ const LayoutBergEditor = () => {
             });
 
             if (response.success && response.data && response.data.blocks) {
+                // Store the generated blocks for potential template saving
+                setLastGeneratedBlocks(response.data.blocks);
+                
                 // Parse and insert the generated blocks immediately
                 const parsedBlocks = parse(response.data.blocks);
                 
@@ -120,7 +128,14 @@ const LayoutBergEditor = () => {
                         createNotice(
                             'success',
                             __('Layout generated and replaced selected blocks!', 'layoutberg'),
-                            { type: 'snackbar', isDismissible: true }
+                            { 
+                                type: 'snackbar', 
+                                isDismissible: true,
+                                actions: [{
+                                    label: __('Save as Template', 'layoutberg'),
+                                    onClick: () => setIsSaveTemplateModalOpen(true)
+                                }]
+                            }
                         );
                     } else {
                         // Insert at the end
@@ -128,7 +143,14 @@ const LayoutBergEditor = () => {
                         createNotice(
                             'success',
                             __('Layout generated and inserted!', 'layoutberg'),
-                            { type: 'snackbar', isDismissible: true }
+                            { 
+                                type: 'snackbar', 
+                                isDismissible: true,
+                                actions: [{
+                                    label: __('Save as Template', 'layoutberg'),
+                                    onClick: () => setIsSaveTemplateModalOpen(true)
+                                }]
+                            }
                         );
                     }
                     
@@ -147,6 +169,48 @@ const LayoutBergEditor = () => {
         }
     };
 
+
+    /**
+     * Handle template save
+     */
+    const handleTemplateSave = (template) => {
+        createNotice(
+            'success',
+            sprintf(
+                __('Template "%s" saved successfully!', 'layoutberg'),
+                template.name
+            ),
+            { 
+                type: 'snackbar', 
+                isDismissible: true,
+                actions: [{
+                    label: __('View Templates', 'layoutberg'),
+                    url: layoutbergEditor.templatesUrl || '/wp-admin/admin.php?page=layoutberg-templates'
+                }]
+            }
+        );
+        setIsSaveTemplateModalOpen(false);
+    };
+
+    /**
+     * Handle save current post as template
+     */
+    const handleSaveCurrentAsTemplate = () => {
+        if (allBlocks.length === 0) {
+            createNotice(
+                'warning',
+                __('No content to save as template. Please add some blocks first.', 'layoutberg'),
+                { type: 'snackbar', isDismissible: true }
+            );
+            return;
+        }
+
+        // Serialize all blocks
+        const serializedBlocks = serialize(allBlocks);
+        setLastGeneratedBlocks(serializedBlocks);
+        setPrompt(__('Saved from current post', 'layoutberg'));
+        setIsSaveTemplateModalOpen(true);
+    };
 
     /**
      * Handle keyboard shortcuts
@@ -181,6 +245,7 @@ const LayoutBergEditor = () => {
             >
                 <LayoutBergSidebar 
                     onGenerate={openModal}
+                    onSaveAsTemplate={handleSaveCurrentAsTemplate}
                     settings={settings}
                     onSettingsChange={setSettings}
                 />
@@ -199,6 +264,17 @@ const LayoutBergEditor = () => {
                     settings={settings}
                     onSettingsChange={setSettings}
                     hasSelectedBlocks={hasSelectedBlocks}
+                />
+            )}
+
+            {/* Save Template Modal */}
+            {isSaveTemplateModalOpen && (
+                <SaveTemplateModal
+                    isOpen={isSaveTemplateModalOpen}
+                    onClose={() => setIsSaveTemplateModalOpen(false)}
+                    onSave={handleTemplateSave}
+                    blocks={lastGeneratedBlocks}
+                    prompt={prompt}
                 />
             )}
         </Fragment>

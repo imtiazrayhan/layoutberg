@@ -12,9 +12,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Get container instance
-$container = \DotCamp\LayoutBerg\Container::get_instance();
-$template_manager = $container->get( 'template_manager' );
+// Get template manager instance
+global $wpdb;
+require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-template-manager.php';
+$template_manager = new \DotCamp\LayoutBerg\Template_Manager();
 
 // Handle actions
 $action = isset( $_GET['action'] ) ? sanitize_text_field( $_GET['action'] ) : '';
@@ -76,7 +77,7 @@ $categories = array(
 		<?php echo esc_html( get_admin_page_title() ); ?>
 	</h1>
 	
-	<a href="#" class="page-title-action layoutberg-new-template">
+	<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=post&layoutberg_create_template=1' ) ); ?>" class="page-title-action layoutberg-new-template" title="<?php esc_attr_e( 'Create a new layout in the editor and save it as a template', 'layoutberg' ); ?>">
 		<?php esc_html_e( 'Add New Template', 'layoutberg' ); ?>
 	</a>
 	
@@ -85,6 +86,12 @@ $categories = array(
 	</a>
 	
 	<hr class="wp-header-end">
+	
+	<?php if ( isset( $_GET['new'] ) && $_GET['new'] === '1' ) : ?>
+		<div class="notice notice-info is-dismissible">
+			<p><?php esc_html_e( 'To create a new template: Use the LayoutBerg AI Layout block in the editor to generate a layout, then save it as a template using the "Save as Template" button.', 'layoutberg' ); ?></p>
+		</div>
+	<?php endif; ?>
 	
 	<!-- Filters -->
 	<div class="tablenav top">
@@ -157,7 +164,18 @@ $categories = array(
 	<!-- Templates Grid -->
 	<?php if ( empty( $templates ) ) : ?>
 		<div class="layoutberg-templates-empty">
-			<p><?php esc_html_e( 'No templates found. Create your first template by generating a layout in the editor!', 'layoutberg' ); ?></p>
+			<h3><?php esc_html_e( 'No templates yet', 'layoutberg' ); ?></h3>
+			<p><?php esc_html_e( 'Templates let you save and reuse your AI-generated layouts.', 'layoutberg' ); ?></p>
+			<p><?php esc_html_e( 'To create your first template:', 'layoutberg' ); ?></p>
+			<ol>
+				<li><?php esc_html_e( 'Click "Add New Template" to open the editor', 'layoutberg' ); ?></li>
+				<li><?php esc_html_e( 'Add a LayoutBerg AI Layout block', 'layoutberg' ); ?></li>
+				<li><?php esc_html_e( 'Generate a layout with your prompt', 'layoutberg' ); ?></li>
+				<li><?php esc_html_e( 'Save it as a template for future use', 'layoutberg' ); ?></li>
+			</ol>
+			<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=post&layoutberg_create_template=1' ) ); ?>" class="button button-primary button-hero">
+				<?php esc_html_e( 'Create Your First Template', 'layoutberg' ); ?>
+			</a>
 		</div>
 	<?php else : ?>
 		<div class="layoutberg-templates-grid">
@@ -462,9 +480,37 @@ $categories = array(
 	background: #fff;
 	border: 1px solid #ddd;
 	border-radius: 4px;
-	padding: 40px;
+	padding: 60px 40px;
 	text-align: center;
 	margin-top: 20px;
+	max-width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.layoutberg-templates-empty h3 {
+	font-size: 24px;
+	margin: 0 0 20px;
+	color: #23282d;
+}
+
+.layoutberg-templates-empty p {
+	font-size: 16px;
+	color: #666;
+	margin-bottom: 15px;
+}
+
+.layoutberg-templates-empty ol {
+	text-align: left;
+	display: inline-block;
+	margin: 20px 0 30px;
+	font-size: 14px;
+}
+
+.layoutberg-templates-empty .button-hero {
+	font-size: 16px;
+	padding: 12px 30px;
+	height: auto;
 }
 
 /* Modals */

@@ -7,7 +7,7 @@
  * @since 1.0.0
  */
 
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
 import { 
     Button, 
@@ -32,7 +32,7 @@ import { layout, help, info, cog } from '@wordpress/icons';
 /**
  * LayoutBerg Sidebar Component
  */
-const LayoutBergSidebar = ({ onGenerate, settings, onSettingsChange }) => {
+const LayoutBergSidebar = ({ onGenerate, onSaveAsTemplate, settings, onSettingsChange }) => {
     const { selectedBlocks, hasSelectedBlocks, totalBlocks } = useSelect((select) => {
         const selectedBlockIds = select(blockEditorStore).getSelectedBlockClientIds();
         const allBlocks = select(blockEditorStore).getBlocks();
@@ -93,6 +93,31 @@ const LayoutBergSidebar = ({ onGenerate, settings, onSettingsChange }) => {
                             }
                         </p>
                     )}
+                </CardBody>
+            </Card>
+
+            {/* Save as Template Card */}
+            <Card className="layoutberg-sidebar-card">
+                <CardHeader>
+                    <Flex>
+                        <FlexItem>
+                            <strong>{__('Templates', 'layoutberg')}</strong>
+                        </FlexItem>
+                    </Flex>
+                </CardHeader>
+                <CardBody>
+                    <p className="layoutberg-sidebar-description">
+                        {__('Save your current layout as a reusable template', 'layoutberg')}
+                    </p>
+                    
+                    <Button 
+                        variant="secondary" 
+                        onClick={onSaveAsTemplate}
+                        size="compact"
+                        className="layoutberg-save-template-button"
+                    >
+                        {__('Save as Template', 'layoutberg')}
+                    </Button>
                 </CardBody>
             </Card>
 

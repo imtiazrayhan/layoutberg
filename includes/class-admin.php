@@ -141,10 +141,12 @@ class Admin {
 			'layoutberg-editor',
 			'layoutbergEditor',
 			array(
-				'apiUrl'    => rest_url( 'layoutberg/v1' ),
-				'restNonce' => wp_create_nonce( 'wp_rest' ),
-				'settings'  => $this->get_default_settings(),
-				'strings'   => array(
+				'apiUrl'       => rest_url( 'layoutberg/v1' ),
+				'restNonce'    => wp_create_nonce( 'wp_rest' ),
+				'nonce'        => wp_create_nonce( 'layoutberg_nonce' ),
+				'templatesUrl' => admin_url( 'admin.php?page=layoutberg-templates' ),
+				'settings'     => $this->get_default_settings(),
+				'strings'      => array(
 					'generating'     => __( 'Generating layout...', 'layoutberg' ),
 					'generated'      => __( 'Layout generated successfully!', 'layoutberg' ),
 					'error'          => __( 'An error occurred. Please try again.', 'layoutberg' ),
@@ -785,7 +787,7 @@ class Admin {
 		}
 
 		// Get template.
-		$template_manager = $this->container->get( 'template_manager' );
+		$template_manager = new Template_Manager();
 		$template = $template_manager->get_template( $template_id );
 
 		if ( is_wp_error( $template ) ) {
@@ -826,7 +828,7 @@ class Admin {
 		);
 
 		// Update template.
-		$template_manager = $this->container->get( 'template_manager' );
+		$template_manager = new Template_Manager();
 		$result = $template_manager->update_template( $template_id, $data );
 
 		if ( is_wp_error( $result ) ) {
@@ -876,7 +878,7 @@ class Admin {
 		}
 
 		// Import template.
-		$template_manager = $this->container->get( 'template_manager' );
+		$template_manager = new Template_Manager();
 		$template_id = $template_manager->import_template( $template_data );
 
 		if ( is_wp_error( $template_id ) ) {

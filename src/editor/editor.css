@@ -50,6 +50,11 @@
     background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
 }
 
+.layoutberg-save-template-button {
+    width: 100%;
+    justify-content: center;
+}
+
 .layoutberg-sidebar-note {
     margin: 8px 0 0 0;
     font-size: 12px;
@@ -322,6 +327,26 @@
     padding: 12px;
     border-radius: 6px;
     margin-bottom: 16px;
+}
+
+/* Save Template Modal */
+.layoutberg-save-template-modal {
+    max-width: 500px !important;
+}
+
+.layoutberg-save-template-modal .components-modal__header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 16px 20px;
+}
+
+.layoutberg-save-template-modal .components-modal__header h1 {
+    color: white;
+    font-size: 18px;
+}
+
+.layoutberg-save-template-modal .components-modal__content {
+    padding: 20px;
 }
 
 /* Dark Mode Support */
