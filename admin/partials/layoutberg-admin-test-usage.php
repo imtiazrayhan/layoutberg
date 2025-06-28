@@ -87,7 +87,7 @@ $month_usage = $wpdb->get_row(
 		FROM $table_usage 
 		WHERE user_id = %d AND date LIKE %s",
 		$user_id,
-		$this_month . '%'
+		$wpdb->esc_like( $this_month ) . '%'
 	)
 );
 
