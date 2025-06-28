@@ -1,0 +1,184 @@
+<?php
+/**
+ * Test usage tracking
+ *
+ * @package    LayoutBerg
+ * @subpackage Admin/Partials
+ * @since      1.0.0
+ */
+
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// Only allow admin users
+if ( ! current_user_can( 'manage_options' ) ) {
+	wp_die( 'Unauthorized' );
+}
+
+global $wpdb;
+$user_id = get_current_user_id();
+$table_usage = $wpdb->prefix . 'layoutberg_usage';
+$table_generations = $wpdb->prefix . 'layoutberg_generations';
+$today = current_time( 'Y-m-d' );
+$message = '';
+
+// If test button clicked
+if ( isset( $_POST['test_tracking'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'test_tracking' ) ) {
+	// Insert test generation record
+	$wpdb->insert(
+		$table_generations,
+		array(
+			'user_id'     => $user_id,
+			'prompt'      => 'Test prompt',
+			'response'    => '<!-- wp:paragraph --><p>Test response</p><!-- /wp:paragraph -->',
+			'model'       => 'gpt-3.5-turbo',
+			'tokens_used' => 100,
+			'status'      => 'completed',
+		),
+		array( '%d', '%s', '%s', '%s', '%d', '%s' )
+	);
+	$generation_id = $wpdb->insert_id;
+	
+	// Update daily usage
+	$updated = $wpdb->query(
+		$wpdb->prepare(
+			"UPDATE $table_usage 
+			SET generations_count = generations_count + 1, 
+			    tokens_used = tokens_used + 100,
+			    cost = cost + 0.002
+			WHERE user_id = %d AND date = %s",
+			$user_id,
+			$today
+		)
+	);
+	
+	if ( 0 === $updated ) {
+		$wpdb->insert(
+			$table_usage,
+			array(
+				'user_id'           => $user_id,
+				'date'              => $today,
+				'generations_count' => 1,
+				'tokens_used'       => 100,
+				'cost'              => 0.002,
+			),
+			array( '%d', '%s', '%d', '%d', '%f' )
+		);
+	}
+	
+	$message = 'Test generation added successfully! Generation ID: ' . $generation_id;
+}
+
+// Get current data
+$today_usage = $wpdb->get_row(
+	$wpdb->prepare(
+		"SELECT * FROM $table_usage WHERE user_id = %d AND date = %s",
+		$user_id,
+		$today
+	)
+);
+
+$this_month = current_time( 'Y-m' );
+$month_usage = $wpdb->get_row(
+	$wpdb->prepare(
+		"SELECT SUM(generations_count) as total_generations, SUM(tokens_used) as total_tokens, SUM(cost) as total_cost
+		FROM $table_usage 
+		WHERE user_id = %d AND date LIKE %s",
+		$user_id,
+		$this_month . '%'
+	)
+);
+
+// Get all usage records
+$all_usage = $wpdb->get_results(
+	$wpdb->prepare(
+		"SELECT * FROM $table_usage WHERE user_id = %d ORDER BY date DESC LIMIT 30",
+		$user_id
+	)
+);
+
+// Check table structure
+$columns = $wpdb->get_results( "SHOW COLUMNS FROM $table_usage" );
+?>
+
+<div class="wrap">
+	<h1>LayoutBerg Usage Tracking Test</h1>
+	
+	<?php if ( $message ) : ?>
+		<div class="notice notice-success">
+			<p><?php echo esc_html( $message ); ?></p>
+		</div>
+	<?php endif; ?>
+	
+	<div class="card">
+		<h2>Table Structure</h2>
+		<table class="widefat">
+			<thead>
+				<tr>
+					<th>Column</th>
+					<th>Type</th>
+					<th>Key</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $columns as $column ) : ?>
+					<tr>
+						<td><?php echo esc_html( $column->Field ); ?></td>
+						<td><?php echo esc_html( $column->Type ); ?></td>
+						<td><?php echo esc_html( $column->Key ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+	
+	<div class="card">
+		<h2>Current Stats</h2>
+		<p><strong>Today:</strong> <?php echo $today_usage ? $today_usage->generations_count : 0; ?> generations</p>
+		<p><strong>This Month (<?php echo esc_html( $this_month ); ?>):</strong> <?php echo $month_usage ? $month_usage->total_generations : 0; ?> generations</p>
+	</div>
+	
+	<div class="card">
+		<h2>Add Test Generation</h2>
+		<form method="post">
+			<?php wp_nonce_field( 'test_tracking' ); ?>
+			<p>
+				<input type="submit" name="test_tracking" class="button button-primary" value="Add Test Generation">
+			</p>
+		</form>
+	</div>
+	
+	<div class="card">
+		<h2>Usage Records</h2>
+		<table class="widefat">
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Generations</th>
+					<th>Tokens</th>
+					<th>Cost</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if ( $all_usage ) : ?>
+					<?php foreach ( $all_usage as $usage ) : ?>
+						<tr>
+							<td><?php echo esc_html( $usage->date ); ?></td>
+							<td><?php echo esc_html( $usage->generations_count ); ?></td>
+							<td><?php echo esc_html( $usage->tokens_used ); ?></td>
+							<td>$<?php echo esc_html( number_format( $usage->cost, 4 ) ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				<?php else : ?>
+					<tr>
+						<td colspan="4">No usage records found</td>
+					</tr>
+				<?php endif; ?>
+			</tbody>
+		</table>
+	</div>
+	
+	<p><a href="<?php echo admin_url( 'admin.php?page=layoutberg' ); ?>" class="button">Back to Dashboard</a></p>
+</div>

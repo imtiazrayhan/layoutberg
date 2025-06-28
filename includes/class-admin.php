@@ -233,6 +233,26 @@ class Admin {
 			'layoutberg-analytics',
 			array( $this, 'display_analytics_page' )
 		);
+
+		// Temporary: Add hidden upgrade page
+		add_submenu_page(
+			null, // Hidden from menu
+			__( 'Upgrade DB', 'layoutberg' ),
+			__( 'Upgrade DB', 'layoutberg' ),
+			'manage_options',
+			'layoutberg-upgrade-db',
+			array( $this, 'display_upgrade_db_page' )
+		);
+		
+		// Temporary: Add hidden test usage page
+		add_submenu_page(
+			null, // Hidden from menu
+			__( 'Test Usage', 'layoutberg' ),
+			__( 'Test Usage', 'layoutberg' ),
+			'manage_options',
+			'layoutberg-test-usage',
+			array( $this, 'display_test_usage_page' )
+		);
 	}
 
 	/**
@@ -269,6 +289,24 @@ class Admin {
 	 */
 	public function display_analytics_page() {
 		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-analytics.php';
+	}
+
+	/**
+	 * Display the upgrade DB page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function display_upgrade_db_page() {
+		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-upgrade-db.php';
+	}
+
+	/**
+	 * Display the test usage page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function display_test_usage_page() {
+		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-test-usage.php';
 	}
 
 	/**

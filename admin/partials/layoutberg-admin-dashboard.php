@@ -43,6 +43,38 @@ $month_usage = $wpdb->get_row(
 	)
 );
 
+// Debug: Check if table exists and has data
+if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+	$table_exists = $wpdb->get_var( "SHOW TABLES LIKE '$table_usage'" );
+	error_log( 'LayoutBerg Debug - Table exists: ' . ( $table_exists ? 'yes' : 'no' ) );
+	
+	if ( $table_exists ) {
+		$all_usage = $wpdb->get_results( "SELECT * FROM $table_usage ORDER BY date DESC LIMIT 10" );
+		error_log( 'LayoutBerg Debug - Usage records: ' . print_r( $all_usage, true ) );
+		
+		// Check table structure
+		$columns = $wpdb->get_results( "SHOW COLUMNS FROM $table_usage" );
+		error_log( 'LayoutBerg Debug - Table columns: ' . print_r( $columns, true ) );
+	}
+	
+	error_log( 'LayoutBerg Debug - This month: ' . $this_month );
+	error_log( 'LayoutBerg Debug - User ID: ' . $user_id );
+	
+	// Check database version
+	$db_version = get_option( 'layoutberg_db_version', 'not set' );
+	error_log( 'LayoutBerg Debug - DB Version: ' . $db_version );
+	
+	// Test generation count from generations table
+	$gen_count = $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT COUNT(*) FROM $table_generations WHERE user_id = %d AND created_at >= %s",
+			$user_id,
+			$this_month . '-01'
+		)
+	);
+	error_log( 'LayoutBerg Debug - Generations this month: ' . $gen_count );
+}
+
 // Get recent generations.
 $recent_generations = $wpdb->get_results(
 	$wpdb->prepare(
@@ -151,6 +183,12 @@ $templates_count = $wpdb->get_var(
 				<p class="layoutberg-stat-label"><?php esc_html_e( 'This Month', 'layoutberg' ); ?></p>
 				<?php if ( $month_usage && $month_usage->total_generations > 0 ) : ?>
 					<span class="layoutberg-stat-trend up">+12%</span>
+				<?php endif; ?>
+				<?php if ( defined( 'WP_DEBUG' ) && WP_DEBUG && ( ! $month_usage || $month_usage->total_generations == 0 ) ) : ?>
+					<div style="margin-top: 10px; font-size: 11px;">
+						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-upgrade-db' ); ?>" style="color: #007cba;">Run DB upgrade</a> | 
+						<a href="<?php echo admin_url( 'admin.php?page=layoutberg-test-usage' ); ?>" style="color: #007cba;">Test tracking</a>
+					</div>
 				<?php endif; ?>
 			</div>
 
