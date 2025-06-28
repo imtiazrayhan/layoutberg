@@ -109,8 +109,8 @@ const LayoutBergEditor = () => {
                 }
             });
 
-            if (response.success && response.data.blocks) {
-                // Parse the generated blocks
+            if (response.success && response.data && response.data.blocks) {
+                // Parse and insert the generated blocks immediately
                 const parsedBlocks = parse(response.data.blocks);
                 
                 if (parsedBlocks.length > 0) {
@@ -134,7 +134,7 @@ const LayoutBergEditor = () => {
                     
                     closeModal();
                 } else {
-                    setGenerationError(__('No valid blocks were generated. Please try a different prompt.', 'layoutberg'));
+                    setGenerationError(__('No valid blocks found in the generated layout.', 'layoutberg'));
                 }
             } else {
                 setGenerationError(response.data?.message || __('Failed to generate layout. Please try again.', 'layoutberg'));
@@ -146,6 +146,7 @@ const LayoutBergEditor = () => {
             setIsGenerating(false);
         }
     };
+
 
     /**
      * Handle keyboard shortcuts

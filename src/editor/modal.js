@@ -8,7 +8,7 @@
  */
 
 import { __ } from '@wordpress/i18n';
-import { Fragment, useState } from '@wordpress/element';
+import { Fragment, useState, useEffect } from '@wordpress/element';
 import { 
     Modal,
     Button,
@@ -29,7 +29,7 @@ import {
     __experimentalVStack as VStack,
     __experimentalHStack as HStack
 } from '@wordpress/components';
-import { layout, starFilled, cog, close } from '@wordpress/icons';
+import { layout, starFilled, cog } from '@wordpress/icons';
 
 /**
  * LayoutBerg Generation Modal
@@ -44,7 +44,7 @@ const LayoutBergModal = ({
     onPromptChange, 
     settings, 
     onSettingsChange,
-    hasSelectedBlocks 
+    hasSelectedBlocks
 }) => {
     const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -54,6 +54,7 @@ const LayoutBergModal = ({
             [key]: value
         });
     };
+
 
     const quickPrompts = [
         {
@@ -249,9 +250,9 @@ const LayoutBergModal = ({
                                         value={settings.maxTokens}
                                         onChange={(value) => updateSetting('maxTokens', value)}
                                         min={500}
-                                        max={4000}
+                                        max={4096}
                                         step={100}
-                                        help={__('Higher values allow more complex layouts but cost more', 'layoutberg')}
+                                        help={__('Higher values allow more complex layouts but cost more (max 4096 for GPT-3.5)', 'layoutberg')}
                                     />
                                 </VStack>
                             </Fragment>
@@ -260,7 +261,7 @@ const LayoutBergModal = ({
                 </Card>
 
                 {/* Action Buttons */}
-                <HStack justify="end" spacing={3}>
+                <HStack justify="flex-end" spacing={3}>
                     <Button
                         variant="tertiary"
                         onClick={onClose}

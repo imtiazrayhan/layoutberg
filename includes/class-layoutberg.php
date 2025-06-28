@@ -111,8 +111,10 @@ class LayoutBerg {
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-api-client.php';
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-api-handler.php';
 
-		// Load block generator.
+		// Load block generator and related classes.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-block-generator.php';
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-block-serializer.php';
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-prompt-engineer.php';
 
 		// Load template manager.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-template-manager.php';

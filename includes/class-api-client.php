@@ -142,6 +142,10 @@ class API_Client {
 		// Get other settings.
 		$this->model       = isset( $options['model'] ) ? $options['model'] : 'gpt-3.5-turbo';
 		$this->max_tokens  = isset( $options['max_tokens'] ) ? intval( $options['max_tokens'] ) : 2000;
+		// Ensure max tokens doesn't exceed model limit
+		if ( $this->max_tokens > 4096 ) {
+			$this->max_tokens = 4096;
+		}
 		$this->temperature = isset( $options['temperature'] ) ? floatval( $options['temperature'] ) : 0.7;
 	}
 
@@ -154,6 +158,12 @@ class API_Client {
 	 * @return array|WP_Error Response data or error.
 	 */
 	public function generate_layout( $prompt, $options = array() ) {
+		// Debug logging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'LayoutBerg API_Client::generate_layout called' );
+			error_log( 'API key present: ' . ( ! empty( $this->api_key ) ? 'yes' : 'no' ) );
+		}
+		
 		// Check if API key is set.
 		if ( empty( $this->api_key ) ) {
 			return new \WP_Error( 'no_api_key', __( 'OpenAI API key is not configured.', 'layoutberg' ) );
@@ -570,9 +580,29 @@ class API_Client {
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
+		$body = wp_remote_retrieve_body( $response );
 
 		if ( 200 !== $code ) {
-			return new \WP_Error( 'invalid_api_key', __( 'Invalid API key.', 'layoutberg' ) );
+			$error_message = __( 'Invalid API key.', 'layoutberg' );
+			
+			// Try to get more specific error message from response
+			if ( ! empty( $body ) ) {
+				$decoded = json_decode( $body, true );
+				if ( isset( $decoded['error']['message'] ) ) {
+					$error_message = $decoded['error']['message'];
+				}
+			}
+			
+			// Common error codes
+			if ( 401 === $code ) {
+				$error_message = __( 'Invalid API key. Please check your OpenAI API key.', 'layoutberg' );
+			} elseif ( 429 === $code ) {
+				$error_message = __( 'Rate limit exceeded. Please try again later.', 'layoutberg' );
+			} elseif ( 403 === $code ) {
+				$error_message = __( 'Access denied. Please check your OpenAI account status.', 'layoutberg' );
+			}
+			
+			return new \WP_Error( 'invalid_api_key', $error_message );
 		}
 
 		return true;

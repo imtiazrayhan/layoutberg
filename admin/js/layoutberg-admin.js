@@ -392,7 +392,7 @@
                 message = 'Please enter a valid email address';
             }
             
-            if ($field.hasClass('api-key') && value && !value.startsWith('sk-')) {
+            if ($field.hasClass('api-key') && value && !value.startsWith('sk-') && value.indexOf('*') === -1) {
                 isValid = false;
                 message = 'API key should start with "sk-"';
             }

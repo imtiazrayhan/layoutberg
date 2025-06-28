@@ -418,4 +418,256 @@ class Cache_Manager {
 		// Fire action hook.
 		do_action( 'layoutberg_cache_preloaded' );
 	}
+
+	/**
+	 * Clean expired cache entries.
+	 *
+	 * @since 1.0.0
+	 * @return int Number of expired entries cleaned.
+	 */
+	public function clean_expired() {
+		$cleaned = 0;
+		
+		// Clean file cache.
+		$cache_dir = $this->get_cache_dir();
+		$files     = glob( $cache_dir . '/*.cache' );
+		
+		if ( is_array( $files ) ) {
+			foreach ( $files as $file ) {
+				$data = file_get_contents( $file );
+				if ( false !== $data ) {
+					$cache_data = unserialize( $data );
+					if ( isset( $cache_data['expiration'] ) && time() > $cache_data['expiration'] ) {
+						unlink( $file );
+						$cleaned++;
+					}
+				}
+			}
+		}
+		
+		// Clean expired transients.
+		global $wpdb;
+		
+		$expired_transients = $wpdb->get_col(
+			"SELECT option_name FROM {$wpdb->options} 
+			WHERE option_name LIKE '_transient_timeout_layoutberg_%' 
+			AND option_value < UNIX_TIMESTAMP()"
+		);
+		
+		foreach ( $expired_transients as $timeout_key ) {
+			$transient_key = str_replace( '_transient_timeout_', '_transient_', $timeout_key );
+			delete_option( $timeout_key );
+			delete_option( $transient_key );
+			$cleaned++;
+		}
+		
+		return $cleaned;
+	}
+
+	/**
+	 * Delete cache entries by pattern.
+	 *
+	 * @since 1.0.0
+	 * @param string $pattern Cache key pattern (supports wildcards).
+	 * @return int Number of entries deleted.
+	 */
+	public function delete_by_pattern( $pattern ) {
+		$deleted = 0;
+		
+		// Handle file cache.
+		$cache_dir = $this->get_cache_dir();
+		$files     = glob( $cache_dir . '/*.cache' );
+		
+		if ( is_array( $files ) ) {
+			foreach ( $files as $file ) {
+				$filename = basename( $file, '.cache' );
+				
+				// Check if this file matches any of our cached keys.
+				foreach ( $this->memory_cache as $key => $value ) {
+					if ( fnmatch( $pattern, $key ) && md5( $key ) === $filename ) {
+						unlink( $file );
+						unset( $this->memory_cache[ $key ] );
+						$deleted++;
+						break;
+					}
+				}
+			}
+		}
+		
+		// Handle transients.
+		global $wpdb;
+		
+		$like_pattern = str_replace( array( '*', '?' ), array( '%', '_' ), $pattern );
+		$transients = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options} 
+				WHERE option_name LIKE %s",
+				'_transient_' . $like_pattern
+			)
+		);
+		
+		foreach ( $transients as $transient_key ) {
+			$key = str_replace( '_transient_', '', $transient_key );
+			delete_transient( $key );
+			$deleted++;
+		}
+		
+		return $deleted;
+	}
+
+	/**
+	 * Get cache usage statistics.
+	 *
+	 * @since 1.0.0
+	 * @return array Detailed cache usage statistics.
+	 */
+	public function get_usage_stats() {
+		$stats = $this->get_stats();
+		
+		// Add hit/miss ratios if available.
+		$hit_count = get_option( 'layoutberg_cache_hits', 0 );
+		$miss_count = get_option( 'layoutberg_cache_misses', 0 );
+		$total_requests = $hit_count + $miss_count;
+		
+		$stats['hit_count'] = $hit_count;
+		$stats['miss_count'] = $miss_count;
+		$stats['hit_ratio'] = $total_requests > 0 ? round( ( $hit_count / $total_requests ) * 100, 2 ) : 0;
+		
+		// Add cache effectiveness metrics.
+		$stats['cache_effectiveness'] = $this->calculate_cache_effectiveness();
+		
+		return $stats;
+	}
+
+	/**
+	 * Track cache hit.
+	 *
+	 * @since 1.0.0
+	 */
+	public function track_hit() {
+		$hits = get_option( 'layoutberg_cache_hits', 0 );
+		update_option( 'layoutberg_cache_hits', $hits + 1 );
+	}
+
+	/**
+	 * Track cache miss.
+	 *
+	 * @since 1.0.0
+	 */
+	public function track_miss() {
+		$misses = get_option( 'layoutberg_cache_misses', 0 );
+		update_option( 'layoutberg_cache_misses', $misses + 1 );
+	}
+
+	/**
+	 * Calculate cache effectiveness.
+	 *
+	 * @since 1.0.0
+	 * @return array Cache effectiveness metrics.
+	 */
+	private function calculate_cache_effectiveness() {
+		$cache_dir = $this->get_cache_dir();
+		$files = glob( $cache_dir . '/*.cache' );
+		
+		$total_size = 0;
+		$total_age = 0;
+		$count = 0;
+		
+		if ( is_array( $files ) ) {
+			$current_time = time();
+			foreach ( $files as $file ) {
+				$total_size += filesize( $file );
+				$total_age += $current_time - filemtime( $file );
+				$count++;
+			}
+		}
+		
+		return array(
+			'average_entry_size' => $count > 0 ? round( $total_size / $count ) : 0,
+			'average_entry_age' => $count > 0 ? round( $total_age / $count ) : 0,
+			'total_entries' => $count,
+			'total_size_bytes' => $total_size,
+		);
+	}
+
+	/**
+	 * Optimize cache performance.
+	 *
+	 * @since 1.0.0
+	 * @return array Optimization results.
+	 */
+	public function optimize() {
+		$results = array(
+			'expired_cleaned' => 0,
+			'fragmentation_reduced' => false,
+			'preload_refreshed' => false,
+		);
+		
+		// Clean expired entries.
+		$results['expired_cleaned'] = $this->clean_expired();
+		
+		// Defragment file cache if needed.
+		if ( $results['expired_cleaned'] > 10 ) {
+			$this->defragment_file_cache();
+			$results['fragmentation_reduced'] = true;
+		}
+		
+		// Refresh preloaded data.
+		$this->preload();
+		$results['preload_refreshed'] = true;
+		
+		return $results;
+	}
+
+	/**
+	 * Defragment file cache by reorganizing cache files.
+	 *
+	 * @since 1.0.0
+	 */
+	private function defragment_file_cache() {
+		$cache_dir = $this->get_cache_dir();
+		$files = glob( $cache_dir . '/*.cache' );
+		
+		if ( ! is_array( $files ) || count( $files ) < 100 ) {
+			return; // Not worth defragmenting.
+		}
+		
+		// Create temporary directory.
+		$temp_dir = $cache_dir . '/temp_' . time();
+		wp_mkdir_p( $temp_dir );
+		
+		// Move valid cache files to temp directory.
+		$current_time = time();
+		foreach ( $files as $file ) {
+			$data = file_get_contents( $file );
+			if ( false !== $data ) {
+				$cache_data = unserialize( $data );
+				if ( isset( $cache_data['expiration'] ) && $current_time <= $cache_data['expiration'] ) {
+					$new_file = $temp_dir . '/' . basename( $file );
+					rename( $file, $new_file );
+				} else {
+					unlink( $file );
+				}
+			}
+		}
+		
+		// Remove old cache files and move temp files back.
+		$remaining_files = glob( $cache_dir . '/*.cache' );
+		if ( is_array( $remaining_files ) ) {
+			foreach ( $remaining_files as $file ) {
+				unlink( $file );
+			}
+		}
+		
+		$temp_files = glob( $temp_dir . '/*.cache' );
+		if ( is_array( $temp_files ) ) {
+			foreach ( $temp_files as $file ) {
+				$new_file = $cache_dir . '/' . basename( $file );
+				rename( $file, $new_file );
+			}
+		}
+		
+		// Remove temp directory.
+		rmdir( $temp_dir );
+	}
 }

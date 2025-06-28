@@ -142,6 +142,8 @@ class ComposerStaticInit368b02ba2351bf8dd90abc62e70e7405
         'DotCamp\\LayoutBerg\\Cache_Manager' => __DIR__ . '/../..' . '/includes/class-cache-manager.php',
         'DotCamp\\LayoutBerg\\Container' => __DIR__ . '/../..' . '/includes/class-container.php',
         'DotCamp\\LayoutBerg\\Deactivator' => __DIR__ . '/../..' . '/includes/class-deactivator.php',
+        'DotCamp\\LayoutBerg\\Debug_Page' => __DIR__ . '/../..' . '/includes/class-debug-page.php',
+        'DotCamp\\LayoutBerg\\Input_Sanitizer' => __DIR__ . '/../..' . '/includes/class-input-sanitizer.php',
         'DotCamp\\LayoutBerg\\LayoutBerg' => __DIR__ . '/../..' . '/includes/class-layoutberg.php',
         'DotCamp\\LayoutBerg\\Loader' => __DIR__ . '/../..' . '/includes/class-loader.php',
         'DotCamp\\LayoutBerg\\Prompt_Engineer' => __DIR__ . '/../..' . '/includes/class-prompt-engineer.php',

@@ -31,6 +31,24 @@ class Security_Manager {
 	private $cipher = 'AES-256-CBC';
 
 	/**
+	 * Input sanitizer instance.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    Input_Sanitizer
+	 */
+	private $input_sanitizer;
+
+	/**
+	 * Constructor.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __construct() {
+		$this->input_sanitizer = new Input_Sanitizer();
+	}
+
+	/**
 	 * Get encryption key.
 	 *
 	 * @since 1.0.0
@@ -161,22 +179,43 @@ class Security_Manager {
 	 *
 	 * @since 1.0.0
 	 * @param string $prompt Prompt to sanitize.
-	 * @return string Sanitized prompt.
+	 * @return string|WP_Error Sanitized prompt or error.
 	 */
 	public function sanitize_prompt( $prompt ) {
-		// Remove potentially harmful content.
-		$prompt = wp_kses_post( $prompt );
+		return $this->input_sanitizer->sanitize_prompt( $prompt );
+	}
 
-		// Limit length.
-		if ( strlen( $prompt ) > 1000 ) {
-			$prompt = substr( $prompt, 0, 1000 );
-		}
+	/**
+	 * Sanitize settings array.
+	 *
+	 * @since 1.0.0
+	 * @param array $settings Settings to sanitize.
+	 * @return array Sanitized settings.
+	 */
+	public function sanitize_settings( $settings ) {
+		return $this->input_sanitizer->sanitize_settings( $settings );
+	}
 
-		// Remove script tags and SQL keywords.
-		$prompt = preg_replace( '/<script[^>]*>.*?<\/script>/is', '', $prompt );
-		$prompt = preg_replace( '/\b(DROP|DELETE|INSERT|UPDATE|EXEC|EXECUTE)\b/i', '', $prompt );
+	/**
+	 * Sanitize API key.
+	 *
+	 * @since 1.0.0
+	 * @param string $api_key API key to sanitize.
+	 * @return string|WP_Error Sanitized API key or error.
+	 */
+	public function sanitize_api_key( $api_key ) {
+		return $this->input_sanitizer->sanitize_api_key( $api_key );
+	}
 
-		return $prompt;
+	/**
+	 * Sanitize user options.
+	 *
+	 * @since 1.0.0
+	 * @param array $options Options to sanitize.
+	 * @return array Sanitized options.
+	 */
+	public function sanitize_user_options( $options ) {
+		return $this->input_sanitizer->sanitize_user_options( $options );
 	}
 
 	/**
@@ -187,8 +226,9 @@ class Security_Manager {
 	 * @return bool True if valid format.
 	 */
 	public function validate_api_key_format( $api_key ) {
-		// OpenAI API keys start with 'sk-' and are 51 characters long.
-		return preg_match( '/^sk-[a-zA-Z0-9]{48}$/', $api_key );
+		// OpenAI API keys start with 'sk-'
+		// More flexible validation as OpenAI key format has changed over time
+		return preg_match( '/^sk-[a-zA-Z0-9\-_]{20,}$/', $api_key );
 	}
 
 	/**

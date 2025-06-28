@@ -137,60 +137,81 @@ class API_Handler {
 	 * @return WP_REST_Response|WP_Error Response object.
 	 */
 	public function generate_layout( $request ) {
-		$prompt           = $request->get_param( 'prompt' );
-		$settings         = $request->get_param( 'settings' );
-		$replace_selected = $request->get_param( 'replace_selected' );
+		try {
+			$prompt           = $request->get_param( 'prompt' );
+			$settings         = $request->get_param( 'settings' );
+			$replace_selected = $request->get_param( 'replace_selected' );
 
-		// Normalize options for backward compatibility.
-		$options = array();
-		if ( ! empty( $settings ) ) {
-			$options = array(
-				'style'       => $settings['style'] ?? 'modern',
-				'layout'      => $settings['layout'] ?? 'single-column',
-				'model'       => $settings['model'] ?? 'gpt-3.5-turbo',
-				'temperature' => $settings['temperature'] ?? 0.7,
-				'max_tokens'  => $settings['maxTokens'] ?? 2000,
+			// Normalize options for backward compatibility.
+			$options = array();
+			if ( ! empty( $settings ) ) {
+				$options = array(
+					'style'       => $settings['style'] ?? 'modern',
+					'layout'      => $settings['layout'] ?? 'single-column',
+					'model'       => $settings['model'] ?? 'gpt-3.5-turbo',
+					'temperature' => $settings['temperature'] ?? 0.7,
+					'max_tokens'  => $settings['maxTokens'] ?? 2000,
+				);
+			}
+
+			// Add replace mode context.
+			if ( $replace_selected ) {
+				$options['replace_mode'] = true;
+			}
+
+			// Check rate limits.
+			$security = new Security_Manager();
+			$user_id  = get_current_user_id();
+			
+			// Increased rate limit for development/testing
+			if ( ! $security->check_rate_limit( $user_id, 'generate', 100, HOUR_IN_SECONDS ) ) {
+				return new \WP_Error(
+					'rate_limit_exceeded',
+					__( 'Rate limit exceeded. Please try again later.', 'layoutberg' ),
+					array( 'status' => 429 )
+				);
+			}
+
+			// Generate layout.
+			$generator = new Block_Generator();
+			$result    = $generator->generate( $prompt, $options );
+
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+
+			// Format response for the editor.
+			// The result from Block_Generator already contains structured data
+			$response = array(
+				'success' => true,
+				'data'    => array(
+					'blocks'       => isset( $result['serialized'] ) ? $result['serialized'] : $result['blocks'],
+					'html'         => isset( $result['html'] ) ? $result['html'] : '',
+					'raw'          => isset( $result['raw'] ) ? $result['raw'] : '',
+					'prompt'       => $prompt,
+					'settings'     => $settings,
+					'timestamp'    => current_time( 'mysql' ),
+					'replace_mode' => $replace_selected,
+					'usage'        => isset( $result['usage'] ) ? $result['usage'] : null,
+					'model'        => isset( $result['model'] ) ? $result['model'] : null,
+					'metadata'     => isset( $result['metadata'] ) ? $result['metadata'] : null,
+				),
 			);
-		}
 
-		// Add replace mode context.
-		if ( $replace_selected ) {
-			$options['replace_mode'] = true;
-		}
-
-		// Check rate limits.
-		$security = new Security_Manager();
-		$user_id  = get_current_user_id();
-		
-		if ( ! $security->check_rate_limit( $user_id, 'generate', 10, HOUR_IN_SECONDS ) ) {
+			return rest_ensure_response( $response );
+		} catch ( \Exception $e ) {
+			// Log the error for debugging
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'LayoutBerg Generate Error: ' . $e->getMessage() );
+				error_log( 'Stack trace: ' . $e->getTraceAsString() );
+			}
+			
 			return new \WP_Error(
-				'rate_limit_exceeded',
-				__( 'Rate limit exceeded. Please try again later.', 'layoutberg' ),
-				array( 'status' => 429 )
+				'generation_error',
+				__( 'An error occurred while generating the layout: ', 'layoutberg' ) . $e->getMessage(),
+				array( 'status' => 500 )
 			);
 		}
-
-		// Generate layout.
-		$generator = new Block_Generator();
-		$result    = $generator->generate( $prompt, $options );
-
-		if ( is_wp_error( $result ) ) {
-			return $result;
-		}
-
-		// Format response for the editor.
-		$response = array(
-			'success' => true,
-			'data'    => array(
-				'blocks'       => $result,
-				'prompt'       => $prompt,
-				'settings'     => $settings,
-				'timestamp'    => current_time( 'mysql' ),
-				'replace_mode' => $replace_selected,
-			),
-		);
-
-		return rest_ensure_response( $response );
 	}
 
 	/**

@@ -74,7 +74,7 @@ class Admin {
 		wp_enqueue_script(
 			'layoutberg-admin',
 			LAYOUTBERG_PLUGIN_URL . 'admin/js/layoutberg-admin.js',
-			array( 'jquery', 'wp-i18n' ),
+			array( 'jquery', 'wp-i18n', 'wp-api-request' ),
 			$this->version,
 			true
 		);
@@ -301,13 +301,14 @@ class Admin {
 		$sanitized = array();
 
 		// Sanitize and encrypt API key.
+		$existing_options = get_option( 'layoutberg_options', array() );
+		
 		if ( isset( $input['api_key'] ) ) {
 			$api_key = sanitize_text_field( $input['api_key'] );
 			
-			// Check if the API key is masked (contains asterisks).
-			if ( strpos( $api_key, '*' ) !== false ) {
+			// Check if the API key is masked (contains asterisks) or empty when we have a stored key.
+			if ( ( strpos( $api_key, '*' ) !== false ) || ( empty( $api_key ) && isset( $input['has_api_key'] ) && $input['has_api_key'] == '1' ) ) {
 				// Keep the existing encrypted key.
-				$existing_options = get_option( 'layoutberg_options', array() );
 				if ( isset( $existing_options['api_key'] ) ) {
 					$sanitized['api_key'] = $existing_options['api_key'];
 				}
@@ -315,6 +316,14 @@ class Admin {
 				// New API key - encrypt it.
 				$security = new Security_Manager();
 				$sanitized['api_key'] = $security->encrypt_api_key( $api_key );
+			} elseif ( empty( $api_key ) && ! isset( $input['has_api_key'] ) ) {
+				// User cleared the API key field intentionally
+				$sanitized['api_key'] = '';
+			}
+		} else {
+			// If API key field is not in the input, preserve the existing one
+			if ( isset( $existing_options['api_key'] ) ) {
+				$sanitized['api_key'] = $existing_options['api_key'];
 			}
 		}
 
@@ -328,7 +337,9 @@ class Admin {
 
 		// Sanitize max tokens.
 		if ( isset( $input['max_tokens'] ) ) {
-			$sanitized['max_tokens'] = absint( $input['max_tokens'] );
+			$max_tokens = absint( $input['max_tokens'] );
+			// Ensure max tokens doesn't exceed 4096 for GPT-3.5-turbo
+			$sanitized['max_tokens'] = min( 4096, $max_tokens );
 		}
 
 		// Handle other settings that might be present in the form.

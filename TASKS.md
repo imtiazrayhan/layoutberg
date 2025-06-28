@@ -67,7 +67,7 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 -   [x] Implement prompt enhancement logic
 -   [x] Add context injection for better results
 -   [x] Create prompt validation
--   [ ] Test and refine prompts
+-   [x] Test and refine prompts
 
 ### 3. Block Generation System
 
@@ -83,16 +83,16 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 
 #### 3.2 Core Block Support
 
--   [ ] Support for Paragraph blocks
--   [ ] Support for Heading blocks
--   [ ] Support for Image blocks
--   [ ] Support for Column blocks
--   [ ] Support for Group blocks
--   [ ] Support for Cover blocks
--   [ ] Support for Spacer blocks
--   [ ] Support for Button blocks
--   [ ] Support for List blocks
--   [ ] Create block whitelist system
+-   [x] Support for Paragraph blocks
+-   [x] Support for Heading blocks
+-   [x] Support for Image blocks
+-   [x] Support for Column blocks
+-   [x] Support for Group blocks
+-   [x] Support for Cover blocks
+-   [x] Support for Spacer blocks
+-   [x] Support for Button blocks
+-   [x] Support for List blocks
+-   [x] Create block whitelist system
 
 ### 4. User Interface Development
 
@@ -101,10 +101,8 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 -   [x] Create Gutenberg toolbar button
 -   [x] Add keyboard shortcut (Ctrl+Shift+L)
 -   [x] Implement generation modal
--   [ ] Create preview interface
--   [ ] Add device preview toggles
--   [ ] Implement variation selector
--   [ ] Create apply/edit/regenerate controls
+-   [x] Direct insertion to editor (no preview)
+-   [x] Add replace selected blocks functionality
 
 #### 4.2 Admin Dashboard
 
@@ -144,15 +142,15 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 -   [x] Create CacheManager class
 -   [x] Implement memory caching
 -   [x] Add WordPress transient caching
--   [ ] Create cache key generation
--   [ ] Implement cache invalidation
--   [ ] Add cache statistics tracking
+-   [x] Create cache key generation
+-   [x] Implement cache invalidation
+-   [x] Add cache statistics tracking
 
 ### 7. Security Implementation
 
 #### 7.1 Input Validation & Sanitization
 
--   [ ] Create InputSanitizer class
+-   [x] Create InputSanitizer class
 -   [x] Implement prompt sanitization
 -   [x] Add nonce verification
 -   [x] Create capability checks
@@ -410,7 +408,7 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 
 ## Progress Tracking
 
-### Phase 1 Progress: 50/76 tasks (66%)
+### Phase 1 Progress: 65/73 tasks (89%)
 
 ### Phase 2 Progress: 0/52 tasks (0%)
 
@@ -418,7 +416,7 @@ This document tracks all development tasks for the LayoutBerg plugin. Tasks are 
 
 ### Phase 4 Progress: 0/41 tasks (0%)
 
-**Total Progress: 50/226 tasks (22%)**
+**Total Progress: 65/223 tasks (29%)**
 
 ---
 

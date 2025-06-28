@@ -125,6 +125,9 @@ if ( ! empty( $options['api_key'] ) ) {
 										placeholder="sk-..."
 										data-encrypted="<?php echo ! empty( $options['api_key'] ) ? 'true' : 'false'; ?>"
 									/>
+									<?php if ( ! empty( $options['api_key'] ) ) : ?>
+										<input type="hidden" name="layoutberg_options[has_api_key]" value="1" />
+									<?php endif; ?>
 								</div>
 								<p class="layoutberg-help-text">
 									<?php 
@@ -184,12 +187,12 @@ if ( ! empty( $options['api_key'] ) ) {
 										name="layoutberg_options[max_tokens]" 
 										value="<?php echo esc_attr( $options['max_tokens'] ?? 2000 ); ?>" 
 										min="100" 
-										max="8000" 
+										max="4096" 
 										step="100"
 										class="layoutberg-input"
 									/>
 									<p class="layoutberg-help-text">
-										<?php esc_html_e( 'Maximum tokens (100-8000). Higher values = more complex layouts but higher cost.', 'layoutberg' ); ?>
+										<?php esc_html_e( 'Maximum tokens (100-4096). Higher values = more complex layouts but higher cost. GPT-3.5-turbo supports up to 4096 tokens.', 'layoutberg' ); ?>
 									</p>
 								</div>
 
@@ -513,7 +516,7 @@ jQuery(document).ready(function($) {
 		// Check if API key field is empty or just contains masked value
 		if (!apiKey || (isEncrypted && apiKey.indexOf('*') !== -1)) {
 			// If it's a masked value, we'll test the stored key
-			apiKey = '';
+			apiKey = 'use_stored';
 		}
 
 		if (!apiKey && !isEncrypted) {
@@ -524,15 +527,24 @@ jQuery(document).ready(function($) {
 		$button.prop('disabled', true).find('.dashicons').addClass('layoutberg-spinner');
 		$status.removeClass('success error').text('<?php esc_html_e( 'Testing...', 'layoutberg' ); ?>');
 
-		// Simulate API test (replace with actual implementation)
-		setTimeout(function() {
-			if (apiKey && apiKey.startsWith('sk-')) {
-				$status.addClass('success').text('<?php esc_html_e( 'Valid API key!', 'layoutberg' ); ?>');
-			} else {
-				$status.addClass('error').text('<?php esc_html_e( 'Invalid API key format', 'layoutberg' ); ?>');
+		// Make actual API request to validate key
+		wp.apiRequest({
+			path: '/layoutberg/v1/validate-key',
+			method: 'POST',
+			data: {
+				api_key: apiKey
 			}
+		}).done(function(response) {
+			$status.addClass('success').text('<?php esc_html_e( 'Valid API key!', 'layoutberg' ); ?>');
+		}).fail(function(xhr) {
+			var message = '<?php esc_html_e( 'Invalid API key', 'layoutberg' ); ?>';
+			if (xhr.responseJSON && xhr.responseJSON.message) {
+				message = xhr.responseJSON.message;
+			}
+			$status.addClass('error').text(message);
+		}).always(function() {
 			$button.prop('disabled', false).find('.dashicons').removeClass('layoutberg-spinner');
-		}, 2000);
+		});
 	});
 
 	// Clear cache
@@ -558,6 +570,12 @@ jQuery(document).ready(function($) {
 	$('#layoutberg-settings-form').on('submit', function(e) {
 		var $form = $(this);
 		var $submitBtn = $form.find('button[type="submit"]');
+		var $apiKeyInput = $('#layoutberg_api_key');
+		
+		// If API key field is empty but we have a stored key, ensure we send the masked value
+		if (!$apiKeyInput.val() && $apiKeyInput.data('encrypted') === 'true') {
+			// Don't modify the field, the backend will handle it
+		}
 		
 		$submitBtn.prop('disabled', true);
 		$submitBtn.find('.dashicons').addClass('layoutberg-spinner');

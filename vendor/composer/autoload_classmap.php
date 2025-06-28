@@ -80,6 +80,8 @@ return array(
     'DotCamp\\LayoutBerg\\Cache_Manager' => $baseDir . '/includes/class-cache-manager.php',
     'DotCamp\\LayoutBerg\\Container' => $baseDir . '/includes/class-container.php',
     'DotCamp\\LayoutBerg\\Deactivator' => $baseDir . '/includes/class-deactivator.php',
+    'DotCamp\\LayoutBerg\\Debug_Page' => $baseDir . '/includes/class-debug-page.php',
+    'DotCamp\\LayoutBerg\\Input_Sanitizer' => $baseDir . '/includes/class-input-sanitizer.php',
     'DotCamp\\LayoutBerg\\LayoutBerg' => $baseDir . '/includes/class-layoutberg.php',
     'DotCamp\\LayoutBerg\\Loader' => $baseDir . '/includes/class-loader.php',
     'DotCamp\\LayoutBerg\\Prompt_Engineer' => $baseDir . '/includes/class-prompt-engineer.php',
