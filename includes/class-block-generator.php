@@ -655,17 +655,20 @@ class Block_Generator {
 			}
 		}
 
-		// For image blocks in AI generation, we'll skip URL validation
-		// since we're focusing on layout structure rather than actual images
+		// For image blocks in AI generation, allow placehold.co URLs
 		if ( isset( $block['attrs']['url'] ) ) {
-			// Remove the URL to avoid validation issues
-			unset( $block['attrs']['url'] );
-			// Add a placeholder text to indicate where image would go
-			if ( empty( $block['attrs']['alt'] ) ) {
-				$block['attrs']['alt'] = __( 'Placeholder for image content', 'layoutberg' );
+			$url = $block['attrs']['url'];
+			// Only allow placehold.co URLs
+			if ( strpos( $url, 'https://placehold.co/' ) !== 0 ) {
+				// Replace with a placehold.co URL
+				$block['attrs']['url'] = 'https://placehold.co/600x400/007cba/ffffff?text=Placeholder+Image';
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'LayoutBerg: Replaced non-placehold.co URL with placeholder' );
+				}
 			}
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'LayoutBerg: Removed image URL from image block for AI-generated layout' );
+			// Ensure alt text exists
+			if ( empty( $block['attrs']['alt'] ) ) {
+				$block['attrs']['alt'] = __( 'Placeholder image', 'layoutberg' );
 			}
 		}
 

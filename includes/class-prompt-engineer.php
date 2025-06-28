@@ -142,9 +142,11 @@ VISUAL DESIGN REQUIREMENTS:
 1. For hero sections and cover blocks, use background colors instead of images:
    - Use gradient backgrounds: {\"gradient\":\"linear-gradient(135deg,#667eea 0%,#764ba2 100%)\"}
    - Or solid colors: {\"backgroundColor\":\"primary\"} or {\"customBackgroundColor\":\"#123456\"}
-2. For image blocks, use colored placeholders with text overlays
+2. For image blocks, use placehold.co URLs for placeholder images:
+   - Example: {\"url\":\"https://placehold.co/600x400/007cba/ffffff?text=Hero+Image\"}
+   - Format: https://placehold.co/WIDTHxHEIGHT/BGCOLOR/TEXTCOLOR?text=DESCRIPTION
 3. Focus on color combinations and gradients for visual interest
-4. NEVER use external image URLs - use background colors and gradients instead
+4. Only use placehold.co for placeholder images, no other external URLs
 5. Use these color palettes:
    - Modern: gradients with purple, blue, teal combinations
    - Corporate: solid blues, grays, whites
@@ -348,7 +350,7 @@ PROPER 3-COLUMN FEATURES SECTION:
 		<div class=\"wp-block-column\" style=\"flex-basis:33.33%\">
 			<!-- wp:image {\"align\":\"center\",\"width\":64,\"height\":64,\"className\":\"feature-icon\"} -->
 			<figure class=\"wp-block-image aligncenter is-resized feature-icon\">
-				<img src=\"https://via.placeholder.com/64x64/007cba/ffffff?text=🚀\" alt=\"Speed and performance icon\" width=\"64\" height=\"64\"/>
+				<img src=\"https://placehold.co/64x64/007cba/ffffff?text=🚀\" alt=\"Speed and performance icon\" width=\"64\" height=\"64\"/>
 			</figure>
 			<!-- /wp:image -->
 			
@@ -366,7 +368,7 @@ PROPER 3-COLUMN FEATURES SECTION:
 		<div class=\"wp-block-column\" style=\"flex-basis:33.33%\">
 			<!-- wp:image {\"align\":\"center\",\"width\":64,\"height\":64,\"className\":\"feature-icon\"} -->
 			<figure class=\"wp-block-image aligncenter is-resized feature-icon\">
-				<img src=\"https://via.placeholder.com/64x64/007cba/ffffff?text=🔒\" alt=\"Security and privacy icon\" width=\"64\" height=\"64\"/>
+				<img src=\"https://placehold.co/64x64/007cba/ffffff?text=🔒\" alt=\"Security and privacy icon\" width=\"64\" height=\"64\"/>
 			</figure>
 			<!-- /wp:image -->
 			
@@ -384,7 +386,7 @@ PROPER 3-COLUMN FEATURES SECTION:
 		<div class=\"wp-block-column\" style=\"flex-basis:33.33%\">
 			<!-- wp:image {\"align\":\"center\",\"width\":64,\"height\":64,\"className\":\"feature-icon\"} -->
 			<figure class=\"wp-block-image aligncenter is-resized feature-icon\">
-				<img src=\"https://via.placeholder.com/64x64/007cba/ffffff?text=⚡\" alt=\"Easy integration icon\" width=\"64\" height=\"64\"/>
+				<img src=\"https://placehold.co/64x64/007cba/ffffff?text=⚡\" alt=\"Easy integration icon\" width=\"64\" height=\"64\"/>
 			</figure>
 			<!-- /wp:image -->
 			
