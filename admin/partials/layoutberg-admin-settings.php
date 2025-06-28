@@ -187,12 +187,12 @@ if ( ! empty( $options['api_key'] ) ) {
 										name="layoutberg_options[max_tokens]" 
 										value="<?php echo esc_attr( $options['max_tokens'] ?? 2000 ); ?>" 
 										min="100" 
-										max="4096" 
+										max="128000" 
 										step="100"
 										class="layoutberg-input"
 									/>
 									<p class="layoutberg-help-text">
-										<?php esc_html_e( 'Maximum tokens (100-4096). Higher values = more complex layouts but higher cost. GPT-3.5-turbo supports up to 4096 tokens.', 'layoutberg' ); ?>
+										<?php esc_html_e( 'Maximum tokens. Higher values = more complex layouts but higher cost. GPT-3.5: max 4096, GPT-4: max 8192, GPT-4 Turbo: max 128000.', 'layoutberg' ); ?>
 									</p>
 								</div>
 

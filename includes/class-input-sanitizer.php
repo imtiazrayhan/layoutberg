@@ -124,7 +124,7 @@ class Input_Sanitizer {
 		// Sanitize individual settings.
 		$settings['model'] = $this->sanitize_model( $settings['model'] );
 		$settings['temperature'] = $this->sanitize_temperature( $settings['temperature'] );
-		$settings['maxTokens'] = $this->sanitize_max_tokens( $settings['maxTokens'] );
+		$settings['maxTokens'] = $this->sanitize_max_tokens( $settings['maxTokens'], $settings['model'] );
 		$settings['style'] = $this->sanitize_style( $settings['style'] );
 		$settings['layout'] = $this->sanitize_layout( $settings['layout'] );
 
@@ -446,13 +446,21 @@ class Input_Sanitizer {
 	 *
 	 * @since 1.0.0
 	 * @param mixed $max_tokens Max tokens value.
+	 * @param string $model Model being used (optional).
 	 * @return int Sanitized max tokens.
 	 */
-	private function sanitize_max_tokens( $max_tokens ) {
+	private function sanitize_max_tokens( $max_tokens, $model = 'gpt-3.5-turbo' ) {
 		$max_tokens = intval( $max_tokens );
-		// GPT-3.5-turbo supports max 4096 tokens
-		// GPT-4 models support more, but we'll use 4096 as safe default
-		return max( 500, min( 4096, $max_tokens ) );
+		
+		// Set max based on model
+		$max_limit = 4096; // Default for GPT-3.5
+		if ( $model === 'gpt-4' ) {
+			$max_limit = 8192;
+		} elseif ( $model === 'gpt-4-turbo' ) {
+			$max_limit = 128000; // GPT-4 Turbo supports 128k
+		}
+		
+		return max( 500, min( $max_limit, $max_tokens ) );
 	}
 
 	/**

@@ -7,7 +7,7 @@
  * @since 1.0.0
  */
 
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Fragment, useState, useEffect } from '@wordpress/element';
 import { 
     Modal,
@@ -47,12 +47,37 @@ const LayoutBergModal = ({
     hasSelectedBlocks
 }) => {
     const [showAdvanced, setShowAdvanced] = useState(false);
+    
+    // Get max tokens based on selected model
+    const getMaxTokensForModel = (model) => {
+        switch (model) {
+            case 'gpt-4':
+                return 8192;
+            case 'gpt-4-turbo':
+                return 128000; // GPT-4 Turbo supports up to 128k tokens
+            case 'gpt-3.5-turbo':
+            default:
+                return 4096;
+        }
+    };
+    
+    const maxTokensLimit = getMaxTokensForModel(settings.model);
 
     const updateSetting = (key, value) => {
-        onSettingsChange({
+        let newSettings = {
             ...settings,
             [key]: value
-        });
+        };
+        
+        // If model changed, adjust maxTokens if needed
+        if (key === 'model') {
+            const newMaxLimit = getMaxTokensForModel(value);
+            if (settings.maxTokens > newMaxLimit) {
+                newSettings.maxTokens = newMaxLimit;
+            }
+        }
+        
+        onSettingsChange(newSettings);
     };
 
 
@@ -250,9 +275,9 @@ const LayoutBergModal = ({
                                         value={settings.maxTokens}
                                         onChange={(value) => updateSetting('maxTokens', value)}
                                         min={500}
-                                        max={4096}
+                                        max={maxTokensLimit}
                                         step={100}
-                                        help={__('Higher values allow more complex layouts but cost more', 'layoutberg')}
+                                        help={sprintf(__('Higher values allow more complex layouts but cost more (max %d for %s)', 'layoutberg'), maxTokensLimit, settings.model)}
                                     />
                                 </VStack>
                             </Fragment>
