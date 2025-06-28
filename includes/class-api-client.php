@@ -233,6 +233,14 @@ class API_Client {
 			return $response;
 		}
 
+		// Debug token usage
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && isset( $response['usage'] ) ) {
+			error_log( 'LayoutBerg Token Usage:' );
+			error_log( '- Prompt tokens: ' . ( $response['usage']['prompt_tokens'] ?? 'not set' ) );
+			error_log( '- Completion tokens: ' . ( $response['usage']['completion_tokens'] ?? 'not set' ) );
+			error_log( '- Total tokens: ' . ( $response['usage']['total_tokens'] ?? 'not set' ) );
+		}
+
 		// Track usage.
 		$this->track_usage( $response, $prompt );
 
@@ -354,6 +362,11 @@ class API_Client {
 			// Extract generated content.
 			if ( ! isset( $data['choices'][0]['message']['content'] ) ) {
 				return new \WP_Error( 'invalid_response', __( 'Invalid API response format.', 'layoutberg' ) );
+			}
+
+			// Debug full usage data
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && isset( $data['usage'] ) ) {
+				error_log( 'LayoutBerg Raw API Usage: ' . json_encode( $data['usage'] ) );
 			}
 
 			// Success!

@@ -278,27 +278,30 @@ $templates_count = $wpdb->get_var(
 					<div class="layoutberg-list">
 						<?php foreach ( $recent_generations as $generation ) : ?>
 							<div class="layoutberg-list-item" style="padding: 1rem 0; border-bottom: 1px solid var(--lberg-gray-200);">
-								<div class="layoutberg-flex layoutberg-items-center layoutberg-justify-between">
-									<div>
-										<p style="margin: 0; font-weight: 500;">
-											<?php echo esc_html( substr( $generation->prompt, 0, 50 ) . '...' ); ?>
-										</p>
-										<p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--lberg-gray-600);">
-											<?php
-											/* translators: %s: Time ago */
-											printf( esc_html__( '%s ago', 'layoutberg' ), human_time_diff( strtotime( $generation->created_at ) ) );
-											?>
-										</p>
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-generation-details&id=' . $generation->id ) ); ?>" 
+								   style="text-decoration: none; color: inherit; display: block;">
+									<div class="layoutberg-flex layoutberg-items-center layoutberg-justify-between">
+										<div>
+											<p style="margin: 0; font-weight: 500;">
+												<?php echo esc_html( substr( $generation->prompt, 0, 50 ) . '...' ); ?>
+											</p>
+											<p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--lberg-gray-600);">
+												<?php
+												/* translators: %s: Time ago */
+												printf( esc_html__( '%s ago', 'layoutberg' ), human_time_diff( strtotime( $generation->created_at ) ) );
+												?>
+											</p>
+										</div>
+										<div class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
+											<span class="layoutberg-badge layoutberg-badge-<?php echo esc_attr( $generation->status === 'completed' ? 'success' : 'danger' ); ?>">
+												<?php echo esc_html( ucfirst( $generation->status ) ); ?>
+											</span>
+											<span style="font-size: 0.75rem; color: var(--lberg-gray-500);">
+												<?php echo esc_html( number_format( $generation->tokens_used ) ); ?> tokens
+											</span>
+										</div>
 									</div>
-									<div class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
-										<span class="layoutberg-badge layoutberg-badge-<?php echo esc_attr( $generation->status === 'completed' ? 'success' : 'danger' ); ?>">
-											<?php echo esc_html( ucfirst( $generation->status ) ); ?>
-										</span>
-										<span style="font-size: 0.75rem; color: var(--lberg-gray-500);">
-											<?php echo esc_html( number_format( $generation->tokens_used ) ); ?> tokens
-										</span>
-									</div>
-								</div>
+								</a>
 							</div>
 						<?php endforeach; ?>
 					</div>

@@ -263,6 +263,16 @@ class Admin {
 			'layoutberg-reset-data',
 			array( $this, 'display_reset_data_page' )
 		);
+		
+		// Add hidden generation details page
+		add_submenu_page(
+			null, // Hidden from menu
+			__( 'Generation Details', 'layoutberg' ),
+			__( 'Generation Details', 'layoutberg' ),
+			'manage_options',
+			'layoutberg-generation-details',
+			array( $this, 'display_generation_details_page' )
+		);
 	}
 
 	/**
@@ -326,6 +336,15 @@ class Admin {
 	 */
 	public function display_reset_data_page() {
 		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-reset-data.php';
+	}
+
+	/**
+	 * Display the generation details page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function display_generation_details_page() {
+		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-generation-details.php';
 	}
 
 	/**
