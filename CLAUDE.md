@@ -5,14 +5,15 @@ This document contains specific instructions and guidelines for Claude (AI assis
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [Development Environment](#development-environment)
-3. [Coding Standards](#coding-standards)
-4. [Security Guidelines](#security-guidelines)
-5. [Testing Requirements](#testing-requirements)
-6. [Git Workflow](#git-workflow)
-7. [Performance Guidelines](#performance-guidelines)
-8. [WordPress Best Practices](#wordpress-best-practices)
-9. [Gutenberg Development](#gutenberg-development)
-10. [API Integration Guidelines](#api-integration-guidelines)
+3. [Task Management](#task-management)
+4. [Coding Standards](#coding-standards)
+5. [Security Guidelines](#security-guidelines)
+6. [Testing Requirements](#testing-requirements)
+7. [Git Workflow](#git-workflow)
+8. [Performance Guidelines](#performance-guidelines)
+9. [WordPress Best Practices](#wordpress-best-practices)
+10. [Gutenberg Development](#gutenberg-development)
+11. [API Integration Guidelines](#api-integration-guidelines)
 
 ---
 
@@ -39,6 +40,43 @@ Always prioritize:
 2. Performance and caching
 3. Security (especially API key handling)
 4. User experience in the editor
+
+---
+
+## Task Management
+
+### CRITICAL: Always Update TASKS.md
+
+When working on any tasks:
+
+1. **Before starting work:**
+   - Check TASKS.md to see current task status
+   - Identify which tasks you'll be working on
+
+2. **After completing tasks:**
+   - IMMEDIATELY update TASKS.md to mark tasks as completed with [x]
+   - Update the progress counts at the bottom of the file
+   - Calculate new percentages accurately
+
+3. **Commit task updates:**
+   - Create a separate commit for TASKS.md updates
+   - Use commit message format: "docs: Update TASKS.md progress - [brief description]"
+   - This helps track when tasks were completed
+
+4. **Example workflow:**
+   ```bash
+   # After completing prompt engineering tasks
+   git add TASKS.md
+   git commit -m "docs: Update TASKS.md progress - completed prompt engineering tasks"
+   ```
+
+### Task Tracking Rules
+
+- Mark tasks with [x] only when FULLY completed
+- If a task is partially done, leave it as [ ] and add a note
+- Update both individual task counts AND total progress
+- Use 🚧 for tasks currently in progress
+- Use ❌ for blocked tasks with a note explaining why
 
 ---
 
@@ -535,6 +573,8 @@ register_rest_route( 'layoutberg/v1', '/generate', array(
 3. **Test thoroughly** before marking tasks complete
 4. **Document** any deviations from these guidelines
 5. **Ask for clarification** when requirements are unclear
+6. **UPDATE TASKS.md** whenever you complete tasks - mark completed items with [x] and update progress counts
+7. **Create a commit** specifically for TASKS.md updates to track progress
 
 ## Quick Reference Commands
 
