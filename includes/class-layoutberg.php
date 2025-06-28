@@ -359,7 +359,7 @@ class LayoutBerg {
 	}
 
 	/**
-	 * Get available AI models based on license.
+	 * Get available AI models.
 	 *
 	 * @since 1.0.0
 	 * @return array Available models.
@@ -367,12 +367,9 @@ class LayoutBerg {
 	private function get_available_models() {
 		$models = array(
 			'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo', 'layoutberg' ),
+			'gpt-4' => __( 'GPT-4', 'layoutberg' ),
+			'gpt-4-turbo' => __( 'GPT-4 Turbo', 'layoutberg' ),
 		);
-
-		if ( $this->is_pro() ) {
-			$models['gpt-4'] = __( 'GPT-4', 'layoutberg' );
-			$models['gpt-4-turbo'] = __( 'GPT-4 Turbo', 'layoutberg' );
-		}
 
 		return $models;
 	}

@@ -156,14 +156,14 @@ if ( ! empty( $options['api_key'] ) ) {
 										<?php esc_html_e( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ); ?>
 									</option>
 									<option value="gpt-4" <?php selected( $options['model'] ?? '', 'gpt-4' ); ?>>
-										<?php esc_html_e( 'GPT-4 (Most Capable) - Pro', 'layoutberg' ); ?>
+										<?php esc_html_e( 'GPT-4 (Most Capable)', 'layoutberg' ); ?>
 									</option>
 									<option value="gpt-4-turbo" <?php selected( $options['model'] ?? '', 'gpt-4-turbo' ); ?>>
-										<?php esc_html_e( 'GPT-4 Turbo (Fast & Capable) - Pro', 'layoutberg' ); ?>
+										<?php esc_html_e( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ); ?>
 									</option>
 								</select>
 								<p class="layoutberg-help-text">
-									<?php esc_html_e( 'Select the AI model to use for layout generation. GPT-4 models require a Pro license.', 'layoutberg' ); ?>
+									<?php esc_html_e( 'Select the AI model to use for layout generation.', 'layoutberg' ); ?>
 								</p>
 							</div>
 						</div>

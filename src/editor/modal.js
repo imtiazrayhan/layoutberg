@@ -223,11 +223,11 @@ const LayoutBergModal = ({
                                         value={settings.model}
                                         options={[
                                             { label: __('GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg'), value: 'gpt-3.5-turbo' },
-                                            { label: __('GPT-4 (Most Capable) - Pro', 'layoutberg'), value: 'gpt-4' },
-                                            { label: __('GPT-4 Turbo (Fast & Capable) - Pro', 'layoutberg'), value: 'gpt-4-turbo' }
+                                            { label: __('GPT-4 (Most Capable)', 'layoutberg'), value: 'gpt-4' },
+                                            { label: __('GPT-4 Turbo (Fast & Capable)', 'layoutberg'), value: 'gpt-4-turbo' }
                                         ]}
                                         onChange={(value) => updateSetting('model', value)}
-                                        help={__('GPT-4 models require a Pro license', 'layoutberg')}
+                                        help={__('Choose the AI model for generation', 'layoutberg')}
                                     />
 
                                     <RangeControl
@@ -252,7 +252,7 @@ const LayoutBergModal = ({
                                         min={500}
                                         max={4096}
                                         step={100}
-                                        help={__('Higher values allow more complex layouts but cost more (max 4096 for GPT-3.5)', 'layoutberg')}
+                                        help={__('Higher values allow more complex layouts but cost more', 'layoutberg')}
                                     />
                                 </VStack>
                             </Fragment>
