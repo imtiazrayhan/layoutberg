@@ -625,6 +625,51 @@ $categories = array(
 	border-radius: 4px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
+.template-preview-info {
+	margin-bottom: 20px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid #eee;
+}
+
+.template-preview-info h3 {
+	margin: 0 0 10px;
+	font-size: 20px;
+}
+
+.template-preview-info .template-meta {
+	display: flex;
+	gap: 20px;
+	font-size: 14px;
+	color: #666;
+}
+
+.template-preview-info .template-meta span {
+	display: block;
+}
+
+.template-code-preview {
+	margin-top: 20px;
+}
+
+.template-code-preview h4 {
+	margin: 0 0 10px;
+	font-size: 16px;
+}
+
+.template-code-preview pre {
+	background: #f5f5f5;
+	padding: 15px;
+	border-radius: 4px;
+	overflow-x: auto;
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+.template-code-preview code {
+	font-size: 12px;
+	line-height: 1.5;
+}
 </style>
 
 <script>
@@ -661,7 +706,27 @@ jQuery(document).ready(function($) {
 			},
 			success: function(response) {
 				if (response.success && response.data) {
-					$('.template-preview-content').html(response.data.content);
+					// Show template info and block structure
+					var previewHtml = '<div class="template-preview-info">';
+					previewHtml += '<h3>' + response.data.name + '</h3>';
+					if (response.data.description) {
+						previewHtml += '<p class="template-description">' + response.data.description + '</p>';
+					}
+					previewHtml += '<div class="template-meta">';
+					previewHtml += '<span><strong>Category:</strong> ' + response.data.category + '</span>';
+					if (response.data.tags && response.data.tags.length) {
+						previewHtml += '<span><strong>Tags:</strong> ' + response.data.tags.join(', ') + '</span>';
+					}
+					previewHtml += '</div>';
+					previewHtml += '</div>';
+					
+					// Show block code in a code block
+					previewHtml += '<div class="template-code-preview">';
+					previewHtml += '<h4><?php esc_html_e( "Block Structure", "layoutberg" ); ?></h4>';
+					previewHtml += '<pre><code>' + response.data.content.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
+					previewHtml += '</div>';
+					
+					$('.template-preview-content').html(previewHtml);
 					$('.layoutberg-use-template-modal').data('template-id', templateId);
 				}
 			}

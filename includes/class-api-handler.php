@@ -81,6 +81,25 @@ class API_Handler {
 			)
 		);
 
+		// Get single template endpoint.
+		register_rest_route(
+			$this->namespace,
+			'/templates/(?P<id>\d+)',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_template' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'validate_callback' => function( $param ) {
+							return is_numeric( $param );
+						},
+					),
+				),
+			)
+		);
+
 		// Delete template endpoint.
 		register_rest_route(
 			$this->namespace,
@@ -227,6 +246,26 @@ class API_Handler {
 		);
 
 		return rest_ensure_response( $templates );
+	}
+
+	/**
+	 * Get single template endpoint callback.
+	 *
+	 * @since 1.0.0
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error Response object.
+	 */
+	public function get_template( $request ) {
+		$template_id = $request->get_param( 'id' );
+
+		$template_manager = new Template_Manager();
+		$template = $template_manager->get_template( $template_id );
+
+		if ( is_wp_error( $template ) ) {
+			return $template;
+		}
+
+		return rest_ensure_response( $template );
 	}
 
 	/**

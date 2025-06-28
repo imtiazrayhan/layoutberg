@@ -228,6 +228,75 @@ const LayoutBergEditor = () => {
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, []);
 
+    /**
+     * Load template if specified in URL
+     */
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const templateId = urlParams.get('layoutberg_template');
+        
+        if (templateId) {
+            // Load and insert the template
+            apiFetch({
+                path: `/layoutberg/v1/templates/${templateId}`,
+                method: 'GET'
+            }).then(response => {
+                if (response && response.content) {
+                    const parsedBlocks = parse(response.content);
+                    if (parsedBlocks.length > 0) {
+                        insertBlocks(parsedBlocks);
+                        createNotice(
+                            'success',
+                            sprintf(
+                                __('Template "%s" loaded successfully!', 'layoutberg'),
+                                response.name
+                            ),
+                            { type: 'snackbar', isDismissible: true }
+                        );
+                    }
+                }
+            }).catch(error => {
+                // Fallback to AJAX
+                jQuery.ajax({
+                    url: ajaxurl,
+                    type: 'GET',
+                    data: {
+                        action: 'layoutberg_get_template',
+                        template_id: templateId,
+                        _wpnonce: layoutbergEditor.nonce
+                    },
+                    success: function(response) {
+                        if (response.success && response.data && response.data.content) {
+                            const parsedBlocks = parse(response.data.content);
+                            if (parsedBlocks.length > 0) {
+                                insertBlocks(parsedBlocks);
+                                createNotice(
+                                    'success',
+                                    sprintf(
+                                        __('Template "%s" loaded successfully!', 'layoutberg'),
+                                        response.data.name
+                                    ),
+                                    { type: 'snackbar', isDismissible: true }
+                                );
+                            }
+                        } else {
+                            createNotice(
+                                'error',
+                                __('Failed to load template.', 'layoutberg'),
+                                { type: 'snackbar', isDismissible: true }
+                            );
+                        }
+                    }
+                });
+            });
+            
+            // Remove the parameter from URL to prevent reloading on refresh
+            urlParams.delete('layoutberg_template');
+            const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, '', newUrl);
+        }
+    }, []);
+
     return (
         <Fragment>
             {/* Sidebar */}
