@@ -50,6 +50,45 @@ class Prompt_Engineer {
 	}
 
 	/**
+	 * Estimate token count for a string.
+	 *
+	 * @since 1.0.0
+	 * @param string $text Text to count tokens for.
+	 * @return int Estimated token count.
+	 */
+	public function estimate_token_count( $text ) {
+		// Rough estimate: ~4 characters = 1 token
+		// This is a simplified estimation. Real tokenization is more complex.
+		return intval( strlen( $text ) / 4 );
+	}
+
+	/**
+	 * Get model token limits.
+	 *
+	 * @since 1.0.0
+	 * @param string $model Model name.
+	 * @return array Token limits.
+	 */
+	public function get_model_limits( $model ) {
+		$limits = array(
+			'gpt-3.5-turbo' => array(
+				'total' => 4096,
+				'max_completion' => 4096,
+			),
+			'gpt-4' => array(
+				'total' => 8192,
+				'max_completion' => 4096,
+			),
+			'gpt-4-turbo' => array(
+				'total' => 128000,
+				'max_completion' => 4096,
+			),
+		);
+		
+		return isset( $limits[ $model ] ) ? $limits[ $model ] : $limits['gpt-3.5-turbo'];
+	}
+
+	/**
 	 * Build enhanced system prompt for layout generation.
 	 *
 	 * @since 1.0.0
@@ -62,7 +101,18 @@ class Prompt_Engineer {
 			error_log( 'LayoutBerg Prompt Engineer - Options received: ' . print_r( $options, true ) );
 		}
 		
-		$prompt = $this->get_base_system_prompt();
+		// Check if we should use compact mode based on user prompt length
+		$use_compact = false;
+		if ( isset( $options['user_prompt_length'] ) && $options['user_prompt_length'] > 1000 ) {
+			$use_compact = true;
+		}
+		
+		// Get model limits
+		$model = isset( $options['model'] ) ? $options['model'] : 'gpt-3.5-turbo';
+		$model_limits = $this->get_model_limits( $model );
+		
+		// Start with base prompt (compact or full)
+		$prompt = $use_compact ? $this->get_base_system_prompt_compact() : $this->get_base_system_prompt();
 		
 		// Add specific layout type instructions.
 		if ( isset( $options['layout_type'] ) && isset( $this->layout_templates[ $options['layout_type'] ] ) ) {
@@ -209,6 +259,29 @@ COMMON MISTAKES TO AVOID:
 6. Don't use invalid attribute names or values
 7. Don't create malformed JSON in block attributes";
 	}
+	
+	/**
+	 * Get base system prompt - COMPACT VERSION.
+	 *
+	 * @since 1.0.0
+	 * @return string Base system prompt.
+	 */
+	private function get_base_system_prompt_compact() {
+		return "Generate valid Gutenberg block markup. CRITICAL RULES:
+
+1. OUTPUT: Start with <!-- wp: and end with -->. NO explanations or wrapper text.
+2. SYNTAX: Use {\"attribute\":\"value\"} format. Close all blocks with <!-- /wp:block-name -->
+3. IMAGES: Use placehold.co URLs (e.g., https://placehold.co/600x400/007cba/ffffff?text=Hero)
+4. COLORS: Use gradients {\"gradient\":\"linear-gradient(...)\"} or {\"customBackgroundColor\":\"#hex\"}
+5. MANDATORY: Follow ALL style/color/density instructions below - they override defaults.
+
+KEY REQUIREMENTS:
+- Proper heading hierarchy (h1→h2→h3)
+- Alt text for images
+- Mobile-responsive columns
+- Semantic block structure
+- Spacer blocks for spacing";
+	}
 
 	/**
 	 * Get style-specific instructions.
@@ -219,45 +292,33 @@ COMMON MISTAKES TO AVOID:
 	 */
 	private function get_style_instructions( $style ) {
 		$style_guides = array(
-			'modern' => "MANDATORY MODERN DESIGN REQUIREMENTS - YOU MUST APPLY ALL OF THESE:
-- MUST use generous whitespace with spacer blocks (minimum 48px between sections)
-- MUST implement card-based layouts with group blocks and box shadows
-- MUST add gradient backgrounds to cover blocks (use gradients like linear-gradient(135deg,#667eea 0%,#764ba2 100%))
-- MUST use large, bold typography for headings (fontSize: x-large or larger)
-- MUST include rounded corners via additional CSS classes (is-style-rounded)
-- MUST implement asymmetric column layouts (avoid equal-width columns)
-- MUST apply contemporary vibrant gradient color palettes
-- MUST use bold color contrasts between sections",
+			'modern' => "MODERN STYLE (MANDATORY):
+• Spacers: 48px+ between sections
+• Gradients: linear-gradient(135deg,#667eea 0%,#764ba2 100%)
+• Typography: Large/bold headings (fontSize:\"x-large\")
+• Layout: Asymmetric columns, card-based sections
+• Colors: Vibrant gradients, bold contrasts",
 			
-			'classic' => "MANDATORY CLASSIC DESIGN REQUIREMENTS - YOU MUST APPLY ALL OF THESE:
-- MUST use structured, symmetrical grid-based layouts
-- MUST implement professional color schemes (navy blue #001F3F, gray #666666, white)
-- MUST create balanced, symmetrical layouts (equal column widths)
-- MUST use traditional typography (serif fonts for headings via className)
-- MUST use formal, professional placeholder text
-- MUST implement clear visual hierarchy with consistent spacing
-- MUST apply subtle shadows and 1px borders
-- MUST use traditional spacing (32px between elements)",
+			'classic' => "CLASSIC STYLE (MANDATORY):
+• Layout: Symmetrical grids, equal columns
+• Colors: Navy #001F3F, gray #666666, white
+• Typography: Traditional serif headings
+• Spacing: Consistent 32px
+• Design: Subtle shadows, 1px borders",
 			
-			'minimal' => "MANDATORY MINIMALIST DESIGN REQUIREMENTS - YOU MUST APPLY ALL OF THESE:
-- MUST use maximum whitespace between sections (80px+ spacers)
-- MUST stick to monochromatic color schemes (only black, white, and grays)
-- MUST implement simple, clean typography (no decorative fonts)
-- MUST avoid ALL decorative elements
-- MUST use NO separators or only thin 1px lines
-- MUST focus on content with minimal visual elements
-- MUST use solid colors only (NO gradients)
-- MUST use plenty of negative space (double normal spacing)",
+			'minimal' => "MINIMAL STYLE (MANDATORY):
+• Spacers: 80px+ (maximum whitespace)
+• Colors: ONLY black/white/grays (NO gradients)
+• Typography: Simple, clean fonts
+• Design: NO decorative elements
+• Layout: Focus on content, negative space",
 			
-			'bold' => "MANDATORY BOLD DESIGN REQUIREMENTS - YOU MUST APPLY ALL OF THESE:
-- MUST use asymmetric and dynamic layouts (varied column widths)
-- MUST implement bold, vibrant color combinations (bright reds #FF006E, oranges #FB5607)
-- MUST add dramatic contrast between elements
-- MUST include extra-large, impactful typography (xxl font sizes)
-- MUST use strong visual elements and patterns
-- MUST implement eye-catching gradient backgrounds (vibrant multi-color gradients)
-- MUST apply dynamic spacing (mix of tight and loose spacing)
-- MUST use high-contrast color combinations",
+			'bold' => "BOLD STYLE (MANDATORY):
+• Layout: Asymmetric, varied columns
+• Colors: Bright #FF006E, #FB5607, vibrant gradients
+• Typography: Extra-large (fontSize:"xx-large")
+• Spacing: Dynamic (mix tight/loose)
+• Design: High contrast, strong patterns",
 			
 			'elegant' => "Apply elegant/sophisticated design principles:
 - Use refined typography with serif fonts for headings
@@ -357,23 +418,15 @@ COMMON MISTAKES TO AVOID:
 	 */
 	private function get_color_scheme_instructions( $color_scheme ) {
 		$color_guides = array(
-			'monochrome' => "CRITICAL COLOR REQUIREMENT - MONOCHROME SCHEME:
-YOU MUST USE ONLY BLACK, WHITE, AND GRAY COLORS:
-- Background colors: ONLY use #000000, #FFFFFF, or gray shades
-- Text colors: ONLY use black (#000000) on white or white (#FFFFFF) on black
-- For cover blocks: {\"customBackgroundColor\":\"#000000\"} or {\"customBackgroundColor\":\"#333333\"}
-- For gradients: {\"gradient\":\"linear-gradient(135deg,#e0e0e0 0%,#666666 100%)\"}
-- NO OTHER COLORS ALLOWED - ONLY GRAYSCALE
-- Image placeholders: https://placehold.co/600x400/cccccc/333333",
+			'monochrome' => "MONOCHROME (USE ONLY):
+• Colors: #000000, #FFFFFF, grays ONLY
+• Gradients: linear-gradient(135deg,#e0e0e0 0%,#666666 100%)
+• Images: https://placehold.co/600x400/cccccc/333333",
 			
-			'blue' => "CRITICAL COLOR REQUIREMENT - BLUE SCHEME:
-YOU MUST USE BLUE AS THE DOMINANT COLOR:
-- Background colors: {\"customBackgroundColor\":\"#001F3F\"} or {\"customBackgroundColor\":\"#0074D9\"}
-- Gradients: {\"gradient\":\"linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)\"}
-- Text on blue backgrounds MUST be white
-- Accent colors: ONLY light blue #7FDBFF or white
-- Image placeholders: https://placehold.co/600x400/0074D9/FFFFFF
-- ALL sections must incorporate blue - no neutral sections",
+			'blue' => "BLUE SCHEME (USE ONLY):
+• Colors: #001F3F, #0074D9, #7FDBFF
+• Gradients: linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)
+• Images: https://placehold.co/600x400/0074D9/FFFFFF",
 			
 			'green' => "Apply green-dominated color scheme:
 - Use natural, calming green tones
@@ -430,29 +483,11 @@ YOU MUST USE BLUE AS THE DOMINANT COLOR:
 	 */
 	private function get_density_instructions( $density ) {
 		$density_guides = array(
-			'compact' => "MANDATORY COMPACT DENSITY - YOU MUST APPLY:
-- MUST use ONLY 20px spacer blocks between ALL elements
-- {\"height\":\"20px\"} for ALL spacer blocks - NO EXCEPTIONS
-- MUST use small font sizes (fontSize: small or normal)
-- MUST pack content tightly together
-- MUST minimize all margins and padding
-- NO spacers larger than 20px allowed",
+			'compact' => "COMPACT: Use {\"height\":\"20px\"} spacers ONLY. Small fonts.",
 			
-			'normal' => "MANDATORY NORMAL DENSITY - YOU MUST APPLY:
-- MUST use EXACTLY 40px spacer blocks between sections
-- {\"height\":\"40px\"} for ALL spacer blocks
-- MUST use standard font sizes (fontSize: medium)
-- MUST maintain consistent spacing throughout
-- MUST balance content with breathing room
-- ALL spacers must be exactly 40px",
+			'normal' => "NORMAL: Use {\"height\":\"40px\"} spacers EXACTLY. Medium fonts.",
 			
-			'spacious' => "MANDATORY SPACIOUS DENSITY - YOU MUST APPLY:
-- MUST use MINIMUM 80px spacer blocks between ALL sections
-- {\"height\":\"80px\"} or {\"height\":\"100px\"} for spacer blocks
-- MUST use large font sizes (fontSize: large or x-large)
-- MUST create airy, luxury feeling with excessive whitespace
-- MUST add extra spacing around all elements
-- NO spacers smaller than 80px allowed",
+			'spacious' => "SPACIOUS: Use {\"height\":\"80px\"} spacers MINIMUM. Large fonts.",
 		);
 		
 		return isset( $density_guides[ $density ] ) ? $density_guides[ $density ] : $density_guides['normal'];
@@ -741,148 +776,16 @@ YOU MUST USE BLUE AS THE DOMINANT COLOR:
 	 * @return string Example blocks.
 	 */
 	private function get_example_blocks() {
-		return "VALID BLOCK MARKUP EXAMPLES:
+		return "BLOCK SYNTAX EXAMPLES:
 
-PROPER HERO SECTION:
-<!-- wp:cover {\"url\":\"https://example.com/hero-bg.jpg\",\"dimRatio\":50,\"overlayColor\":\"primary\",\"align\":\"full\",\"className\":\"hero-section\"} -->
-<div class=\"wp-block-cover alignfull hero-section\">
-	<span aria-hidden=\"true\" class=\"wp-block-cover__background has-primary-background-color has-background-dim\"></span>
-	<img class=\"wp-block-cover__image-background\" alt=\"\" src=\"https://example.com/hero-bg.jpg\" data-object-fit=\"cover\"/>
-	<div class=\"wp-block-cover__inner-container\">
-		<!-- wp:heading {\"level\":1,\"textAlign\":\"center\",\"className\":\"hero-title\"} -->
-		<h1 class=\"has-text-align-center hero-title\">Transform Your Business Today</h1>
-		<!-- /wp:heading -->
-		
-		<!-- wp:paragraph {\"align\":\"center\",\"fontSize\":\"large\"} -->
-		<p class=\"has-text-align-center has-large-font-size\">Discover how our innovative solutions can help you achieve your goals faster than ever before.</p>
-		<!-- /wp:paragraph -->
-		
-		<!-- wp:spacer {\"height\":\"20px\"} -->
-		<div style=\"height:20px\" aria-hidden=\"true\" class=\"wp-block-spacer\"></div>
-		<!-- /wp:spacer -->
-		
-		<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-		<div class=\"wp-block-buttons\">
-			<!-- wp:button {\"backgroundColor\":\"vivid-cyan-blue\",\"textColor\":\"white\"} -->
-			<div class=\"wp-block-button\"><a class=\"wp-block-button__link has-vivid-cyan-blue-background-color has-white-color has-text-color has-background\">Get Started Free</a></div>
-			<!-- /wp:button -->
-			
-			<!-- wp:button {\"style\":{\"border\":{\"width\":\"2px\",\"color\":\"#ffffff\"}},\"textColor\":\"white\",\"className\":\"is-style-outline\"} -->
-			<div class=\"wp-block-button is-style-outline\"><a class=\"wp-block-button__link has-white-color has-text-color has-border-color\" style=\"border-color:#ffffff;border-width:2px\">Learn More</a></div>
-			<!-- /wp:button -->
-		</div>
-		<!-- /wp:buttons -->
-	</div>
-</div>
-<!-- /wp:cover -->
-
-PROPER 3-COLUMN FEATURES SECTION:
-<!-- wp:group {\"align\":\"wide\",\"className\":\"features-section\"} -->
-<div class=\"wp-block-group alignwide features-section\">
-	<!-- wp:heading {\"level\":2,\"textAlign\":\"center\"} -->
-	<h2 class=\"has-text-align-center\">Why Choose Our Platform</h2>
-	<!-- /wp:heading -->
-	
-	<!-- wp:paragraph {\"align\":\"center\"} -->
-	<p class=\"has-text-align-center\">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.</p>
-	<!-- /wp:paragraph -->
-	
-	<!-- wp:spacer {\"height\":\"40px\"} -->
-	<div style=\"height:40px\" aria-hidden=\"true\" class=\"wp-block-spacer\"></div>
-	<!-- /wp:spacer -->
-	
-	<!-- wp:columns {\"className\":\"features-grid\"} -->
-	<div class=\"wp-block-columns features-grid\">
-		<!-- wp:column {\"width\":\"33.33%\"} -->
-		<div class=\"wp-block-column\" style=\"flex-basis:33.33%\">
-			<!-- wp:image {\"align\":\"center\",\"width\":64,\"height\":64,\"className\":\"feature-icon\"} -->
-			<figure class=\"wp-block-image aligncenter is-resized feature-icon\">
-				<img src=\"https://placehold.co/64x64/007cba/ffffff?text=🚀\" alt=\"Speed and performance icon\" width=\"64\" height=\"64\"/>
-			</figure>
-			<!-- /wp:image -->
-			
-			<!-- wp:heading {\"level\":3,\"textAlign\":\"center\"} -->
-			<h3 class=\"has-text-align-center\">Lightning Fast</h3>
-			<!-- /wp:heading -->
-			
-			<!-- wp:paragraph {\"align\":\"center\"} -->
-			<p class=\"has-text-align-center\">Experience blazing-fast performance with our optimized infrastructure and cutting-edge technology.</p>
-			<!-- /wp:paragraph -->
-		</div>
-		<!-- /wp:column -->
-		
-		<!-- wp:column {\"width\":\"33.33%\"} -->
-		<div class=\"wp-block-column\" style=\"flex-basis:33.33%\">
-			<!-- wp:image {\"align\":\"center\",\"width\":64,\"height\":64,\"className\":\"feature-icon\"} -->
-			<figure class=\"wp-block-image aligncenter is-resized feature-icon\">
-				<img src=\"https://placehold.co/64x64/007cba/ffffff?text=🔒\" alt=\"Security and privacy icon\" width=\"64\" height=\"64\"/>
-			</figure>
-			<!-- /wp:image -->
-			
-			<!-- wp:heading {\"level\":3,\"textAlign\":\"center\"} -->
-			<h3 class=\"has-text-align-center\">Secure & Private</h3>
-			<!-- /wp:heading -->
-			
-			<!-- wp:paragraph {\"align\":\"center\"} -->
-			<p class=\"has-text-align-center\">Your data is protected with enterprise-grade security and privacy controls you can trust.</p>
-			<!-- /wp:paragraph -->
-		</div>
-		<!-- /wp:column -->
-		
-		<!-- wp:column {\"width\":\"33.33%\"} -->
-		<div class=\"wp-block-column\" style=\"flex-basis:33.33%\">
-			<!-- wp:image {\"align\":\"center\",\"width\":64,\"height\":64,\"className\":\"feature-icon\"} -->
-			<figure class=\"wp-block-image aligncenter is-resized feature-icon\">
-				<img src=\"https://placehold.co/64x64/007cba/ffffff?text=⚡\" alt=\"Easy integration icon\" width=\"64\" height=\"64\"/>
-			</figure>
-			<!-- /wp:image -->
-			
-			<!-- wp:heading {\"level\":3,\"textAlign\":\"center\"} -->
-			<h3 class=\"has-text-align-center\">Easy Integration</h3>
-			<!-- /wp:heading -->
-			
-			<!-- wp:paragraph {\"align\":\"center\"} -->
-			<p class=\"has-text-align-center\">Seamlessly integrate with your existing tools and workflows in just a few clicks.</p>
-			<!-- /wp:paragraph -->
-		</div>
-		<!-- /wp:column -->
-	</div>
-	<!-- /wp:columns -->
-</div>
-<!-- /wp:group -->
-
-PROPER CALL-TO-ACTION SECTION:
-<!-- wp:group {\"align\":\"full\",\"backgroundColor\":\"primary\",\"textColor\":\"white\",\"className\":\"cta-section\"} -->
-<div class=\"wp-block-group alignfull cta-section has-white-color has-primary-background-color has-text-color has-background\">
-	<!-- wp:spacer {\"height\":\"60px\"} -->
-	<div style=\"height:60px\" aria-hidden=\"true\" class=\"wp-block-spacer\"></div>
-	<!-- /wp:spacer -->
-	
-	<!-- wp:heading {\"level\":2,\"textAlign\":\"center\",\"textColor\":\"white\"} -->
-	<h2 class=\"has-text-align-center has-white-color has-text-color\">Ready to Get Started?</h2>
-	<!-- /wp:heading -->
-	
-	<!-- wp:paragraph {\"align\":\"center\",\"fontSize\":\"medium\"} -->
-	<p class=\"has-text-align-center has-medium-font-size\">Join thousands of satisfied customers who have transformed their business with our platform.</p>
-	<!-- /wp:paragraph -->
-	
-	<!-- wp:spacer {\"height\":\"30px\"} -->
-	<div style=\"height:30px\" aria-hidden=\"true\" class=\"wp-block-spacer\"></div>
-	<!-- /wp:spacer -->
-	
-	<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-	<div class=\"wp-block-buttons\">
-		<!-- wp:button {\"backgroundColor\":\"white\",\"textColor\":\"primary\",\"fontSize\":\"medium\"} -->
-		<div class=\"wp-block-button has-custom-font-size has-medium-font-size\"><a class=\"wp-block-button__link has-primary-color has-white-background-color has-text-color has-background\">Start Your Free Trial</a></div>
-		<!-- /wp:button -->
-	</div>
-	<!-- /wp:buttons -->
-	
-	<!-- wp:spacer {\"height\":\"60px\"} -->
-	<div style=\"height:60px\" aria-hidden=\"true\" class=\"wp-block-spacer\"></div>
-	<!-- /wp:spacer -->
-</div>
-<!-- /wp:group -->";
+1. Cover block with gradient: {\"gradient\":\"linear-gradient(135deg,#667eea 0%,#764ba2 100%)\"}
+2. Custom background color: {\"customBackgroundColor\":\"#001F3F\"}
+3. Spacer heights: {\"height\":\"40px\"}
+4. Column widths: {\"width\":\"33.33%\"}
+5. Font sizes: {\"fontSize\":\"large\"} or {\"fontSize\":\"x-large\"}
+6. Text alignment: {\"textAlign\":\"center\"}
+7. Button styles: {\"backgroundColor\":\"primary\",\"textColor\":\"white\"}
+8. Image URLs: https://placehold.co/600x400/007cba/ffffff?text=Hero+Image";
 	}
 
 	/**

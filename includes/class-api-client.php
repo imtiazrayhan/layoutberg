@@ -192,6 +192,9 @@ class API_Client {
 			error_log( 'Layout: ' . ( isset( $options['layout'] ) ? $options['layout'] : 'not set' ) );
 		}
 
+		// Add user prompt length to options for token management
+		$options['user_prompt_length'] = strlen( $prompt );
+		
 		// Build system prompt using prompt engineer.
 		$system_prompt = $this->prompt_engineer->build_system_prompt( $options );
 
@@ -208,6 +211,36 @@ class API_Client {
 			return $validation;
 		}
 		$user_prompt = $this->prompt_engineer->enhance_user_prompt( $prompt, $options );
+		
+		// Estimate token usage
+		$system_tokens = $this->prompt_engineer->estimate_token_count( $system_prompt );
+		$user_tokens = $this->prompt_engineer->estimate_token_count( $user_prompt );
+		$total_prompt_tokens = $system_tokens + $user_tokens;
+		
+		// Log token estimates
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'Estimated tokens - System: ' . $system_tokens . ', User: ' . $user_tokens . ', Total: ' . $total_prompt_tokens );
+		}
+		
+		// Check against model limits
+		$model_limits = $this->prompt_engineer->get_model_limits( $this->model );
+		if ( $total_prompt_tokens + $this->max_tokens > $model_limits['total'] ) {
+			// Adjust max_tokens if needed
+			$available_tokens = $model_limits['total'] - $total_prompt_tokens - 500; // Keep 500 token buffer
+			if ( $available_tokens < 500 ) {
+				return new \WP_Error( 
+					'prompt_too_long', 
+					sprintf( 
+						__( 'Your request is too long for the selected model. Try a shorter description or switch to GPT-4 Turbo for longer requests.', 'layoutberg' )
+					)
+				);
+			}
+			$this->max_tokens = min( $available_tokens, $model_limits['max_completion'] );
+			
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Adjusted max_tokens to: ' . $this->max_tokens );
+			}
+		}
 
 		// Prepare request body.
 		$request_body = array(
@@ -347,6 +380,15 @@ class API_Client {
 			if ( isset( $data['error'] ) ) {
 				$error_message = $this->get_error_message_from_response( $data );
 				$error_type = isset( $data['error']['type'] ) ? $data['error']['type'] : 'unknown';
+				$error_code = isset( $data['error']['code'] ) ? $data['error']['code'] : 'unknown';
+				
+				// Handle specific error types
+				if ( $error_code === 'context_length_exceeded' ) {
+					return new \WP_Error( 
+						'context_length_exceeded', 
+						__( 'Your request is too long. Please try a shorter description or switch to GPT-4 Turbo which supports longer requests.', 'layoutberg' )
+					);
+				}
 				
 				// Retry on certain error types
 				if ( in_array( $error_type, array( 'server_error', 'engine_error' ), true ) && $attempt < $this->max_retries ) {
