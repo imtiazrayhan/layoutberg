@@ -46,7 +46,9 @@ const LayoutBergModal = ({
     settings, 
     onSettingsChange,
     hasSelectedBlocks,
-    lastResponse
+    lastResponse,
+    generationState = 'idle',
+    onCancel
 }) => {
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [showPrompts, setShowPrompts] = useState(false);
@@ -89,6 +91,97 @@ const LayoutBergModal = ({
         }
     ];
 
+    // Progress steps configuration
+    const progressSteps = [
+        { id: 'preparing', label: __('Preparing your request', 'layoutberg'), icon: '📝' },
+        { id: 'sending', label: __('Connecting to AI model', 'layoutberg'), icon: '🚀' },
+        { id: 'generating', label: __('Generating layout blocks', 'layoutberg'), icon: '✨' },
+        { id: 'processing', label: __('Processing and validating', 'layoutberg'), icon: '🔍' },
+        { id: 'complete', label: __('Finalizing your layout', 'layoutberg'), icon: '✅' }
+    ];
+
+    // Get current step based on generation state
+    const getCurrentStep = () => {
+        switch (generationState) {
+            case 'preparing': return 0;
+            case 'sending': return 1;
+            case 'generating': return 2;
+            case 'processing': return 3;
+            case 'complete': return 4;
+            default: return -1;
+        }
+    };
+
+    // Estimated time based on model
+    const getEstimatedTime = () => {
+        if (settings.model?.includes('gpt-4')) {
+            return __('20-40 seconds', 'layoutberg');
+        } else if (settings.model?.includes('claude')) {
+            return __('15-30 seconds', 'layoutberg');
+        }
+        return __('10-25 seconds', 'layoutberg');
+    };
+
+    // Progress View Component
+    const ProgressView = () => {
+        const currentStep = getCurrentStep();
+        
+        return (
+            <div className="layoutberg-progress-view">
+                <div className="layoutberg-progress-header">
+                    <h3>{__('Creating your layout...', 'layoutberg')}</h3>
+                    <p className="layoutberg-prompt-preview">{prompt}</p>
+                </div>
+                
+                <div className="layoutberg-progress-animation">
+                    <div className="layoutberg-progress-circle">
+                        <Spinner />
+                    </div>
+                    <div>
+                        <div className="layoutberg-progress-model">
+                            {sprintf(__('Using %s', 'layoutberg'), settings.model || 'AI Model')}
+                        </div>
+                        <div className="layoutberg-estimated-time">
+                            {sprintf(__('Estimated: %s', 'layoutberg'), getEstimatedTime())}
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="layoutberg-progress-steps">
+                    {progressSteps.map((step, index) => (
+                        <div 
+                            key={step.id}
+                            className={`layoutberg-progress-step ${
+                                index < currentStep ? 'completed' : 
+                                index === currentStep ? 'active' : 
+                                'pending'
+                            }`}
+                        >
+                            <span className="step-icon">
+                                {index < currentStep ? '✓' : 
+                                 index === currentStep ? '⟳' : 
+                                 '○'}
+                            </span>
+                            <span className="step-label">{step.label}</span>
+                        </div>
+                    ))}
+                </div>
+                
+                <div className="layoutberg-progress-footer">
+                    {onCancel && generationState !== 'complete' && (
+                        <Button 
+                            variant="secondary" 
+                            onClick={onCancel}
+                            className="layoutberg-cancel-button"
+                        >
+                            {__('Cancel', 'layoutberg')}
+                        </Button>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -112,31 +205,34 @@ const LayoutBergModal = ({
             className="layoutberg-generation-modal"
             size="large"
         >
-            <VStack spacing={4}>
-                {/* Error Notice */}
-                {error && (
-                    <Notice 
-                        status="error" 
-                        isDismissible={false}
-                        className="layoutberg-modal-error"
-                    >
-                        {error}
-                    </Notice>
-                )}
+            {isGenerating && generationState !== 'idle' ? (
+                <ProgressView />
+            ) : (
+                <VStack spacing={4}>
+                    {/* Error Notice */}
+                    {error && (
+                        <Notice 
+                            status="error" 
+                            isDismissible={false}
+                            className="layoutberg-modal-error"
+                        >
+                            {error}
+                        </Notice>
+                    )}
 
-                {/* Selected Blocks Info */}
-                {hasSelectedBlocks && (
-                    <Notice 
-                        status="info" 
-                        isDismissible={false}
-                        className="layoutberg-modal-info"
-                    >
-                        {__('The generated layout will replace your selected blocks.', 'layoutberg')}
-                    </Notice>
-                )}
+                    {/* Selected Blocks Info */}
+                    {hasSelectedBlocks && (
+                        <Notice 
+                            status="info" 
+                            isDismissible={false}
+                            className="layoutberg-modal-info"
+                        >
+                            {__('The generated layout will replace your selected blocks.', 'layoutberg')}
+                        </Notice>
+                    )}
 
-                {/* Quick Prompts */}
-                <Card>
+                    {/* Quick Prompts */}
+                    <Card>
                     <CardHeader>
                         <strong>{__('Quick Start Templates', 'layoutberg')}</strong>
                     </CardHeader>
@@ -347,7 +443,7 @@ const LayoutBergModal = ({
                     </Button>
                 </HStack>
             </VStack>
-
+            )}
         </Modal>
     );
 };

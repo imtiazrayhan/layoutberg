@@ -53,6 +53,7 @@ const LayoutBergEditor = () => {
     const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generationError, setGenerationError] = useState(null);
+    const [generationState, setGenerationState] = useState('idle');
     const [prompt, setPrompt] = useState('');
     const [lastGeneratedBlocks, setLastGeneratedBlocks] = useState('');
     const [lastResponse, setLastResponse] = useState(null);
@@ -93,6 +94,7 @@ const LayoutBergEditor = () => {
         setIsModalOpen(false);
         setPrompt('');
         setGenerationError(null);
+        setGenerationState('idle');
     };
 
     /**
@@ -106,8 +108,19 @@ const LayoutBergEditor = () => {
 
         setIsGenerating(true);
         setGenerationError(null);
+        setGenerationState('preparing');
 
         try {
+            // Small delay for preparing state to be visible
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            setGenerationState('sending');
+            
+            // Small delay for sending state
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            setGenerationState('generating');
+            
             const response = await apiFetch({
                 path: '/layoutberg/v1/generate',
                 method: 'POST',
@@ -117,6 +130,8 @@ const LayoutBergEditor = () => {
                     replace_selected: hasSelectedBlocks
                 }
             });
+
+            setGenerationState('processing');
 
             if (response.success && response.data && response.data.blocks) {
                 // Store the generated blocks for potential template saving
@@ -161,16 +176,24 @@ const LayoutBergEditor = () => {
                         );
                     }
                     
+                    setGenerationState('complete');
+                    
+                    // Small delay to show completion
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
                     closeModal();
                 } else {
                     setGenerationError(__('No valid blocks found in the generated layout.', 'layoutberg'));
+                    setGenerationState('idle');
                 }
             } else {
                 setGenerationError(response.data?.message || __('Failed to generate layout. Please try again.', 'layoutberg'));
+                setGenerationState('idle');
             }
         } catch (error) {
             console.error('LayoutBerg generation error:', error);
             setGenerationError(error.message || __('An error occurred while generating the layout.', 'layoutberg'));
+            setGenerationState('idle');
         } finally {
             setIsGenerating(false);
         }
@@ -212,6 +235,15 @@ const LayoutBergEditor = () => {
         
         // Open the save template modal
         setIsSaveTemplateModalOpen(true);
+    };
+
+    /**
+     * Handle generation cancel
+     */
+    const handleCancelGeneration = () => {
+        setIsGenerating(false);
+        setGenerationState('idle');
+        setGenerationError(__('Generation cancelled by user.', 'layoutberg'));
     };
 
 
@@ -387,6 +419,8 @@ const LayoutBergEditor = () => {
                     onSettingsChange={setSettings}
                     hasSelectedBlocks={hasSelectedBlocks}
                     lastResponse={lastResponse}
+                    generationState={generationState}
+                    onCancel={handleCancelGeneration}
                 />
             )}
 
