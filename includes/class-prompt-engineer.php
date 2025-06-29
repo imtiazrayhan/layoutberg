@@ -463,6 +463,99 @@ IMPORTANT VARIATION RULES:
 	private function get_context_instructions( $options ) {
 		$instructions = "CONTEXT-SPECIFIC RULES:";
 		
+		// Add site type context
+		if ( ! empty( $options['site_type'] ) ) {
+			$site_contexts = array(
+				'business' => array(
+					'tone' => 'professional and trustworthy',
+					'content' => 'Focus on services, value propositions, and credibility',
+					'sections' => 'Include testimonials, services overview, and trust indicators'
+				),
+				'blog' => array(
+					'tone' => 'engaging and informative',
+					'content' => 'Emphasize content discovery, categories, and recent posts',
+					'sections' => 'Include featured posts, categories, newsletter signup'
+				),
+				'portfolio' => array(
+					'tone' => 'creative and visually striking',
+					'content' => 'Showcase work samples, creative process, and achievements',
+					'sections' => 'Include portfolio grid, case studies, and creative process'
+				),
+				'ecommerce' => array(
+					'tone' => 'persuasive and customer-focused',
+					'content' => 'Highlight products, benefits, and shopping experience',
+					'sections' => 'Include product showcases, benefits, and trust badges'
+				),
+				'nonprofit' => array(
+					'tone' => 'inspiring and mission-driven',
+					'content' => 'Focus on mission, impact, and call to action',
+					'sections' => 'Include mission statement, impact stories, and donation CTA'
+				),
+				'other' => array(
+					'tone' => 'versatile and adaptable',
+					'content' => 'Balanced approach suitable for various purposes',
+					'sections' => 'Include flexible sections based on the specific prompt'
+				)
+			);
+			
+			$site_type = $options['site_type'];
+			if ( isset( $site_contexts[ $site_type ] ) ) {
+				$context = $site_contexts[ $site_type ];
+				$instructions .= "\n- Site Type: " . ucfirst( $site_type ) . " website";
+				$instructions .= "\n- Tone: Use " . $context['tone'] . " language";
+				$instructions .= "\n- Content Focus: " . $context['content'];
+				$instructions .= "\n- Recommended Sections: " . $context['sections'];
+			}
+		}
+		
+		// Add color preference
+		if ( ! empty( $options['colors'] ) ) {
+			$color_preferences = array(
+				'vibrant' => 'Use bright, bold colors with high saturation. Include vivid gradients and energetic color combinations.',
+				'neutral' => 'Use muted, sophisticated colors. Focus on grays, beiges, and subtle accent colors.',
+				'dark' => 'Use dark backgrounds with light text. Create a moody, sophisticated atmosphere.',
+				'light' => 'Use light, airy colors with plenty of white space. Keep it bright and clean.',
+				'brand' => 'Use limited color palette focusing on 1-2 primary brand colors with neutral supporting colors.'
+			);
+			
+			if ( isset( $color_preferences[ $options['colors'] ] ) ) {
+				$instructions .= "\n- Color Preference: " . $color_preferences[ $options['colors'] ];
+			}
+		} else {
+			// Add default color scheme if not specified
+			$color_scheme = $this->color_schemes[ array_rand( $this->color_schemes ) ];
+			$instructions .= "\n- Color Scheme: " . $color_scheme;
+		}
+		
+		// Add layout density preference
+		if ( ! empty( $options['density'] ) ) {
+			$density_preferences = array(
+				'spacious' => array(
+					'padding' => 'Use large padding (80-120px) between sections',
+					'spacing' => 'Add generous whitespace around all elements',
+					'layout' => 'Keep content blocks well-separated with breathing room'
+				),
+				'balanced' => array(
+					'padding' => 'Use moderate padding (60-80px) between sections',
+					'spacing' => 'Maintain standard spacing for readability',
+					'layout' => 'Balance content density with appropriate whitespace'
+				),
+				'compact' => array(
+					'padding' => 'Use smaller padding (40-60px) between sections',
+					'spacing' => 'Optimize space to show more content above the fold',
+					'layout' => 'Pack more information while maintaining readability'
+				)
+			);
+			
+			if ( isset( $density_preferences[ $options['density'] ] ) ) {
+				$density = $density_preferences[ $options['density'] ];
+				$instructions .= "\n- Layout Density: " . ucfirst( $options['density'] );
+				$instructions .= "\n  - " . $density['padding'];
+				$instructions .= "\n  - " . $density['spacing'];
+				$instructions .= "\n  - " . $density['layout'];
+			}
+		}
+		
 		// Add randomized content suggestions
 		$hero_variations = array(
 			'Use a compelling headline that grabs attention',
@@ -480,12 +573,6 @@ IMPORTANT VARIATION RULES:
 		
 		$instructions .= "\n- Features: Display " . $feature_counts[ array_rand( $feature_counts ) ] . 
 		                 " features using " . $feature_layouts[ array_rand( $feature_layouts ) ];
-		
-		// Add color scheme if not specified
-		if ( ! isset( $options['colors'] ) ) {
-			$color_scheme = $this->color_schemes[ array_rand( $this->color_schemes ) ];
-			$instructions .= "\n- Color Scheme: " . $color_scheme;
-		}
 		
 		return $instructions;
 	}
@@ -568,6 +655,42 @@ IMPORTANT VARIATION RULES:
 - Minimal buttons
 - Clean separators
 - Focus on content hierarchy'
+			),
+			'bold' => array(
+				'name' => 'Bold & Creative',
+				'description' => 'Strong visual impact with confident design choices',
+				'approaches' => array(
+					'Use large, impactful typography',
+					'Implement strong color contrasts',
+					'Create dynamic visual hierarchy',
+					'Make bold design statements'
+				),
+				'colors' => 'High contrast colors, strong primary colors, dramatic combinations',
+				'typography' => 'Large, bold headings, strong font weights, impactful statements',
+				'spacing' => 'Dramatic spacing variations for emphasis',
+				'imagery' => 'High-impact images, strong visual elements',
+				'block_preferences' => '- Large heading blocks with bold fonts
+- High contrast color sections
+- Dramatic cover blocks
+- Strong CTAs with bold buttons'
+			),
+			'playful' => array(
+				'name' => 'Playful & Fun',
+				'description' => 'Friendly, approachable design with personality',
+				'approaches' => array(
+					'Use rounded corners and soft shapes',
+					'Implement cheerful color palettes',
+					'Add playful elements and animations',
+					'Create friendly, welcoming layouts'
+				),
+				'colors' => 'Bright, cheerful colors, pastels, friendly combinations',
+				'typography' => 'Rounded fonts, friendly typefaces, casual tone',
+				'spacing' => 'Comfortable spacing with breathing room',
+				'imagery' => 'Friendly illustrations, casual photography, fun graphics',
+				'block_preferences' => '- Rounded button styles
+- Colorful backgrounds
+- Friendly icons and illustrations
+- Casual, conversational content'
 			)
 		);
 	}

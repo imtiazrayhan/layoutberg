@@ -179,6 +179,27 @@ class API_Handler {
 				);
 			}
 
+			// Get stored user preferences from onboarding
+			$stored_options = get_option( 'layoutberg_options', array() );
+			
+			// Add site context if available
+			if ( ! empty( $stored_options['site_context']['type'] ) ) {
+				$options['site_type'] = $stored_options['site_context']['type'];
+			}
+			
+			// Add style preferences if available
+			if ( ! empty( $stored_options['style_defaults'] ) ) {
+				if ( ! empty( $stored_options['style_defaults']['style'] ) ) {
+					$options['style'] = $stored_options['style_defaults']['style'];
+				}
+				if ( ! empty( $stored_options['style_defaults']['colors'] ) ) {
+					$options['colors'] = $stored_options['style_defaults']['colors'];
+				}
+				if ( ! empty( $stored_options['style_defaults']['density'] ) ) {
+					$options['density'] = $stored_options['style_defaults']['density'];
+				}
+			}
+
 			// Add replace mode context.
 			if ( $replace_selected ) {
 				$options['replace_mode'] = true;
