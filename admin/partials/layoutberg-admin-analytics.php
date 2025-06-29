@@ -114,7 +114,7 @@ $top_prompts = $wpdb->get_results(
 		WHERE user_id = %d AND created_at >= %s AND created_at <= %s AND status = 'completed'
 		GROUP BY prompt_preview
 		ORDER BY count DESC
-		LIMIT 10",
+		LIMIT 5",
 		$user_id,
 		$start_date . ' 00:00:00',
 		$end_date . ' 23:59:59'

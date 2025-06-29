@@ -1,0 +1,167 @@
+/**
+ * Template Preview Styles
+ */
+
+.layoutberg-template-preview-wrapper {
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.layoutberg-template-preview-loading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 400px;
+	color: #666;
+}
+
+.layoutberg-template-preview-loading .components-spinner {
+	margin-bottom: 10px;
+}
+
+.layoutberg-template-preview-error,
+.layoutberg-template-preview-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 400px;
+	color: #666;
+	text-align: center;
+}
+
+.layoutberg-template-preview-error {
+	color: #d94f4f;
+}
+
+.layoutberg-template-preview-container {
+	width: 100%;
+	height: 100%;
+	min-height: 400px;
+	background: #f0f0f0;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.layoutberg-template-preview-frame {
+	width: 100%;
+	height: 100%;
+	background: #fff;
+	position: relative;
+}
+
+/* Tab panel styles */
+.layoutberg-template-preview-tabs {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.layoutberg-template-preview-tabs .components-tab-panel__tabs {
+	margin-bottom: 0;
+	border-bottom: 1px solid #ddd;
+	background: #f5f5f5;
+	padding: 0;
+}
+
+.layoutberg-template-preview-tabs .components-button.components-tab-panel__tabs-item {
+	padding: 12px 20px;
+	margin: 0;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	color: #666;
+	font-weight: 500;
+	border-bottom: 3px solid transparent;
+	transition: all 0.2s ease;
+}
+
+.layoutberg-template-preview-tabs .components-button.components-tab-panel__tabs-item:hover {
+	background: #e5e5e5;
+	color: #333;
+}
+
+.layoutberg-template-preview-tabs .components-button.components-tab-panel__tabs-item.is-active {
+	color: #0073aa;
+	background: #fff;
+	border-bottom-color: #0073aa;
+}
+
+.layoutberg-template-preview-tabs .components-tab-panel__tab-content {
+	flex: 1;
+	overflow: auto;
+	padding: 0;
+}
+
+/* Code container styles */
+.layoutberg-template-code-container {
+	padding: 20px;
+	background: #f5f5f5;
+	height: 100%;
+	overflow: auto;
+}
+
+.layoutberg-template-code-container pre {
+	margin: 0;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 20px;
+	overflow: auto;
+	font-family: 'Monaco', 'Consolas', 'Andale Mono', 'DejaVu Sans Mono', monospace;
+	font-size: 13px;
+	line-height: 1.6;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+.layoutberg-template-code-container code {
+	display: block;
+	color: #333;
+	background: none;
+	padding: 0;
+}
+
+/* Block preview specific overrides */
+.layoutberg-template-preview-frame .block-editor-block-preview__container {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.layoutberg-template-preview-frame .block-editor-block-preview__content {
+	max-width: none !important;
+}
+
+/* Ensure the preview scales properly */
+.layoutberg-template-preview-frame .block-editor-block-preview__content-iframe {
+	pointer-events: none; /* Prevent interaction with the preview */
+}
+
+/* Modal specific adjustments */
+.layoutberg-modal .layoutberg-template-preview-wrapper {
+	height: 500px;
+	max-height: 70vh;
+}
+
+.layoutberg-modal .layoutberg-template-preview-container {
+	height: 100%;
+}
+
+.layoutberg-modal .layoutberg-template-preview-tabs {
+	height: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 782px) {
+	.layoutberg-template-preview-tabs .components-button.components-tab-panel__tabs-item {
+		padding: 10px 15px;
+		font-size: 14px;
+	}
+	
+	.layoutberg-modal .layoutberg-template-preview-wrapper {
+		height: 400px;
+		max-height: 60vh;
+	}
+}

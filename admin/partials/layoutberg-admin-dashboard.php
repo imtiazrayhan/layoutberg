@@ -364,7 +364,7 @@ $health_score = count( $health_checks ) / count( $system_status ) * 100;
 					</div>
 					<h4><?php esc_html_e( '1. Configure API Key', 'layoutberg' ); ?></h4>
 					<p style="color: var(--lberg-gray-600); font-size: 0.875rem;">
-						<?php esc_html_e( 'Add your OpenAI API key in the settings to enable AI-powered layout generation.', 'layoutberg' ); ?>
+						<?php esc_html_e( 'Add your OpenAI or Claude API key in the settings to enable AI-powered layout generation.', 'layoutberg' ); ?>
 					</p>
 				</div>
 				
@@ -372,9 +372,9 @@ $health_score = count( $health_checks ) / count( $system_status ) * 100;
 					<div class="layoutberg-stat-icon success layoutberg-mb-2" style="margin: 0 auto 1rem; width: 64px; height: 64px;">
 						<span class="dashicons dashicons-edit-page" style="font-size: 2rem;"></span>
 					</div>
-					<h4><?php esc_html_e( '2. Create New Page', 'layoutberg' ); ?></h4>
+					<h4><?php esc_html_e( '2. Open the Editor', 'layoutberg' ); ?></h4>
 					<p style="color: var(--lberg-gray-600); font-size: 0.875rem;">
-						<?php esc_html_e( 'Create a new page or post and add the LayoutBerg AI Layout block.', 'layoutberg' ); ?>
+						<?php esc_html_e( 'Create a new page or post and look for LayoutBerg in the toolbar or sidebar.', 'layoutberg' ); ?>
 					</p>
 				</div>
 				
@@ -384,7 +384,7 @@ $health_score = count( $health_checks ) / count( $system_status ) * 100;
 					</div>
 					<h4><?php esc_html_e( '3. Generate Layout', 'layoutberg' ); ?></h4>
 					<p style="color: var(--lberg-gray-600); font-size: 0.875rem;">
-						<?php esc_html_e( 'Describe your desired layout in natural language and let AI create it for you.', 'layoutberg' ); ?>
+						<?php esc_html_e( 'Click the Generate button, describe your layout, and let AI create it instantly.', 'layoutberg' ); ?>
 					</p>
 				</div>
 			</div>

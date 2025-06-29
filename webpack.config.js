@@ -6,6 +6,7 @@ module.exports = {
 	entry: {
 		// Admin scripts
 		'admin/index': path.resolve( process.cwd(), 'src/admin/index.js' ),
+		'admin/template-preview': path.resolve( process.cwd(), 'src/admin/template-preview.js' ),
 		// Editor scripts (main entry for Gutenberg)
 		'editor': path.resolve( process.cwd(), 'src/editor/index.js' ),
 		// Blocks

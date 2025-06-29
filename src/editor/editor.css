@@ -24,6 +24,164 @@
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
 }
 
+/* Prominent Toolbar Button in Block Controls */
+.layoutberg-toolbar-button--primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    height: auto !important;
+    min-height: 36px !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+    border: none !important;
+    margin: 2px !important;
+}
+
+.layoutberg-toolbar-button--primary:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3) !important;
+    color: white !important;
+}
+
+.layoutberg-toolbar-button--primary svg {
+    margin-right: 4px !important;
+}
+
+/* Top Toolbar Button Styles */
+.layoutberg-toolbar-container {
+    display: inline-flex !important;
+    align-items: center;
+    margin-right: 12px;
+    margin-left: 8px;
+}
+
+/* Ensure container is visible in toolbar */
+.editor-document-tools__left .layoutberg-toolbar-container,
+.editor-header__settings .layoutberg-toolbar-container {
+    display: inline-flex !important;
+    vertical-align: middle;
+}
+
+.layoutberg-top-toolbar-button {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 0 12px !important;
+    height: 36px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+}
+
+/* Ensure text is visible */
+.layoutberg-top-toolbar-button span {
+    display: inline-block !important;
+    line-height: 1 !important;
+}
+
+.layoutberg-top-toolbar-button .layoutberg-button-text,
+.layoutberg-top-toolbar-button span:last-child {
+    display: inline-block !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: white !important;
+    margin-left: 4px !important;
+}
+
+/* Override WordPress hiding text in toolbar buttons */
+.edit-post-header-toolbar .layoutberg-top-toolbar-button span:not(.dashicons),
+.editor-header__toolbar .layoutberg-top-toolbar-button span:not(.dashicons),
+.editor-document-tools__left .layoutberg-top-toolbar-button span:not(.dashicons),
+.editor-header__settings .layoutberg-top-toolbar-button span:not(.dashicons) {
+    width: auto !important;
+    height: auto !important;
+    font-size: 13px !important;
+    line-height: 1 !important;
+    text-indent: 0 !important;
+    display: inline-block !important;
+    position: static !important;
+    margin: 0 0 0 4px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    clip-path: none !important;
+}
+
+/* Ensure button has proper min-width */
+.layoutberg-top-toolbar-button {
+    min-width: auto !important;
+}
+
+/* Override any screen-reader-text class if applied */
+.layoutberg-top-toolbar-button .screen-reader-text {
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    clip: auto !important;
+    clip-path: none !important;
+}
+
+.layoutberg-top-toolbar-button:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3) !important;
+}
+
+.layoutberg-top-toolbar-button:focus {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5) !important;
+    outline: none !important;
+}
+
+.layoutberg-top-toolbar-button:active {
+    transform: translateY(0) !important;
+}
+
+.layoutberg-top-toolbar-button .dashicons {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    margin-right: 4px !important;
+}
+
+/* Make sure the button stands out in the toolbar */
+.edit-post-header-toolbar .layoutberg-toolbar-container,
+.editor-header__toolbar .layoutberg-toolbar-container {
+    order: -1; /* Place it at the beginning */
+}
+
+/* Animation for new users */
+@keyframes layoutberg-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    }
+}
+
+.layoutberg-top-toolbar-button:not(:hover) {
+    animation: layoutberg-pulse 2s infinite;
+}
+
+/* Make toolbar button more visible in toolbar groups */
+.block-editor-block-toolbar .layoutberg-toolbar-button--primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
 /* Sidebar Styles */
 .layoutberg-sidebar-card {
     margin-bottom: 16px;

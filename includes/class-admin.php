@@ -86,6 +86,41 @@ class Admin {
 			true
 		);
 
+		// Enqueue template preview script on templates page
+		$screen = get_current_screen();
+		if ( $screen && 'layoutberg_page_layoutberg-templates' === $screen->id ) {
+			// Check if build file exists for template preview
+			$preview_asset_file = LAYOUTBERG_PLUGIN_DIR . 'build/admin/template-preview.asset.php';
+			$preview_asset = file_exists( $preview_asset_file ) 
+				? include $preview_asset_file 
+				: array( 'dependencies' => array(), 'version' => $this->version );
+
+			// Ensure wp-blocks is in the dependencies
+			$dependencies = $preview_asset['dependencies'];
+			if (!in_array('wp-blocks', $dependencies)) {
+				$dependencies[] = 'wp-blocks';
+			}
+			if (!in_array('wp-block-library', $dependencies)) {
+				$dependencies[] = 'wp-block-library';
+			}
+			
+			wp_enqueue_script(
+				'layoutberg-template-preview',
+				LAYOUTBERG_PLUGIN_URL . 'build/admin/template-preview.js',
+				$dependencies,
+				$preview_asset['version'],
+				true
+			);
+
+			// Enqueue template preview styles
+			wp_enqueue_style(
+				'layoutberg-template-preview',
+				LAYOUTBERG_PLUGIN_URL . 'build/admin/template-preview.css',
+				array( 'wp-components' ),
+				$preview_asset['version']
+			);
+		}
+
 		// Localize script.
 		wp_localize_script(
 			'layoutberg-admin',
@@ -932,11 +967,8 @@ class Admin {
 			wp_send_json_error( $template->get_error_message() );
 		}
 
-		// Generate HTML preview if requested.
-		$include_preview = isset( $_GET['include_preview'] ) && $_GET['include_preview'] == '1';
-		if ( $include_preview && ! empty( $template['content'] ) ) {
-			$template['html_preview'] = $this->generate_template_preview_html( $template['content'] );
-		}
+		// No longer generating HTML preview as we're using Gutenberg's BlockPreview component
+		// The React component will render the preview directly from the block content
 
 		wp_send_json_success( $template );
 	}

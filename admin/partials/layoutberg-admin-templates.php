@@ -264,30 +264,7 @@ $categories = array(
 		</div>
 		<div class="layoutberg-modal-body">
 			<div class="template-preview-container">
-				<div class="template-preview-tabs">
-					<button class="template-preview-tab active" data-tab="visual">
-						<?php esc_html_e( 'Visual Preview', 'layoutberg' ); ?>
-					</button>
-					<button class="template-preview-tab" data-tab="code">
-						<?php esc_html_e( 'Block Code', 'layoutberg' ); ?>
-					</button>
-				</div>
-				<div class="template-preview-content">
-					<div class="template-preview-panel active" id="visual-panel">
-						<div class="template-preview-info"></div>
-						<div class="template-visual-preview">
-							<div class="template-loading">
-								<?php esc_html_e( 'Loading preview...', 'layoutberg' ); ?>
-							</div>
-						</div>
-					</div>
-					<div class="template-preview-panel" id="code-panel">
-						<div class="template-code-preview">
-							<h4><?php esc_html_e( 'Block Structure', 'layoutberg' ); ?></h4>
-							<pre><code class="template-code-content"></code></pre>
-						</div>
-					</div>
-				</div>
+				<div id="layoutberg-gutenberg-preview-container"></div>
 			</div>
 		</div>
 		<div class="layoutberg-modal-footer">
@@ -670,58 +647,16 @@ $categories = array(
 
 /* Template Preview */
 .template-preview-container {
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	padding: 0;
-	background: #f9f9f9;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+#layoutberg-gutenberg-preview-container {
+	flex: 1;
 	min-height: 500px;
-	display: flex;
-	flex-direction: column;
 }
 
-.template-preview-content {
-	flex: 1;
-	overflow-y: auto;
-	display: flex;
-	flex-direction: column;
-}
-
-.template-preview-tabs {
-	display: flex;
-	background: #fff;
-	border-bottom: 1px solid #ddd;
-}
-
-.template-preview-tab {
-	padding: 12px 20px;
-	background: none;
-	border: none;
-	cursor: pointer;
-	font-size: 14px;
-	color: #666;
-	border-bottom: 2px solid transparent;
-	transition: all 0.2s;
-}
-
-.template-preview-tab.active {
-	color: #007cba;
-	border-bottom-color: #007cba;
-}
-
-.template-preview-tab:hover {
-	color: #333;
-	background: #f8f9fa;
-}
-
-.template-preview-panel {
-	display: none;
-	flex: 1;
-	overflow-y: auto;
-}
-
-.template-preview-panel.active {
-	display: block;
-}
 
 .template-visual-preview {
 	padding: 20px;
@@ -964,44 +899,54 @@ document.addEventListener('DOMContentLoaded', function() {
 				},
 				beforeSend: function() {
 					console.log('Sending AJAX request for preview template ID:', templateId);
-					// Show loading state
-					const loadingDiv = document.querySelector('.template-loading');
-					if (loadingDiv) {
-						loadingDiv.textContent = 'Loading preview...';
+					// Show loading state using the preview component
+					if (window.layoutbergTemplatePreview && window.layoutbergTemplatePreview.init) {
+						window.layoutbergTemplatePreview.init(
+							'layoutberg-gutenberg-preview-container',
+							'',
+							{ isLoading: true }
+						);
 					}
 				}
 			}).then(response => {
 				console.log('Preview AJAX response:', response);
 				if (response.success && response.data) {
-					// Update template info
-					let infoHtml = '<h3>' + response.data.name + '</h3>';
-					if (response.data.description) {
-						infoHtml += '<p class="template-description">' + response.data.description + '</p>';
-					}
-					infoHtml += '<div class="template-meta">';
-					infoHtml += '<span><strong>Category:</strong> ' + response.data.category + '</span>';
-					if (response.data.tags && response.data.tags.length) {
-						infoHtml += '<span><strong>Tags:</strong> ' + response.data.tags.join(', ') + '</span>';
-					}
-					infoHtml += '</div>';
+					console.log('Template content:', response.data.content);
+					console.log('Content type:', typeof response.data.content);
+					console.log('Content length:', response.data.content ? response.data.content.length : 0);
 					
-					const infoContainer = document.querySelector('.template-preview-info');
-					if (infoContainer) {
-						infoContainer.innerHTML = infoHtml;
-					}
+					// Test with hardcoded content first
+					const testContent = `<!-- wp:paragraph -->
+<p>This is a test paragraph block.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading {"level":2} -->
+<h2>Test Heading</h2>
+<!-- /wp:heading -->`;
 					
-					// Update visual preview
-					const visualPreview = document.querySelector('.template-visual-preview');
-					if (visualPreview && response.data.html_preview) {
-						visualPreview.innerHTML = response.data.html_preview;
-					} else if (visualPreview) {
-						visualPreview.innerHTML = '<p>Visual preview not available for this template.</p>';
-					}
+					console.log('Using test content for debugging');
 					
-					// Update code preview
-					const codeContent = document.querySelector('.template-code-content');
-					if (codeContent) {
-						codeContent.textContent = response.data.content;
+					// Use the new Gutenberg preview component
+					if (window.layoutbergTemplatePreview && window.layoutbergTemplatePreview.init) {
+						// For testing, use hardcoded content
+						// window.layoutbergTemplatePreview.init(
+						// 	'layoutberg-gutenberg-preview-container',
+						// 	testContent,
+						// 	{ showCode: true }
+						// );
+						
+						// Use actual template content
+						window.layoutbergTemplatePreview.init(
+							'layoutberg-gutenberg-preview-container',
+							response.data.content,
+							{ showCode: true }
+						);
+					} else {
+						// Fallback if the preview component isn't loaded
+						const container = document.getElementById('layoutberg-gutenberg-preview-container');
+						if (container) {
+							container.innerHTML = '<div class="notice notice-error"><p>Preview component not loaded. Please refresh the page.</p></div>';
+						}
 					}
 					
 					// Update use template button
@@ -1012,9 +957,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}).catch(error => {
 				console.log('Preview AJAX error:', error);
-				const visualPreview = document.querySelector('.template-visual-preview');
-				if (visualPreview) {
-					visualPreview.innerHTML = '<p>Error loading template: ' + error.message + '</p>';
+				const container = document.getElementById('layoutberg-gutenberg-preview-container');
+				if (container) {
+					container.innerHTML = '<div class="notice notice-error"><p>Error loading template: ' + error.message + '</p></div>';
 				}
 			});
 		}
@@ -1183,30 +1128,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Redirect anyway even if usage increment fails
 				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
 			});
-		}
-	});
-	
-	// Template preview tab switching
-	document.addEventListener('click', function(e) {
-		if (e.target.classList.contains('template-preview-tab')) {
-			const targetTab = e.target.getAttribute('data-tab');
-			
-			// Update tab buttons
-			const tabs = document.querySelectorAll('.template-preview-tab');
-			tabs.forEach(tab => tab.classList.remove('active'));
-			e.target.classList.add('active');
-			
-			// Update panels
-			const panels = document.querySelectorAll('.template-preview-panel');
-			panels.forEach(panel => panel.classList.remove('active'));
-			
-			const targetPanel = targetTab === 'visual' ? 
-				document.getElementById('visual-panel') : 
-				document.getElementById('code-panel');
-			
-			if (targetPanel) {
-				targetPanel.classList.add('active');
-			}
 		}
 	});
 	

@@ -10,9 +10,11 @@
  * @since 1.0.0
  */
 
+// Initialize toolbar button immediately
+import './toolbar-button-init';
+
 import { __, sprintf } from '@wordpress/i18n';
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginDocumentSettingPanel, PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/edit-post';
 import { Fragment } from '@wordpress/element';
 import { 
     Button, 
@@ -37,9 +39,7 @@ import apiFetch from '@wordpress/api-fetch';
 // Import styles
 import './editor.css';
 
-// Import our toolbar button component
-import LayoutBergToolbarButton from './toolbar-button';
-import LayoutBergSidebar from './sidebar';
+// Import our components
 import LayoutBergModal from './modal';
 import SaveTemplateModal from './save-template-modal';
 
@@ -80,6 +80,9 @@ const LayoutBergEditor = () => {
         setIsModalOpen(true);
         setGenerationError(null);
     };
+
+    // Make openModal available globally for toolbar integration
+    window.layoutbergOpenModal = openModal;
 
     /**
      * Close the generation modal
@@ -194,25 +197,6 @@ const LayoutBergEditor = () => {
         setIsSaveTemplateModalOpen(false);
     };
 
-    /**
-     * Handle save current post as template
-     */
-    const handleSaveCurrentAsTemplate = () => {
-        if (allBlocks.length === 0) {
-            createNotice(
-                'warning',
-                __('No content to save as template. Please add some blocks first.', 'layoutberg'),
-                { type: 'snackbar', isDismissible: true }
-            );
-            return;
-        }
-
-        // Serialize all blocks
-        const serializedBlocks = serialize(allBlocks);
-        setLastGeneratedBlocks(serializedBlocks);
-        setPrompt(__('Saved from current post', 'layoutberg'));
-        setIsSaveTemplateModalOpen(true);
-    };
 
     /**
      * Handle keyboard shortcuts
@@ -366,27 +350,6 @@ const LayoutBergEditor = () => {
 
     return (
         <Fragment>
-            {/* Sidebar */}
-            <PluginSidebarMoreMenuItem 
-                target="layoutberg-sidebar"
-                icon="layout"
-            >
-                {__('LayoutBerg', 'layoutberg')}
-            </PluginSidebarMoreMenuItem>
-            
-            <PluginSidebar
-                name="layoutberg-sidebar"
-                title={__('LayoutBerg', 'layoutberg')}
-                icon="layout"
-            >
-                <LayoutBergSidebar 
-                    onGenerate={openModal}
-                    onSaveAsTemplate={handleSaveCurrentAsTemplate}
-                    settings={settings}
-                    onSettingsChange={setSettings}
-                />
-            </PluginSidebar>
-
             {/* Generation Modal */}
             {isModalOpen && (
                 <LayoutBergModal
