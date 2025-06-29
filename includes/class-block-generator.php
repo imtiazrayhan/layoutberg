@@ -248,7 +248,7 @@ class Block_Generator {
 		
 		// Fix common class name issues
 		// Ensure wp-block-heading class is present
-		$content = preg_replace(
+		$content = preg_replace_callback(
 			'/<h([1-6])(\s+class="[^"]*")?>/i',
 			function( $matches ) {
 				$level = $matches[1];
@@ -268,7 +268,7 @@ class Block_Generator {
 		);
 		
 		// Ensure button links have wp-element-button class
-		$content = preg_replace(
+		$content = preg_replace_callback(
 			'/<a\s+class="wp-block-button__link([^"]*)"/',
 			function( $matches ) {
 				$extra_classes = $matches[1];
