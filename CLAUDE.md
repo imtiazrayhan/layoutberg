@@ -3,6 +3,7 @@
 This document contains specific instructions and guidelines for Claude (AI assistant) when working on the LayoutBerg WordPress plugin. Always refer to this document before making any code changes.
 
 ## Table of Contents
+
 1. [Project Overview](#project-overview)
 2. [Development Environment](#development-environment)
 3. [Task Management](#task-management)
@@ -36,6 +37,7 @@ Key features:
 Most of the functionality lives in this WordPress plugin repo. There's also a licensing backend that handles accounts, billing, and API key proxying; that lives at api.dotcamp.com and is written in PHP/Laravel.
 
 Always prioritize:
+
 1. Native Gutenberg compatibility
 2. Performance and caching
 3. Security (especially API key handling)
@@ -50,52 +52,58 @@ Always prioritize:
 When working on any tasks:
 
 1. **Before starting work:**
-   - Check TASKS.md to see current task status
-   - Identify which tasks you'll be working on
+
+    - Check TASKS.md to see current task status
+    - Identify which tasks you'll be working on
 
 2. **After completing tasks:**
-   - IMMEDIATELY update TASKS.md to mark tasks as completed with [x]
-   - Update the progress counts at the bottom of the file
-   - Calculate new percentages accurately
+
+    - IMMEDIATELY update TASKS.md to mark tasks as completed with [x]
+    - Update the progress counts at the bottom of the file
+    - Calculate new percentages accurately
 
 3. **Commit task updates:**
-   - Create a separate commit for TASKS.md updates
-   - Use commit message format: "docs: Update TASKS.md progress - [brief description]"
-   - This helps track when tasks were completed
+
+    - Create a separate commit for TASKS.md updates
+    - Use commit message format: "docs: Update TASKS.md progress - [brief description]"
+    - This helps track when tasks were completed
 
 4. **Example workflow:**
-   ```bash
-   # After completing prompt engineering tasks
-   git add TASKS.md
-   git commit -m "docs: Update TASKS.md progress - completed prompt engineering tasks"
-   ```
+    ```bash
+    # After completing prompt engineering tasks
+    git add TASKS.md
+    git commit -m "docs: Update TASKS.md progress - completed prompt engineering tasks"
+    ```
 
 ### Task Tracking Rules
 
-- Mark tasks with [x] only when FULLY completed
-- If a task is partially done, leave it as [ ] and add a note
-- Update both individual task counts AND total progress
-- Use 🚧 for tasks currently in progress
-- Use ❌ for blocked tasks with a note explaining why
+-   Mark tasks with [x] only when FULLY completed
+-   If a task is partially done, leave it as [ ] and add a note
+-   Update both individual task counts AND total progress
+-   Use 🚧 for tasks currently in progress
+-   Use ❌ for blocked tasks with a note explaining why
 
 ---
 
 ## Development Environment
 
 ### Local Setup Requirements
-- WordPress 6.0+ (latest recommended)
-- PHP 8.1+ (8.2+ preferred)
-- MySQL 5.7+ (8.0+ preferred)
-- Node.js 18+ and npm 8+
-- Composer 2.0+
-- WP-CLI (recommended)
+
+-   WordPress 6.0+ (latest recommended)
+-   PHP 8.1+ (8.2+ preferred)
+-   MySQL 5.7+ (8.0+ preferred)
+-   Node.js 18+ and npm 8+
+-   Composer 2.0+
+-   WP-CLI (recommended)
 
 ### Essential WordPress Plugins for Testing
-- Query Monitor (performance debugging)
-- Debug Bar (general debugging)
-- User Switching (testing different roles)
+
+-   Query Monitor (performance debugging)
+-   Debug Bar (general debugging)
+-   User Switching (testing different roles)
 
 ### Commands to Run Before Starting
+
 ```bash
 # Install PHP dependencies
 composer install
@@ -129,8 +137,8 @@ To start working on a feature, you should:
 1. **Setup**
 
     - Read the relevant GitHub issue (or create one if needed)
-    - Checkout main and pull the latest changes
-    - Create a new branch like `claude/feature-name`. NEVER commit to main. NEVER push to origin/main.
+    - Checkout master and pull the latest changes.
+    - No branching required. Always push to master
 
 2. **Development**
 
@@ -307,10 +315,10 @@ export const Generator: React.FC<IGeneratorProps> = ({
 ### CRITICAL Security Rules
 
 1. **API Key Handling**:
-   - NEVER hardcode API keys
-   - ALWAYS encrypt API keys before storage
-   - Use WordPress options API with encryption
-   - Validate API keys before use
+    - NEVER hardcode API keys
+    - ALWAYS encrypt API keys before storage
+    - Use WordPress options API with encryption
+    - Validate API keys before use
 
 ```php
 // Storing API key
@@ -323,6 +331,7 @@ $api_key = $this->decrypt_api_key( $encrypted_key );
 ```
 
 2. **Nonce Verification**: ALWAYS verify nonces
+
 ```php
 if ( ! wp_verify_nonce( $_POST['layoutberg_nonce'], 'layoutberg_action' ) ) {
     wp_die( 'Security check failed' );
@@ -330,6 +339,7 @@ if ( ! wp_verify_nonce( $_POST['layoutberg_nonce'], 'layoutberg_action' ) ) {
 ```
 
 3. **Capability Checks**: ALWAYS check user capabilities
+
 ```php
 if ( ! current_user_can( 'edit_posts' ) ) {
     wp_die( 'Insufficient permissions' );
@@ -337,6 +347,7 @@ if ( ! current_user_can( 'edit_posts' ) ) {
 ```
 
 4. **SQL Queries**: Use prepared statements
+
 ```php
 global $wpdb;
 $results = $wpdb->get_results(
@@ -348,6 +359,7 @@ $results = $wpdb->get_results(
 ```
 
 5. **File Operations**: Validate file paths and types
+
 ```php
 $allowed_types = array( 'jpg', 'jpeg', 'png', 'gif' );
 $file_type = wp_check_filetype( $filename );
@@ -357,21 +369,24 @@ if ( ! in_array( $file_type['ext'], $allowed_types, true ) ) {
 ```
 
 ### Security Checklist
+
 Before committing any code, ensure:
-- [ ] No hardcoded credentials
-- [ ] All inputs are sanitized
-- [ ] All outputs are escaped
-- [ ] Nonces are used for forms
-- [ ] Capabilities are checked
-- [ ] SQL queries use prepared statements
-- [ ] File uploads are validated
-- [ ] No direct file access allowed
+
+-   [ ] No hardcoded credentials
+-   [ ] All inputs are sanitized
+-   [ ] All outputs are escaped
+-   [ ] Nonces are used for forms
+-   [ ] Capabilities are checked
+-   [ ] SQL queries use prepared statements
+-   [ ] File uploads are validated
+-   [ ] No direct file access allowed
 
 ---
 
 ## Testing Requirements
 
 ### Unit Testing (PHPUnit)
+
 1. Test file naming: `test-class-name.php`
 2. Test class naming: `Test_Class_Name`
 3. Minimum coverage: 80%
@@ -382,7 +397,7 @@ class Test_Block_Generator extends WP_UnitTestCase {
     public function test_generate_creates_valid_blocks() {
         $generator = new Block_Generator();
         $result = $generator->generate( 'Create a hero section' );
-        
+
         $this->assertStringContainsString( '<!-- wp:', $result );
         $this->assertNotEmpty( $result );
     }
@@ -390,19 +405,21 @@ class Test_Block_Generator extends WP_UnitTestCase {
 ```
 
 ### Integration Testing
+
 1. Test with different WordPress versions
 2. Test with popular plugins (Yoast, WooCommerce)
 3. Test with different themes
 4. Test multisite compatibility
 
 ### JavaScript Testing (Jest)
+
 ```javascript
-describe( 'LayoutBergButton', () => {
-    it( 'renders without crashing', () => {
-        const wrapper = shallow( <LayoutBergButton /> );
-        expect( wrapper.exists() ).toBe( true );
-    } );
-} );
+describe("LayoutBergButton", () => {
+	it("renders without crashing", () => {
+		const wrapper = shallow(<LayoutBergButton />);
+		expect(wrapper.exists()).toBe(true);
+	});
+});
 ```
 
 ### Manual Testing Checklist
@@ -425,7 +442,9 @@ Before asking me to test, ensure:
 ## Performance Guidelines
 
 ### Caching Strategy
+
 1. **Use transients** for API responses
+
 ```php
 $cache_key = 'layoutberg_' . md5( $prompt );
 $cached = get_transient( $cache_key );
@@ -440,6 +459,7 @@ return $cached;
 ```
 
 2. **Object caching** when available
+
 ```php
 if ( wp_using_ext_object_cache() ) {
     wp_cache_set( $key, $value, 'layoutberg', 3600 );
@@ -447,18 +467,21 @@ if ( wp_using_ext_object_cache() ) {
 ```
 
 ### Database Optimization
+
 1. Add indexes for frequently queried columns
 2. Use batch operations when possible
 3. Implement pagination for large datasets
 4. Clean up old data periodically
 
 ### Asset Optimization
+
 1. Minify CSS and JavaScript
 2. Use `wp_enqueue_script` with dependencies
 3. Load assets only where needed
 4. Use async/defer for non-critical scripts
 
 ### API Optimization
+
 1. Implement request queuing
 2. Use background processing for large operations
 3. Cache API responses appropriately
@@ -469,34 +492,37 @@ if ( wp_using_ext_object_cache() ) {
 ## Gutenberg Development
 
 ### Block Registration
-```javascript
-import { registerBlockType } from '@wordpress/blocks';
 
-registerBlockType( 'layoutberg/ai-layout', {
-    title: __( 'AI Layout', 'layoutberg' ),
-    category: 'layoutberg',
-    supports: {
-        align: [ 'wide', 'full' ],
-        html: false,
-    },
-    attributes: {
-        prompt: {
-            type: 'string',
-            default: '',
-        },
-    },
-    edit: Edit,
-    save: Save,
-} );
+```javascript
+import { registerBlockType } from "@wordpress/blocks";
+
+registerBlockType("layoutberg/ai-layout", {
+	title: __("AI Layout", "layoutberg"),
+	category: "layoutberg",
+	supports: {
+		align: ["wide", "full"],
+		html: false,
+	},
+	attributes: {
+		prompt: {
+			type: "string",
+			default: "",
+		},
+	},
+	edit: Edit,
+	save: Save,
+});
 ```
 
 ### Editor Integration
+
 1. Use SlotFill for toolbar integration
 2. Follow Gutenberg data flow patterns
 3. Use WordPress components
 4. Implement proper error boundaries
 
 ### Block Patterns
+
 1. Register reusable patterns
 2. Categorize patterns logically
 3. Provide pattern variations
@@ -507,6 +533,7 @@ registerBlockType( 'layoutberg/ai-layout', {
 ## API Integration Guidelines
 
 ### OpenAI API
+
 1. **Rate Limiting**: Implement token bucket algorithm
 2. **Error Handling**: Graceful degradation
 3. **Timeout Handling**: 30-second timeout
@@ -522,16 +549,17 @@ try {
 } catch ( Exception $e ) {
     // Log error
     error_log( 'LayoutBerg API Error: ' . $e->getMessage() );
-    
+
     // Return user-friendly error
-    return new WP_Error( 
-        'api_error', 
+    return new WP_Error(
+        'api_error',
         __( 'Unable to generate layout. Please try again.', 'layoutberg' )
     );
 }
 ```
 
 ### WordPress REST API
+
 1. Use proper authentication
 2. Validate and sanitize all inputs
 3. Return consistent response formats
