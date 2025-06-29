@@ -29,6 +29,7 @@ import {
     PanelBody,
     PanelRow
 } from '@wordpress/components';
+import { layout } from '@wordpress/icons';
 import { useState, useEffect } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
@@ -42,6 +43,7 @@ import './editor.css';
 // Import our components
 import LayoutBergModal from './modal';
 import SaveTemplateModal from './save-template-modal';
+import LayoutBergDocumentPanel from './document-panel';
 
 /**
  * Main LayoutBerg Editor Plugin
@@ -197,6 +199,22 @@ const LayoutBergEditor = () => {
         setIsSaveTemplateModalOpen(false);
     };
 
+    /**
+     * Handle save as template from sidebar
+     */
+    const handleSaveAsTemplate = () => {
+        // Get the current editor blocks
+        const editorBlocks = wp.data.select('core/block-editor').getBlocks();
+        const serializedBlocks = serialize(editorBlocks);
+        
+        // Store the current editor blocks for template saving
+        setLastGeneratedBlocks(serializedBlocks);
+        
+        // Open the save template modal
+        setIsSaveTemplateModalOpen(true);
+    };
+
+
 
     /**
      * Handle keyboard shortcuts
@@ -350,6 +368,11 @@ const LayoutBergEditor = () => {
 
     return (
         <Fragment>
+            {/* Document Panel */}
+            <LayoutBergDocumentPanel
+                onSaveAsTemplate={handleSaveAsTemplate}
+            />
+
             {/* Generation Modal */}
             {isModalOpen && (
                 <LayoutBergModal

@@ -182,75 +182,6 @@
     font-weight: 600 !important;
 }
 
-/* Sidebar Styles */
-.layoutberg-sidebar-card {
-    margin-bottom: 16px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.layoutberg-sidebar-description {
-    margin: 8px 0 16px 0;
-    color: #6b7280;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.layoutberg-generate-button {
-    width: 100%;
-    justify-content: center;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    border: none;
-    margin-bottom: 8px;
-}
-
-.layoutberg-generate-button:hover {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-}
-
-.layoutberg-save-template-button {
-    width: 100%;
-    justify-content: center;
-}
-
-.layoutberg-sidebar-note {
-    margin: 8px 0 0 0;
-    font-size: 12px;
-    color: #9ca3af;
-    text-align: center;
-}
-
-.layoutberg-sidebar-panel .components-panel__body {
-    border: 1px solid #e5e7eb;
-    margin-bottom: 8px;
-}
-
-.layoutberg-tips {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.layoutberg-tip {
-    padding: 12px;
-    background: #f9fafb;
-    border-radius: 6px;
-    border-left: 3px solid #6366f1;
-}
-
-.layoutberg-tip strong {
-    display: block;
-    margin-bottom: 4px;
-    color: #374151;
-    font-size: 13px;
-}
-
-.layoutberg-tip p {
-    margin: 0;
-    font-size: 12px;
-    color: #6b7280;
-    line-height: 1.4;
-}
 
 /* Modal Styles */
 .layoutberg-generation-modal {
@@ -512,29 +443,42 @@
     padding: 20px;
 }
 
+/* Document Panel Styles - Make it look like core panels */
+.layoutberg-document-panel {
+    /* Remove extra padding to match core panels */
+    margin: 0 0;
+}
+
+.layoutberg-document-panel .components-panel__body-toggle {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.layoutberg-document-panel .components-panel__body.is-opened {
+    padding: 16px;
+}
+
+.layoutberg-panel-description {
+    margin: 0 0 12px 0;
+    color: #757575;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.layoutberg-document-panel .layoutberg-save-template-button {
+    width: 100%;
+    justify-content: center;
+}
+
 /* Dark Mode Support - Scoped to LayoutBerg */
 @media (prefers-color-scheme: dark) {
-    .layoutberg-sidebar-card {
-        background: #1f2937;
-        border-color: #374151;
+    .layoutberg-panel-description {
+        color: #949494;
     }
     
     .layoutberg-generation-modal .components-card {
         background: #1f2937;
         border-color: #374151;
-    }
-    
-    .layoutberg-tip {
-        background: #374151;
-        border-left-color: #6366f1;
-    }
-    
-    .layoutberg-tip strong {
-        color: #f3f4f6;
-    }
-    
-    .layoutberg-tip p {
-        color: #d1d5db;
     }
     
     .layoutberg-generation-modal .components-card__header {
