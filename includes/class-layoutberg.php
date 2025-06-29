@@ -73,6 +73,7 @@ class LayoutBerg {
 		$this->define_public_hooks();
 		$this->define_block_hooks();
 		$this->define_api_hooks();
+		$this->define_onboarding_hooks();
 	}
 
 	/**
@@ -130,6 +131,9 @@ class LayoutBerg {
 
 		// Load upgrade handler.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-upgrade.php';
+
+		// Load onboarding handler.
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-onboarding.php';
 
 		// Get container instance and loader.
 		$this->container = Container::get_instance();
@@ -230,6 +234,19 @@ class LayoutBerg {
 
 		// Register REST routes.
 		$this->loader->add_action( 'rest_api_init', $api_handler, 'register_routes' );
+	}
+
+	/**
+	 * Register all of the hooks related to the onboarding functionality.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 */
+	private function define_onboarding_hooks() {
+		$onboarding = $this->container->make( 'DotCamp\LayoutBerg\Onboarding' );
+
+		// Onboarding is initialized in the constructor, so we just need to ensure it's created.
+		// The hooks are registered within the Onboarding class itself.
 	}
 
 	/**

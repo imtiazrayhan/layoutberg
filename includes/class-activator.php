@@ -57,6 +57,11 @@ class Activator {
 
 		// Set activation flag.
 		set_transient( 'layoutberg_activated', true, 30 );
+
+		// Set onboarding redirect flag for first-time activation.
+		if ( ! get_option( 'layoutberg_onboarding_completed', false ) ) {
+			set_transient( 'layoutberg_onboarding_redirect', true, 30 );
+		}
 	}
 
 

@@ -1,0 +1,1000 @@
+/**
+ * LayoutBerg Onboarding Styles
+ */
+
+// Variables
+$primary-color: #6366f1;
+$primary-hover: #4f46e5;
+$success-color: #10b981;
+$error-color: #ef4444;
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$border-color: #e2e8f0;
+$background-light: #f8fafc;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+// Onboarding wrapper
+.layoutberg-onboarding {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+	* {
+		box-sizing: border-box;
+	}
+
+	&__container {
+		background: #fff;
+		border: 1px solid $border-color;
+		border-radius: 8px;
+		box-shadow: $shadow-sm;
+		width: 100%;
+		max-width: 900px;
+		margin: 0 auto;
+		overflow: hidden;
+		animation: fadeInUp 0.5s ease;
+	}
+
+	&__header {
+		padding: 2rem 3rem;
+		border-bottom: 1px solid $border-color;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	&__logo {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+
+		h1 {
+			margin: 0;
+			font-size: 1.5rem;
+			color: $text-primary;
+			font-weight: 600;
+		}
+	}
+
+	// Progress bar
+	&__progress {
+		height: 4px;
+		background: $border-color;
+		position: relative;
+		overflow: hidden;
+
+		&-bar {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			background: $primary-color;
+			transition: width 0.3s ease;
+		}
+	}
+
+	// Content area
+	&__content {
+		padding: 3rem;
+		min-height: 400px;
+	}
+
+	// Footer
+	&__footer {
+		padding: 2rem 3rem;
+		border-top: 1px solid $border-color;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		background: $background-light;
+
+		&-left {
+			display: flex;
+			gap: 1rem;
+		}
+
+		&-right {
+			display: flex;
+			gap: 1rem;
+			align-items: center;
+		}
+	}
+
+	// Steps
+	&__step {
+		animation: fadeIn 0.3s ease;
+
+		h2 {
+			margin: 0 0 0.5rem;
+			font-size: 2rem;
+			color: $text-primary;
+			font-weight: 600;
+		}
+
+		&-description {
+			color: $text-secondary;
+			font-size: 1.125rem;
+			margin-bottom: 2rem;
+		}
+
+		&-actions {
+			margin-top: 2rem;
+			display: flex;
+			gap: 1rem;
+			justify-content: flex-end;
+		}
+	}
+
+	// Welcome step
+	&__welcome {
+		&-hero {
+			text-align: center;
+			margin-bottom: 3rem;
+		}
+
+		&-logo {
+			margin-bottom: 2rem;
+		}
+
+		&-subtitle {
+			font-size: 1.25rem;
+			color: $text-secondary;
+			margin: 1rem 0 0;
+		}
+
+		&-features {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 2rem;
+			margin-bottom: 3rem;
+		}
+
+		&-cta {
+			text-align: center;
+
+			.components-button {
+				.dashicons {
+					margin-left: 0.5rem;
+				}
+			}
+		}
+
+		&-time {
+			margin-top: 1rem;
+			color: $text-secondary;
+			font-size: 0.875rem;
+		}
+	}
+
+	&__feature {
+		text-align: center;
+		padding: 2rem;
+		border-radius: 8px;
+		background: $background-light;
+		transition: transform 0.2s ease;
+
+		&:hover {
+			transform: translateY(-2px);
+		}
+
+		.dashicons {
+			font-size: 2.5rem;
+			width: 2.5rem;
+			height: 2.5rem;
+			color: $primary-color;
+			margin-bottom: 1rem;
+		}
+
+		h3 {
+			margin: 0 0 0.5rem;
+			font-size: 1.25rem;
+			color: $text-primary;
+		}
+
+		p {
+			margin: 0;
+			color: $text-secondary;
+		}
+	}
+
+	// API Setup
+	&__api-setup-content {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 3rem;
+		margin-bottom: 2rem;
+
+		@media (max-width: 768px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	&__api-instructions {
+		h3 {
+			margin: 0 0 1rem;
+			font-size: 1.125rem;
+			color: $text-primary;
+		}
+
+		ol {
+			margin: 0;
+			padding-left: 1.5rem;
+			color: $text-secondary;
+
+			li {
+				margin-bottom: 0.5rem;
+			}
+		}
+	}
+
+	&__api-form {
+		.components-text-control__input {
+			font-family: monospace;
+		}
+	}
+
+	&__api-actions {
+		margin-top: 1rem;
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	&__api-info {
+		background: $background-light;
+		padding: 1.5rem;
+		border-radius: 8px;
+
+		h4 {
+			margin: 0 0 0.5rem;
+			font-size: 1rem;
+			color: $text-primary;
+		}
+
+		p {
+			margin: 0;
+			color: $text-secondary;
+		}
+	}
+
+	// Form sections
+	&__form-section {
+		margin-bottom: 2rem;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+
+		.components-radio-control__option {
+			margin-bottom: 0.5rem;
+		}
+
+		&--two-columns {
+			.components-radio-control__options {
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: 0.5rem;
+				margin-top: 0.75rem;
+			}
+
+			.components-radio-control__option {
+				margin-bottom: 0.75rem;
+			}
+		}
+	}
+
+	// Custom Radio Group
+	&__radio-group {
+		margin-bottom: 1.5rem;
+	}
+
+	&__radio-label {
+		display: block;
+		font-weight: 600;
+		margin-bottom: 0.75rem;
+		color: $text-primary;
+		font-size: 0.875rem;
+	}
+
+	&__radio-options {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.75rem;
+
+		@media (max-width: 768px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	&__radio-option {
+		display: flex;
+		align-items: center;
+		padding: 0.75rem 1rem;
+		background: $background-light;
+		border: 2px solid $border-color;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+
+		&:hover {
+			border-color: lighten($primary-color, 20%);
+			background: lighten($primary-color, 47%);
+		}
+
+		input[type="radio"] {
+			margin-right: 0.5rem;
+			flex-shrink: 0;
+		}
+
+		span {
+			color: $text-primary;
+			font-size: 0.875rem;
+		}
+
+		&:has(input:checked) {
+			border-color: $primary-color;
+			background: lighten($primary-color, 45%);
+
+			span {
+				font-weight: 600;
+			}
+		}
+	}
+
+	// Plugin recommendations
+	&__plugins-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+		gap: 2rem;
+		margin-bottom: 2rem;
+	}
+
+	&__plugin-card {
+		border: 1px solid $border-color;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+		&:hover {
+			transform: translateY(-2px);
+			box-shadow: $shadow-md;
+		}
+	}
+
+	&__plugin-header {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 1rem;
+
+		h3 {
+			margin: 0;
+			flex: 1;
+		}
+	}
+
+	&__plugin-icon {
+		font-size: 2rem;
+		line-height: 1;
+	}
+
+	&__plugin-badge {
+		background: $success-color;
+		color: white;
+		padding: 0.25rem 0.75rem;
+		border-radius: 999px;
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	&__plugin-description {
+		color: $text-secondary;
+		margin-bottom: 1rem;
+	}
+
+	&__plugin-features {
+		list-style: none;
+		margin: 0 0 1rem;
+		padding: 0;
+
+		li {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-bottom: 0.25rem;
+			color: $text-secondary;
+			font-size: 0.875rem;
+
+			.dashicons {
+				color: $success-color;
+				font-size: 1rem;
+				width: 1rem;
+				height: 1rem;
+			}
+		}
+	}
+
+	&__plugin-actions {
+		display: flex;
+		gap: 1rem;
+		align-items: center;
+		margin-top: 1rem;
+	}
+
+	// Model Guide
+	&__models-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1.5rem;
+		margin-bottom: 2rem;
+	}
+
+	&__model-card {
+		border: 2px solid $border-color;
+		border-radius: 8px;
+		padding: 1.5rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+
+		&:hover {
+			border-color: lighten($primary-color, 20%);
+		}
+
+		&.is-selected {
+			border-color: $primary-color;
+			background: lighten($primary-color, 45%);
+		}
+	}
+
+	&__model-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 0.5rem;
+
+		h3 {
+			margin: 0;
+			font-size: 1.25rem;
+		}
+	}
+
+	&__model-provider {
+		font-size: 0.75rem;
+		color: $text-secondary;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin-top: 0.25rem;
+		display: block;
+	}
+
+	&__model-badge {
+		background: $primary-color;
+		color: white;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	&__model-description {
+		color: $text-secondary;
+		font-size: 0.875rem;
+		margin-bottom: 1rem;
+	}
+
+	&__model-details {
+		margin-bottom: 1rem;
+
+		h4 {
+			margin: 0 0 0.25rem;
+			font-size: 0.875rem;
+			font-weight: 600;
+			color: $text-primary;
+		}
+
+		ul {
+			margin: 0 0 0.75rem;
+			padding-left: 0;
+			list-style: none;
+
+			li {
+				display: flex;
+				align-items: center;
+				gap: 0.25rem;
+				font-size: 0.813rem;
+				color: $text-secondary;
+				margin-bottom: 0.125rem;
+
+				.dashicons {
+					font-size: 1rem;
+					width: 1rem;
+					height: 1rem;
+
+					&.dashicons-yes {
+						color: $success-color;
+					}
+
+					&.dashicons-minus {
+						color: $error-color;
+					}
+				}
+			}
+		}
+	}
+
+	&__model-meta {
+		display: flex;
+		gap: 1.5rem;
+		font-size: 0.813rem;
+		color: $text-secondary;
+		margin-bottom: 1rem;
+		padding-top: 1rem;
+		border-top: 1px solid $border-color;
+	}
+
+	&__model-select {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		input[type="radio"] {
+			margin: 0;
+		}
+	}
+
+	&__model-tip {
+		display: flex;
+		gap: 1rem;
+		align-items: start;
+		background: $background-light;
+		padding: 1rem;
+		border-radius: 8px;
+
+		.dashicons {
+			color: $primary-color;
+			font-size: 1.25rem;
+			width: 1.25rem;
+			height: 1.25rem;
+			flex-shrink: 0;
+		}
+
+		p {
+			margin: 0;
+			color: $text-secondary;
+		}
+	}
+
+	// Prompt Tips
+	&__tabs {
+		.components-tab-panel__tabs {
+			border-bottom: 2px solid $border-color;
+			margin-bottom: 2rem;
+		}
+
+		.components-button {
+			font-weight: 500;
+			padding: 0.75rem 1.5rem;
+			border-radius: 0;
+			border-bottom: 2px solid transparent;
+			margin-bottom: -2px;
+
+			&.is-active {
+				border-bottom-color: $primary-color;
+				color: $primary-color;
+			}
+		}
+	}
+
+	&__examples {
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	&__example-card {
+		h4 {
+			margin: 0 0 1rem;
+			font-size: 1.25rem;
+			text-align: center;
+		}
+	}
+
+	&__example-prompt {
+		background: $background-light;
+		border-left: 4px solid $primary-color;
+		padding: 1rem 1rem 1rem 3rem;
+		margin-bottom: 1rem;
+		position: relative;
+
+		.dashicons {
+			position: absolute;
+			left: 1rem;
+			top: 1rem;
+			color: $primary-color;
+		}
+
+		p {
+			margin: 0;
+			font-style: italic;
+			color: $text-primary;
+		}
+	}
+
+	&__example-tip {
+		display: flex;
+		gap: 0.5rem;
+		align-items: start;
+		color: $text-secondary;
+
+		.dashicons {
+			color: #fbbf24;
+			flex-shrink: 0;
+		}
+
+		p {
+			margin: 0;
+			font-size: 0.875rem;
+		}
+	}
+
+	&__example-nav {
+		display: flex;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-top: 2rem;
+	}
+
+	&__example-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: $border-color;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		transition: background 0.2s ease;
+
+		&:hover {
+			background: darken($border-color, 10%);
+		}
+
+		&.is-active {
+			background: $primary-color;
+		}
+	}
+
+	&__best-practices {
+		display: grid;
+		gap: 1rem;
+	}
+
+	&__practice {
+		display: flex;
+		gap: 1rem;
+		align-items: start;
+		padding: 1rem;
+		border-radius: 8px;
+		background: $background-light;
+
+		&.is-do {
+			.dashicons {
+				color: $success-color;
+			}
+		}
+
+		&.is-dont {
+			.dashicons {
+				color: $error-color;
+			}
+		}
+
+		h4 {
+			margin: 0 0 0.25rem;
+			font-size: 1rem;
+		}
+
+		p {
+			margin: 0;
+			color: $text-secondary;
+			font-size: 0.875rem;
+		}
+	}
+
+	&__quick-start {
+		h4 {
+			margin: 0 0 1.5rem;
+			text-align: center;
+			font-size: 1.25rem;
+		}
+	}
+
+	&__formula {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		margin-bottom: 2rem;
+
+		@media (max-width: 768px) {
+			flex-direction: column;
+		}
+
+		&-part {
+			text-align: center;
+			flex: 1;
+			max-width: 200px;
+
+			span {
+				display: inline-block;
+				width: 2rem;
+				height: 2rem;
+				background: $primary-color;
+				color: white;
+				border-radius: 50%;
+				line-height: 2rem;
+				font-weight: 600;
+				margin-bottom: 0.5rem;
+			}
+
+			p {
+				margin: 0 0 0.25rem;
+				font-weight: 600;
+				color: $text-primary;
+			}
+
+			small {
+				color: $text-secondary;
+				font-style: italic;
+			}
+		}
+
+		&-plus {
+			font-size: 1.5rem;
+			color: $text-secondary;
+			font-weight: 300;
+
+			@media (max-width: 768px) {
+				transform: rotate(90deg);
+			}
+		}
+
+		&-result {
+			background: lighten($primary-color, 45%);
+			border: 1px solid lighten($primary-color, 30%);
+			padding: 1rem;
+			border-radius: 8px;
+			text-align: center;
+
+			p {
+				margin: 0;
+			}
+		}
+	}
+
+	// Completion
+	&__completion {
+		&-hero {
+			text-align: center;
+			margin-bottom: 3rem;
+		}
+
+		&-icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 80px;
+			height: 80px;
+			background: lighten($success-color, 40%);
+			border-radius: 50%;
+			margin-bottom: 1.5rem;
+
+			.dashicons {
+				font-size: 3rem;
+				width: 3rem;
+				height: 3rem;
+				color: $success-color;
+			}
+		}
+
+		&-subtitle {
+			font-size: 1.25rem;
+			color: $text-secondary;
+			margin: 1rem 0 0;
+		}
+
+		&-summary {
+			background: $background-light;
+			padding: 2rem;
+			border-radius: 8px;
+			margin-bottom: 3rem;
+
+			h3 {
+				margin: 0 0 1rem;
+				font-size: 1.125rem;
+			}
+		}
+
+		&-items {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 0.75rem;
+		}
+
+		&-item {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			color: $text-secondary;
+
+			.dashicons {
+				color: $success-color;
+				flex-shrink: 0;
+			}
+		}
+
+		&-footer {
+			text-align: center;
+		}
+
+		&-note {
+			margin-top: 1rem;
+			color: $text-secondary;
+			font-size: 0.875rem;
+		}
+	}
+
+	&__quick-actions {
+		margin-bottom: 3rem;
+
+		h3 {
+			text-align: center;
+			margin: 0 0 2rem;
+			font-size: 1.25rem;
+		}
+	}
+
+	&__actions-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1rem;
+
+		@media (max-width: 768px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	&__action-card {
+		background: $background-light;
+		border: 2px solid $border-color;
+		border-radius: 8px;
+		padding: 1.5rem;
+		text-align: center;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		position: relative;
+
+		&:hover {
+			transform: translateY(-2px);
+			border-color: $primary-color;
+			box-shadow: $shadow-md;
+		}
+
+		&.is-primary {
+			background: lighten($primary-color, 45%);
+			border-color: lighten($primary-color, 30%);
+		}
+
+		.dashicons {
+			font-size: 2rem;
+			width: 2rem;
+			height: 2rem;
+			color: $primary-color;
+			margin-bottom: 0.75rem;
+		}
+
+		h4 {
+			margin: 0 0 0.5rem;
+			font-size: 1rem;
+			color: $text-primary;
+		}
+
+		p {
+			margin: 0;
+			font-size: 0.813rem;
+			color: $text-secondary;
+		}
+
+		.dashicons-external {
+			position: absolute;
+			top: 0.5rem;
+			right: 0.5rem;
+			font-size: 1rem;
+			width: 1rem;
+			height: 1rem;
+			color: $text-secondary;
+		}
+	}
+}
+
+// Logo styles
+.layoutberg-logo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	background: $primary-color;
+	color: white;
+	font-weight: 700;
+	font-size: 1.125rem;
+	border-radius: 8px;
+
+	&--large {
+		width: 80px;
+		height: 80px;
+		font-size: 2rem;
+		border-radius: 12px;
+		box-shadow: $shadow-lg;
+	}
+}
+
+// Animations
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+// WordPress Component Overrides
+.layoutberg-onboarding {
+	.components-button {
+		&.is-primary {
+			background: $primary-color;
+			border-color: $primary-color;
+
+			&:hover:not(:disabled) {
+				background: $primary-hover;
+				border-color: $primary-hover;
+			}
+
+			&:focus:not(:disabled) {
+				box-shadow: 0 0 0 2px lighten($primary-color, 30%);
+			}
+		}
+
+		&.is-secondary {
+			color: $primary-color;
+			border-color: $primary-color;
+
+			&:hover:not(:disabled) {
+				color: $primary-hover;
+				border-color: $primary-hover;
+			}
+		}
+	}
+
+	.components-notice {
+		margin: 1rem 0;
+	}
+
+	.components-text-control__input,
+	.components-select-control__input {
+		border-color: $border-color;
+
+		&:focus {
+			border-color: $primary-color;
+			box-shadow: 0 0 0 1px $primary-color;
+		}
+	}
+}

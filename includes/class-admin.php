@@ -144,6 +144,78 @@ class Admin {
 
 		// Set script translations.
 		wp_set_script_translations( 'layoutberg-admin', 'layoutberg' );
+
+		// Enqueue onboarding scripts on onboarding page
+		if ( $screen && 'admin_page_layoutberg-onboarding' === $screen->id ) {
+			// Check if build file exists for onboarding
+			$onboarding_asset_file = LAYOUTBERG_PLUGIN_DIR . 'build/admin/onboarding.asset.php';
+			$onboarding_asset = file_exists( $onboarding_asset_file ) 
+				? include $onboarding_asset_file 
+				: array( 'dependencies' => array(), 'version' => $this->version );
+
+			wp_enqueue_script(
+				'layoutberg-onboarding',
+				LAYOUTBERG_PLUGIN_URL . 'build/admin/onboarding.js',
+				$onboarding_asset['dependencies'],
+				$onboarding_asset['version'],
+				true
+			);
+
+			// Enqueue onboarding styles
+			wp_enqueue_style(
+				'layoutberg-onboarding',
+				LAYOUTBERG_PLUGIN_URL . 'build/admin/onboarding.css',
+				array( 'wp-components' ),
+				$onboarding_asset['version']
+			);
+
+			// Localize onboarding script
+			wp_localize_script(
+				'layoutberg-onboarding',
+				'layoutbergOnboarding',
+				array(
+					'apiUrl'       => rest_url( 'layoutberg/v1' ),
+					'restNonce'    => wp_create_nonce( 'wp_rest' ),
+					'adminUrl'     => admin_url(),
+					'settingsUrl'  => admin_url( 'admin.php?page=layoutberg-settings' ),
+					'editorUrl'    => admin_url( 'post-new.php?post_type=page' ),
+					'dashboardUrl' => admin_url( 'admin.php?page=layoutberg' ),
+					'plugins'      => array(
+						'ultimate-blocks' => array(
+							'slug'        => 'ultimate-blocks',
+							'name'        => 'Ultimate Blocks',
+							'description' => __( 'A collection of essential blocks to supercharge your content creation.', 'layoutberg' ),
+							'installed'   => file_exists( WP_PLUGIN_DIR . '/ultimate-blocks/ultimate-blocks.php' ),
+							'active'      => is_plugin_active( 'ultimate-blocks/ultimate-blocks.php' ),
+						),
+						'tableberg' => array(
+							'slug'        => 'tableberg',
+							'name'        => 'TableBerg',
+							'description' => __( 'Create beautiful, responsive tables with advanced features.', 'layoutberg' ),
+							'installed'   => file_exists( WP_PLUGIN_DIR . '/tableberg/tableberg.php' ),
+							'active'      => is_plugin_active( 'tableberg/tableberg.php' ),
+						),
+					),
+					'strings'      => array(
+						'welcome'         => __( 'Welcome to LayoutBerg', 'layoutberg' ),
+						'next'            => __( 'Next', 'layoutberg' ),
+						'back'            => __( 'Back', 'layoutberg' ),
+						'skip'            => __( 'Skip', 'layoutberg' ),
+						'finish'          => __( 'Finish Setup', 'layoutberg' ),
+						'installing'      => __( 'Installing...', 'layoutberg' ),
+						'activating'      => __( 'Activating...', 'layoutberg' ),
+						'installed'       => __( 'Installed', 'layoutberg' ),
+						'active'          => __( 'Active', 'layoutberg' ),
+						'error'           => __( 'An error occurred. Please try again.', 'layoutberg' ),
+						'connectionError' => __( 'Failed to connect. Please check your API key.', 'layoutberg' ),
+						'connectionSuccess' => __( 'Connected successfully!', 'layoutberg' ),
+					),
+				)
+			);
+
+			// Set script translations
+			wp_set_script_translations( 'layoutberg-onboarding', 'layoutberg' );
+		}
 	}
 
 	/**
@@ -357,6 +429,16 @@ class Admin {
 			'layoutberg-generation-details',
 			array( $this, 'display_generation_details_page' )
 		);
+
+		// Add hidden onboarding page
+		add_submenu_page(
+			null, // Hidden from menu
+			__( 'Welcome to LayoutBerg', 'layoutberg' ),
+			__( 'Welcome', 'layoutberg' ),
+			'manage_options',
+			'layoutberg-onboarding',
+			array( $this, 'display_onboarding_page' )
+		);
 	}
 
 	/**
@@ -438,6 +520,15 @@ class Admin {
 	 */
 	public function display_generation_details_page() {
 		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-generation-details.php';
+	}
+
+	/**
+	 * Display the onboarding page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function display_onboarding_page() {
+		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-onboarding.php';
 	}
 
 	/**
@@ -710,23 +801,6 @@ class Admin {
 	 * @since 1.0.0
 	 */
 	public function display_admin_notices() {
-		// Check if plugin was just activated.
-		if ( get_transient( 'layoutberg_activated' ) ) {
-			?>
-			<div class="notice notice-success is-dismissible">
-				<p>
-					<?php 
-					printf(
-						/* translators: %s: Settings page URL */
-						esc_html__( 'LayoutBerg activated successfully! Please %s to get started.', 'layoutberg' ),
-						'<a href="' . esc_url( admin_url( 'admin.php?page=layoutberg-settings' ) ) . '">' . esc_html__( 'configure your settings', 'layoutberg' ) . '</a>'
-					); 
-					?>
-				</p>
-			</div>
-			<?php
-			delete_transient( 'layoutberg_activated' );
-		}
 
 		// Check if API key is configured.
 		if ( $this->is_layoutberg_admin_page() ) {

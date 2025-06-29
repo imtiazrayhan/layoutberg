@@ -143,6 +143,14 @@ class API_Handler {
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
+					'provider' => array(
+						'required'          => false,
+						'default'           => 'openai',
+						'sanitize_callback' => 'sanitize_text_field',
+						'validate_callback' => function( $value ) {
+							return in_array( $value, array( 'openai', 'claude' ), true );
+						},
+					),
 				),
 			)
 		);
