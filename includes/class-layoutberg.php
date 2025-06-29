@@ -115,6 +115,9 @@ class LayoutBerg {
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-block-generator.php';
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-block-serializer.php';
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-prompt-engineer.php';
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-pattern-variations.php';
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-block-variations.php';
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-content-randomizer.php';
 
 		// Load template manager.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-template-manager.php';

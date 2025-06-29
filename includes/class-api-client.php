@@ -281,6 +281,11 @@ class API_Client {
 			'content' => $response['content'],
 			'usage'   => isset( $response['usage'] ) ? $response['usage'] : array(),
 			'model'   => $this->model,
+			'prompts' => array(
+				'system' => $system_prompt,
+				'user'   => $user_prompt,
+				'original_user' => $prompt,
+			),
 		);
 	}
 

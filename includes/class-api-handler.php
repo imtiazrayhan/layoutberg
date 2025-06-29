@@ -201,6 +201,7 @@ class API_Handler {
 					'usage'        => isset( $result['usage'] ) ? $result['usage'] : null,
 					'model'        => isset( $result['model'] ) ? $result['model'] : null,
 					'metadata'     => isset( $result['metadata'] ) ? $result['metadata'] : null,
+					'prompts'      => isset( $result['prompts'] ) ? $result['prompts'] : null,
 				),
 			);
 

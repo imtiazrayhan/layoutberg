@@ -22,31 +22,40 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Prompt_Engineer {
 
 	/**
-	 * Layout type templates.
+	 * Style variations for prompts.
 	 *
 	 * @since  1.0.0
 	 * @access private
 	 * @var    array
 	 */
-	private $layout_templates = array();
+	private $style_variations = array();
 
 	/**
-	 * Block examples.
+	 * Layout variations for prompts.
 	 *
 	 * @since  1.0.0
 	 * @access private
 	 * @var    array
 	 */
-	private $block_examples = array();
+	private $layout_variations = array();
 
 	/**
-	 * Pattern library.
+	 * Color scheme variations.
 	 *
 	 * @since  1.0.0
 	 * @access private
 	 * @var    array
 	 */
-	private $pattern_library = array();
+	private $color_schemes = array();
+
+	/**
+	 * Typography variations.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    array
+	 */
+	private $typography_variations = array();
 
 	/**
 	 * Constructor.
@@ -54,9 +63,10 @@ class Prompt_Engineer {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		$this->init_layout_templates();
-		$this->init_block_examples();
-		$this->init_pattern_library();
+		$this->init_style_variations();
+		$this->init_layout_variations();
+		$this->init_color_schemes();
+		$this->init_typography_variations();
 	}
 
 	/**
@@ -67,270 +77,630 @@ class Prompt_Engineer {
 	 * @return string System prompt.
 	 */
 	public function build_system_prompt( $options = array() ) {
-		// Start with critical instructions
-		$prompt = $this->get_critical_wordpress_instructions();
+		// Start with core instructions
+		$prompt = $this->get_core_instructions();
 		
-		// Add validation rules
-		$prompt .= "\n\n" . $this->get_validation_rules();
-		
-		// Add simple structure examples
-		$prompt .= "\n\n" . $this->get_simple_structure_examples();
-		
-		// Add common pitfalls to avoid
-		$prompt .= "\n\n" . $this->get_common_pitfalls();
-		
-		// Add comprehensive block examples
-		$prompt .= "\n\n" . $this->get_example_blocks();
-		
-		// Add style-specific instructions if provided
+		// Add dynamic style instructions based on options
 		if ( isset( $options['style'] ) ) {
-			$prompt .= "\n\nSTYLE: Create a " . $options['style'] . " design style.";
-			
-			switch ( $options['style'] ) {
-				case 'modern':
-					$prompt .= " Use clean lines, plenty of whitespace, sans-serif fonts, and minimalist design.";
-					break;
-				case 'classic':
-					$prompt .= " Use traditional layouts, serif fonts, formal structure, and conservative design.";
-					break;
-				case 'creative':
-					$prompt .= " Use bold colors, unique layouts, creative typography, and artistic elements.";
-					break;
-			}
+			$prompt .= "\n\n" . $this->get_style_instructions( $options['style'] );
 		}
 		
-		// Add layout-specific instructions if provided
+		// Add dynamic layout instructions based on options
 		if ( isset( $options['layout'] ) ) {
-			$prompt .= "\n\nLAYOUT: Use " . $options['layout'] . " layout.";
-			
-			switch ( $options['layout'] ) {
-				case 'single-column':
-					$prompt .= " Center all content in a single column with maximum width.";
-					break;
-				case 'two-column':
-					$prompt .= " Use two-column layouts for content sections where appropriate.";
-					break;
-				case 'grid':
-					$prompt .= " Use grid layouts with columns for features, services, or gallery items.";
-					break;
-				case 'asymmetric':
-					$prompt .= " Use asymmetric layouts with varied column widths and creative arrangements.";
-					break;
-			}
+			$prompt .= "\n\n" . $this->get_layout_instructions( $options['layout'] );
 		}
 		
-		// Add pattern library reference
-		$prompt .= "\n\nPATTERN LIBRARY: You have access to these pre-built patterns: " . implode( ', ', array_keys( $this->pattern_library ) );
-		$prompt .= "\nUse these patterns as templates when appropriate, adapting content to match user requirements.";
+		// Add variation instructions to prevent repetition
+		$prompt .= "\n\n" . $this->get_variation_instructions();
 		
-		// Add user instruction priority
-		$prompt .= "\n\nUSER INSTRUCTIONS: Follow the user's description exactly. They specify what sections to include and in what order.";
-		$prompt .= "\nGenerate ONLY the requested sections - no more, no less.";
+		// Add user-specific context
+		$prompt .= "\n\n" . $this->get_context_instructions( $options );
+		
+		// Add block examples for reference
+		$prompt .= "\n\n## BLOCK REFERENCE EXAMPLES\n\n" . $this->get_example_blocks();
 		
 		return $prompt;
 	}
 
 	/**
-	 * Get critical WordPress instructions.
+	 * Get core instructions for block generation.
 	 *
 	 * @since 1.0.0
-	 * @return string Critical instructions.
+	 * @return string Core instructions.
 	 */
-	private function get_critical_wordpress_instructions() {
-		return "You are a WordPress Gutenberg block expert. Generate ONLY valid Gutenberg blocks.
+	private function get_core_instructions() {
+		return 'You are a WordPress Gutenberg block expert. Generate ONLY valid Gutenberg blocks that pass WordPress validation.
 
-CRITICAL RULES TO PREVENT ERRORS:
-1. Output ONLY block comments and content - no explanations
-2. Start with <!-- wp: and end with -->
-3. ALWAYS close blocks: <!-- /wp:block-name -->
-4. Use SIMPLE JSON - avoid complex nested attributes
-5. NO excessive nesting - maximum 3 levels deep
+## OUTPUT RULES
+1. Output ONLY block markup - no explanations, comments, or surrounding text
+2. Every block MUST have matching opening/closing HTML comments
+3. Use ONLY double quotes in JSON: {"attribute":"value"}
+4. NEVER use single quotes or backticks in attributes
+5. Escape special characters in content: &amp; &lt; &gt; &quot;
 
-VALID BLOCK STRUCTURE:
-<!-- wp:blockname {\"attribute\":\"value\"} -->
-content here
-<!-- /wp:blockname -->
+## BLOCK ANATOMY
+<!-- wp:namespace/blockname {"attribute":"value","nested":{"key":"value"}} -->
+<tag class="wp-block-namespace-blockname">content</tag>
+<!-- /wp:namespace/blockname -->
 
-ATTRIBUTE RULES:
-- Use double quotes for JSON: {\"align\":\"wide\"}
-- No single quotes or backticks
-- No line breaks inside JSON
-- Keep attributes simple and flat
+## CRITICAL VALIDATION REQUIREMENTS
 
-SPACING WITH CSS VARIABLES:
-- Use: \"var:preset|spacing|40\" (NOT var(--wp--preset--spacing--40))
-- Common values: 20, 30, 40, 50, 60, 80
-- Apply in style object: {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|40\"}}}}
+### IMAGES & MEDIA
+- ALWAYS use absolute URLs:
+  - Photos: https://images.unsplash.com/photo-[id]?w=[width]&h=[height]&fit=crop
+  - Placeholders: https://placehold.co/[width]x[height]/[bg-color]/[text-color]?text=[text]
+  - Icons: https://placehold.co/64x64/[color]/white?text=[symbol]
+- NEVER use: image.jpg, ./images/, ../assets/, or any relative paths
+- Required attributes: {"url":"https://...","alt":"descriptive text","id":1}
 
-IMAGE RULES - CRITICAL FOR VALIDATION:
-- NEVER use relative paths like \"image.jpg\", \"icon-1.jpg\", or \"photo.png\"
-- ALWAYS use complete URLs: https://via.placeholder.com/400x300/0073aa/ffffff?text=Icon
-- For small icons: https://via.placeholder.com/64x64/0073aa/ffffff?text=Icon+1
-- For regular images: https://images.unsplash.com/photo-1517180102446-f3ece451e9d8
-- Always include meaningful alt text for accessibility
+### COVER BLOCKS - COMPREHENSIVE RULES
 
-COVER BLOCK RULES - NEVER USE IMAGES, ALWAYS USE GRADIENTS:
-- NEVER use \"url\" attribute in cover blocks - this causes validation failures
-- ALWAYS use gradients: {\"gradient\":\"cool-to-warm-spectrum\",\"dimRatio\":50}
-- Simple structure: <div class=\"wp-block-cover\"><div class=\"wp-block-cover__inner-container\">content</div></div>
-- Common gradients: cool-to-warm-spectrum, vivid-cyan-blue-to-vivid-purple, light-green-cyan-to-vivid-green-cyan
-- NO background span needed for gradients - WordPress handles gradient rendering automatically";
-	}
+Cover blocks support TWO methods:
 
-	/**
-	 * Get validation rules to prevent errors.
-	 *
-	 * @since 1.0.0
-	 * @return string Validation rules.
-	 */
-	private function get_validation_rules() {
-		return "RULES TO PREVENT INVALID CONTENT:
+#### Method 1: With Background Image
+<!-- wp:cover {"url":"https://images.unsplash.com/photo-[id]","dimRatio":50,"minHeight":600,"align":"full"} -->
+<div class="wp-block-cover alignfull" style="min-height:600px"><img class="wp-block-cover__image-background" alt="" src="https://images.unsplash.com/photo-[id]" data-object-fit="cover"/><span aria-hidden="true" class="wp-block-cover__background has-background-dim"></span><div class="wp-block-cover__inner-container">
+<!-- inner blocks here -->
+</div></div>
+<!-- /wp:cover -->
 
-1. BLOCK NAMES - Use exact core block names:
-   - heading (not headers or title)
-   - paragraph (not text or para)
-   - columns and column (not cols)
-   - buttons and button (not btn)
-   - image (not img or picture)
-   - group (not div or section)
-   - cover (not hero or banner)
-   - separator (not divider)
-   - spacer (not space or gap)
+Key image attributes:
+- dimRatio: 0-100 (controls overlay darkness)
+- When dimRatio is 50+: add has-background-dim-[number] class
+- Always include: <img class="wp-block-cover__image-background" data-object-fit="cover"/>
 
-2. ATTRIBUTE FORMAT:
-   CORRECT: {\"align\":\"center\",\"fontSize\":\"large\"}
-   WRONG: {'align': 'center'} or {align: \"center\"}
+#### Method 2: With Gradient
+<!-- wp:cover {"gradient":"gradient-name","align":"full"} -->
+<div class="wp-block-cover alignfull"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim has-background-gradient has-[gradient-name]-gradient-background"></span><div class="wp-block-cover__inner-container">
+<!-- inner blocks here -->
+</div></div>
+<!-- /wp:cover -->
 
-3. STYLE OBJECT FORMAT:
-   CORRECT: {\"style\":{\"spacing\":{\"padding\":{\"top\":\"20px\"}}}}
-   WRONG: {\"style\":\"padding-top:20px\"}
+OR with custom gradient:
+<!-- wp:cover {"customGradient":"linear-gradient(135deg,#667eea 0%,#764ba2 100%)","align":"full"} -->
+<div class="wp-block-cover alignfull"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim has-background-gradient" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)"></span><div class="wp-block-cover__inner-container">
+<!-- inner blocks here -->
+</div></div>
+<!-- /wp:cover -->
 
-4. CLASS NAMES:
-   - Always include base class: class=\"wp-block-blockname\"
-   - Add modifier classes: has-text-align-center
-   - Color classes: has-white-color has-text-color
+### REQUIRED CLASS PATTERNS
+- Core blocks: class="wp-block-[blockname]"
+- Variations: class="wp-block-[blockname] is-style-[style]"
+- Alignment: class="wp-block-[blockname] has-text-align-[left|center|right]"
+- Colors: class="has-[color]-color has-text-color" OR "has-[color]-background-color has-background"
+- Custom classes: Can add multiple custom classes like "hero-section custom-style"
 
-5. COVER BLOCKS - CRITICAL VALIDATION RULE:
-   - NEVER use \"url\" attribute: {\"url\":\"...\"} causes validation failures
-   - ALWAYS use gradient: {\"gradient\":\"cool-to-warm-spectrum\",\"dimRatio\":50}
-   - NO background span needed - WordPress handles gradients automatically
+## WORDPRESS PRESETS
 
-6. COMMON ATTRIBUTES:
-   - align: \"left\", \"center\", \"right\", \"wide\", \"full\"
-   - textAlign: \"left\", \"center\", \"right\"
-   - fontSize: \"small\", \"medium\", \"large\", \"x-large\"
-   - backgroundColor/textColor: color slug only";
-	}
+### GRADIENTS
+Named gradients:
+- vivid-cyan-blue-to-vivid-purple
+- vivid-green-cyan-to-vivid-cyan-blue  
+- light-green-cyan-to-vivid-green-cyan
+- luminous-vivid-amber-to-luminous-vivid-orange
+- luminous-vivid-orange-to-vivid-red
+- very-light-gray-to-cyan-bluish-gray
+- cool-to-warm-spectrum
+- blush-light-purple
+- blush-bordeaux
+- luminous-dusk
+- pale-ocean
+- electric-grass
+- midnight
 
-	/**
-	 * Get simple structure examples.
-	 *
-	 * @since 1.0.0
-	 * @return string Simple examples.
-	 */
-	private function get_simple_structure_examples() {
-		return "SIMPLE STRUCTURE EXAMPLES (AVOID OVER-NESTING):
+Custom gradients:
+- linear-gradient(135deg,#color1 0%,#color2 100%)
+- radial-gradient(circle,#color1 0%,#color2 100%)
 
-1. BASIC SECTION - Just one group wrapper:
-<!-- wp:group {\"align\":\"wide\",\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|80\",\"bottom\":\"var:preset|spacing|80\"}}}} -->
-<div class=\"wp-block-group alignwide\" style=\"padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)\">
-    <!-- wp:heading {\"textAlign\":\"center\"} -->
-    <h2 class=\"wp-block-heading has-text-align-center\">Title</h2>
-    <!-- /wp:heading -->
-    
-    <!-- wp:paragraph {\"align\":\"center\"} -->
-    <p class=\"has-text-align-center\">Description</p>
-    <!-- /wp:paragraph -->
+### COLORS
+Named colors:
+- white, black
+- primary, secondary, tertiary, quaternary
+- base, contrast, accent, base-2, contrast-2, contrast-3, accent-2, accent-3
+- vivid-cyan-blue, vivid-green-cyan, vivid-purple
+- pale-cyan-blue, pale-pink
+- luminous-vivid-orange, luminous-vivid-amber
+- light-green-cyan
+
+### SPACING
+Two methods supported:
+
+1. CSS Variables:
+   - JSON: {"padding":{"top":"var:preset|spacing|40"}}
+   - Style: style="padding-top:var(--wp--preset--spacing--40)"
+   - Scale: 20, 30, 40, 50, 60, 70, 80, 100
+
+2. Direct Values:
+   - JSON: {"padding":{"top":"15px","bottom":"15px","left":"40px","right":"40px"}}
+   - Style: style="padding:15px 40px"
+
+### TYPOGRAPHY
+Font Sizes:
+- Named: small, medium, large, larger, huge, gigantic
+- Example: {"fontSize":"large"} or {"fontSize":"huge"}
+- Custom: {"fontSize":"1.25rem"} or {"fontSize":"clamp(2rem, 4vw, 3rem)"}
+
+Font Families:
+- system-font, source-serif-pro, system-sans-serif
+
+## COMMON BLOCK PATTERNS
+
+### BUTTONS
+<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+<div class="wp-block-buttons">
+<!-- wp:button {"backgroundColor":"primary","textColor":"base"} -->
+<div class="wp-block-button"><a class="wp-block-button__link has-base-color has-primary-background-color has-text-color has-background wp-element-button">Button Text</a></div>
+<!-- /wp:button -->
 </div>
-<!-- /wp:group -->
+<!-- /wp:buttons -->
 
-2. COLUMNS WITHOUT EXTRA GROUPS:
-<!-- wp:columns -->
-<div class=\"wp-block-columns\">
-    <!-- wp:column -->
-    <div class=\"wp-block-column\">
-        <!-- wp:heading -->
-        <h3 class=\"wp-block-heading\">Feature</h3>
-        <!-- /wp:heading -->
-        
-        <!-- wp:paragraph -->
-        <p>Description</p>
-        <!-- /wp:paragraph -->
-    </div>
-    <!-- /wp:column -->
+#### Button Style Variations:
+- Default (filled): No additional class needed
+- Outline: {"className":"is-style-outline"}
+- Rounded: {"className":"is-style-rounded"}
+- Combined: {"className":"is-style-outline is-style-rounded"}
+
+### COLUMNS (Responsive)
+<!-- wp:columns {"style":{"spacing":{"blockGap":{"left":"var:preset|spacing|50"}}}} -->
+<div class="wp-block-columns">
+<!-- wp:column {"width":"33.33%"} -->
+<div class="wp-block-column" style="flex-basis:33.33%">
+<!-- content -->
+</div>
+<!-- /wp:column -->
 </div>
 <!-- /wp:columns -->
 
-3. HERO WITH COVER (no nested groups):
-<!-- wp:cover {\"url\":\"image.jpg\",\"dimRatio\":50,\"align\":\"full\"} -->
-<div class=\"wp-block-cover alignfull\">
-    <span aria-hidden=\"true\" class=\"wp-block-cover__background has-background-dim\"></span>
-    <img class=\"wp-block-cover__image-background\" alt=\"\" src=\"image.jpg\" data-object-fit=\"cover\"/>
-    <div class=\"wp-block-cover__inner-container\">
-        <!-- wp:heading {\"textAlign\":\"center\",\"level\":1} -->
-        <h1 class=\"wp-block-heading has-text-align-center\">Welcome</h1>
-        <!-- /wp:heading -->
-    </div>
+### GROUP WITH PADDING
+<!-- wp:group {"style":{"spacing":{"padding":{"top":"60px","bottom":"60px","left":"40px","right":"40px"}}},"layout":{"type":"constrained"}} -->
+<div class="wp-block-group" style="padding-top:60px;padding-right:40px;padding-bottom:60px;padding-left:40px">
+<!-- content -->
 </div>
-<!-- /wp:cover -->
+<!-- /wp:group -->
 
-4. SIMPLE BUTTON:
-<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-<div class=\"wp-block-buttons\">
-    <!-- wp:button -->
-    <div class=\"wp-block-button\"><a class=\"wp-block-button__link wp-element-button\">Click Here</a></div>
-    <!-- /wp:button -->
-</div>
-<!-- /wp:buttons -->";
+### SPACER
+<!-- wp:spacer {"height":"20px"} -->
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+## BLOCK-SPECIFIC VALIDATION
+
+### HEADING
+- Must include level: {"level":1} through {"level":6}
+- Alignment: {"textAlign":"center"}
+- Font size: {"fontSize":"huge"} or custom
+- Can add custom classes: {"className":"hero-title"}
+
+### IMAGE
+Required: {"url":"https://...","alt":"text"}
+Optional: {"sizeSlug":"large","linkDestination":"none","width":800,"height":600}
+
+### PARAGRAPH
+- Alignment: {"align":"center"} (note: "align" not "textAlign" for paragraphs)
+- Font size: {"fontSize":"large"}
+- Text color: {"textColor":"white"}
+
+### SEPARATOR
+Style variations: {"className":"is-style-wide"} or {"className":"is-style-dots"}
+
+### LIST
+CRITICAL: Lists must contain list-item blocks:
+<!-- wp:list -->
+<ul class="wp-block-list">
+<!-- wp:list-item -->
+<li>First item</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Second item</li>
+<!-- /wp:list-item -->
+</ul>
+<!-- /wp:list -->
+
+For ordered lists: {"ordered":true} and use <ol> instead of <ul>
+
+## COLOR CLASS CONVENTIONS
+When using named colors:
+- Text color only: has-[color]-color has-text-color
+- Background only: has-[color]-background-color has-background
+- Both: has-[text-color]-color has-[bg-color]-background-color has-text-color has-background
+
+Examples:
+- class="has-white-color has-text-color"
+- class="has-primary-background-color has-background"
+- class="has-black-color has-white-background-color has-text-color has-background"
+
+## COMMON MISTAKES TO AVOID
+1. Missing or mismatched block closing comments
+2. Using single quotes in JSON attributes
+3. Forgetting required classes on HTML elements
+4. Using relative image paths
+5. Missing wp-block- prefix in class names
+6. Incorrect nesting of inner blocks
+7. Using url attribute in gradient-based cover blocks
+8. Missing required attributes like alt for images
+9. Malformed JSON in block attributes
+10. Forgetting wrapper divs for certain blocks
+11. Using textAlign instead of align for paragraphs
+12. Not including data-object-fit="cover" for cover block images
+
+## CUSTOM CLASSES & STYLING
+- Multiple custom classes allowed: {"className":"hero-section is-style-rounded custom-class"}
+- Custom inline styles supported: style="min-height:600px"
+- Combine preset classes with custom classes
+- Maintain WordPress naming conventions alongside custom classes
+
+## CONTENT GENERATION RULES
+- Professional tone: innovative, cutting-edge, forward-thinking
+- Vary vocabulary - avoid repetitive phrases
+- Use specific benefits, not generic claims
+- Include numbers and data when relevant
+- Mix short punchy headlines with descriptive subheadings
+- Vary button CTAs: "Get Started", "Learn More", "Book a Demo", "Explore Features", "Discover Our Services"
+- Use power words: Transform, Accelerate, Optimize, Revolutionize, Streamline, Innovative
+
+## LAYOUT VARIATION STRATEGIES
+1. Alternate between full-width and constrained sections
+2. Mix 2, 3, and 4 column layouts
+3. Vary alignment patterns (not everything centered)
+4. Use different spacer heights: 20px, 30px, 50px, 80px, 100px
+5. Combine different block patterns for visual interest
+6. Use asymmetrical column widths: 40/60, 25/75, 30/40/30
+7. Mix gradient and image-based cover blocks
+8. Vary button styles within the same section
+9. Use both CSS variables and direct values for spacing variety';
 	}
 
 	/**
-	 * Get common pitfalls to avoid.
+	 * Get style-specific instructions.
 	 *
 	 * @since 1.0.0
-	 * @return string Common pitfalls.
+	 * @param string $style Style type.
+	 * @return string Style instructions.
 	 */
-	private function get_common_pitfalls() {
-		return "COMMON PITFALLS THAT CAUSE INVALID CONTENT:
+	private function get_style_instructions( $style ) {
+		if ( ! isset( $this->style_variations[ $style ] ) ) {
+			$style = 'modern'; // Default fallback
+		}
+		
+		$variation = $this->style_variations[ $style ];
+		$random_index = array_rand( $variation['approaches'] );
+		$approach = $variation['approaches'][ $random_index ];
+		
+		return "STYLE: {$variation['name']} Design
+{$variation['description']}
 
-1. DON'T OVER-NEST GROUPS:
-   BAD: group > group > group > content
-   GOOD: group > content or group > columns > column > content
+Design Approach: {$approach}
 
-2. DON'T USE INLINE STYLES INCORRECTLY:
-   BAD: style=\"padding:40px;margin:20px;\"
-   GOOD: style=\"padding:40px;margin:20px\"
+Visual Elements:
+- Colors: {$variation['colors']}
+- Typography: {$variation['typography']}
+- Spacing: {$variation['spacing']}
+- Imagery: {$variation['imagery']}
 
-3. DON'T MIX VAR FORMATS:
-   BAD: var(--wp--preset--spacing--40)
-   GOOD: var:preset|spacing|40 (in JSON)
-   GOOD: var(--wp--preset--spacing--40) (in style attribute)
-
-4. DON'T FORGET REQUIRED CLASSES:
-   - Every block needs wp-block-[blockname]
-   - Alignment needs both attribute AND class
-   - Color needs both attribute AND class
-
-5. DON'T USE COMPLEX NESTED JSON:
-   Keep attributes flat and simple
-
-6. DON'T FORGET THE INNER CONTAINER:
-   - Cover blocks need wp-block-cover__inner-container
-   - Media & Text blocks have specific structure
-
-7. IMAGE URLS - CAUSES VALIDATION FAILURES:
-   BAD: \"icon-1.jpg\", \"image.png\", \"photo.jpeg\"
-   BAD: \"/images/photo.jpg\", \"./icon.png\"
-   GOOD: \"https://via.placeholder.com/400x300/0073aa/ffffff?text=Icon\"
-   GOOD: \"https://images.unsplash.com/photo-1517180102446-f3ece451e9d8\"
-
-8. PROPER CLOSING:
-   - Every <!-- wp:block --> needs <!-- /wp:block -->
-   - Check the block name matches exactly";
+Block Preferences:
+{$variation['block_preferences']}";
 	}
 
 	/**
-	 * Enhance user prompt with context.
+	 * Get layout-specific instructions.
+	 *
+	 * @since 1.0.0
+	 * @param string $layout Layout type.
+	 * @return string Layout instructions.
+	 */
+	private function get_layout_instructions( $layout ) {
+		if ( ! isset( $this->layout_variations[ $layout ] ) ) {
+			$layout = 'single-column'; // Default fallback
+		}
+		
+		$variation = $this->layout_variations[ $layout ];
+		$random_structure = $variation['structures'][ array_rand( $variation['structures'] ) ];
+		
+		return "LAYOUT: {$variation['name']}
+{$variation['description']}
+
+Structure: {$random_structure}
+
+Layout Rules:
+{$variation['rules']}
+
+Section Organization:
+{$variation['organization']}";
+	}
+
+	/**
+	 * Get variation instructions to prevent repetition.
+	 *
+	 * @since 1.0.0
+	 * @return string Variation instructions.
+	 */
+	private function get_variation_instructions() {
+		$content_types = array(
+			'professional services',
+			'technology startup',
+			'creative agency',
+			'e-commerce business',
+			'educational platform',
+			'healthcare provider',
+			'nonprofit organization',
+			'consulting firm'
+		);
+		
+		$random_content = $content_types[ array_rand( $content_types ) ];
+		
+		$tone_variations = array(
+			'professional and authoritative',
+			'friendly and approachable',
+			'innovative and cutting-edge',
+			'trustworthy and reliable',
+			'creative and inspiring',
+			'modern and sophisticated'
+		);
+		
+		$random_tone = $tone_variations[ array_rand( $tone_variations ) ];
+		
+		return "CONTENT VARIATION:
+Generate unique content as if for a {$random_content} with a {$random_tone} tone.
+
+IMPORTANT VARIATION RULES:
+1. Vary heading text - don't use generic titles
+2. Mix block order - don't always follow the same pattern
+3. Vary column counts - use 2, 3, or 4 columns as appropriate
+4. Use different gradient combinations for cover blocks
+5. Vary button text and styles
+6. Mix alignment - not everything needs to be centered
+7. Use different spacer heights for visual rhythm
+8. Vary color combinations while maintaining cohesion";
+	}
+
+	/**
+	 * Get context-specific instructions.
+	 *
+	 * @since 1.0.0
+	 * @param array $options Context options.
+	 * @return string Context instructions.
+	 */
+	private function get_context_instructions( $options ) {
+		$instructions = "CONTEXT-SPECIFIC RULES:";
+		
+		// Add randomized content suggestions
+		$hero_variations = array(
+			'Use a compelling headline that grabs attention',
+			'Create an inspiring tagline with a clear value proposition',
+			'Craft a bold statement that defines the brand',
+			'Write a customer-focused headline addressing their needs',
+			'Develop a unique selling proposition as the main headline'
+		);
+		
+		$instructions .= "\n- Hero Section: " . $hero_variations[ array_rand( $hero_variations ) ];
+		
+		// Add feature variations
+		$feature_counts = array( 3, 4, 6 );
+		$feature_layouts = array( 'icons with text', 'numbers with descriptions', 'bold headings with details' );
+		
+		$instructions .= "\n- Features: Display " . $feature_counts[ array_rand( $feature_counts ) ] . 
+		                 " features using " . $feature_layouts[ array_rand( $feature_layouts ) ];
+		
+		// Add color scheme if not specified
+		if ( ! isset( $options['colors'] ) ) {
+			$color_scheme = $this->color_schemes[ array_rand( $this->color_schemes ) ];
+			$instructions .= "\n- Color Scheme: " . $color_scheme;
+		}
+		
+		return $instructions;
+	}
+
+	/**
+	 * Initialize style variations.
+	 *
+	 * @since 1.0.0
+	 */
+	private function init_style_variations() {
+		$this->style_variations = array(
+			'modern' => array(
+				'name' => 'Modern',
+				'description' => 'Clean, minimalist design with plenty of whitespace',
+				'approaches' => array(
+					'Use bold typography with sans-serif fonts and high contrast',
+					'Implement card-based layouts with subtle shadows',
+					'Focus on geometric shapes and clean lines',
+					'Emphasize negative space and minimal decoration'
+				),
+				'colors' => 'Monochromatic with accent colors, high contrast between elements',
+				'typography' => 'Sans-serif fonts, large headings, readable body text',
+				'spacing' => 'Generous padding (60-80px sections), consistent margins',
+				'imagery' => 'High-quality photos with subtle overlays, geometric patterns',
+				'block_preferences' => '- Use cover blocks with gradients for heroes
+- Group blocks with background colors for sections
+- Media & text blocks for feature highlights
+- Simple button styles with hover effects'
+			),
+			'classic' => array(
+				'name' => 'Classic',
+				'description' => 'Traditional, professional design with structured layouts',
+				'approaches' => array(
+					'Implement formal grid structures with clear hierarchy',
+					'Use traditional typography with serif headings',
+					'Create balanced, symmetrical layouts',
+					'Focus on readability and clear information architecture'
+				),
+				'colors' => 'Neutral palette with deep blues, grays, and subtle accents',
+				'typography' => 'Serif fonts for headings, clean sans-serif for body',
+				'spacing' => 'Moderate padding (40-60px), consistent throughout',
+				'imagery' => 'Professional photography, traditional layouts',
+				'block_preferences' => '- Traditional header with centered text
+- Columns for features and services
+- Testimonials in quote blocks
+- Structured lists for information'
+			),
+			'creative' => array(
+				'name' => 'Creative',
+				'description' => 'Bold, artistic design with unique layouts',
+				'approaches' => array(
+					'Mix asymmetric layouts with dynamic angles',
+					'Use vibrant color combinations and gradients',
+					'Implement playful typography and custom styles',
+					'Create unexpected layout combinations'
+				),
+				'colors' => 'Vibrant gradients, bold color combinations, high energy',
+				'typography' => 'Mix of font styles, decorative headings, expressive text',
+				'spacing' => 'Variable spacing for dynamic rhythm',
+				'imagery' => 'Artistic images, overlapping elements, creative masks',
+				'block_preferences' => '- Cover blocks with bold gradients
+- Asymmetric column layouts
+- Gallery blocks with creative arrangements
+- Pullquotes for emphasis'
+			),
+			'minimal' => array(
+				'name' => 'Minimal',
+				'description' => 'Ultra-clean design with maximum simplicity',
+				'approaches' => array(
+					'Remove all unnecessary elements',
+					'Focus on typography and content',
+					'Use monochromatic color schemes',
+					'Emphasize functionality over decoration'
+				),
+				'colors' => 'Black, white, and one accent color maximum',
+				'typography' => 'Single font family, consistent weights',
+				'spacing' => 'Maximum whitespace, sparse layouts',
+				'imagery' => 'Minimal use of images, when used they are impactful',
+				'block_preferences' => '- Simple text blocks
+- Minimal buttons
+- Clean separators
+- Focus on content hierarchy'
+			)
+		);
+	}
+
+	/**
+	 * Initialize layout variations.
+	 *
+	 * @since 1.0.0
+	 */
+	private function init_layout_variations() {
+		$this->layout_variations = array(
+			'single-column' => array(
+				'name' => 'Single Column',
+				'description' => 'Centered content in a single column',
+				'structures' => array(
+					'Full-width hero → Narrow content sections → Full-width CTA',
+					'Alternating full and constrained width sections',
+					'Consistent narrow column throughout',
+					'Wide intro → Narrow body → Wide conclusion'
+				),
+				'rules' => '- Maximum content width: 800-1000px
+- Center all content blocks
+- Use full-width backgrounds with constrained content
+- Maintain consistent alignment',
+				'organization' => '- Stack sections vertically
+- Use spacers for rhythm (40-80px)
+- Alternate background colors for sections
+- Keep consistent internal spacing'
+			),
+			'two-column' => array(
+				'name' => 'Two Column',
+				'description' => 'Content arranged in two columns',
+				'structures' => array(
+					'50/50 split for all sections',
+					'60/40 asymmetric layout',
+					'Alternating column dominance',
+					'Mixed single and two-column sections'
+				),
+				'rules' => '- Use columns block with 2 columns
+- Alternate text/image placement
+- Maintain column spacing (40px gap)
+- Responsive stacking on mobile',
+				'organization' => '- Hero: single column
+- Features: 2 columns
+- About: media-text block
+- Mix layouts for variety'
+			),
+			'grid' => array(
+				'name' => 'Grid Layout',
+				'description' => 'Content organized in grid patterns',
+				'structures' => array(
+					'3-column grid for features and services',
+					'4-column grid for compact items',
+					'Mixed 2-3-4 column grids',
+					'Masonry-style varied heights'
+				),
+				'rules' => '- Use columns blocks for grids
+- Consistent gap between items (30-40px)
+- Equal height rows where possible
+- Responsive column reduction',
+				'organization' => '- Hero: full-width
+- Features: 3-4 column grid
+- Team/Portfolio: grid layout
+- Footer: multi-column'
+			),
+			'asymmetric' => array(
+				'name' => 'Asymmetric Layout',
+				'description' => 'Dynamic, unbalanced layouts',
+				'structures' => array(
+					'70/30 split with varying sides',
+					'Offset content blocks',
+					'Diagonal or angled sections',
+					'Overlapping elements'
+				),
+				'rules' => '- Vary column widths dramatically
+- Use offset alignment
+- Mix full, wide, and normal widths
+- Create visual tension',
+				'organization' => '- Break traditional patterns
+- Use unexpected alignments
+- Vary section widths
+- Create dynamic flow'
+			)
+		);
+	}
+
+	/**
+	 * Initialize color schemes.
+	 *
+	 * @since 1.0.0
+	 */
+	private function init_color_schemes() {
+		$this->color_schemes = array(
+			'Use a monochromatic blue scheme with white and gray accents',
+			'Implement a warm palette with oranges, yellows, and browns',
+			'Create a cool palette with teals, purples, and blues',
+			'Use a high-contrast black and white with one bold accent color',
+			'Apply an earthy palette with greens, browns, and natural tones',
+			'Design with a gradient-heavy approach using vivid color transitions',
+			'Implement a pastel palette with soft, muted colors',
+			'Use a corporate palette with navy, gray, and subtle blue accents',
+			'Create a vibrant palette with complementary colors',
+			'Apply a dark theme with bright accent colors'
+		);
+	}
+
+	/**
+	 * Initialize typography variations.
+	 *
+	 * @since 1.0.0
+	 */
+	private function init_typography_variations() {
+		$this->typography_variations = array(
+			'modern_sans' => array(
+				'headings' => 'Bold sans-serif, sizes: h1-60px, h2-48px, h3-36px',
+				'body' => 'Clean sans-serif, 16-18px, 1.6 line-height',
+				'special' => 'All caps for small labels, letter-spacing for emphasis'
+			),
+			'classic_serif' => array(
+				'headings' => 'Elegant serif, sizes: h1-48px, h2-36px, h3-28px',
+				'body' => 'Readable sans-serif, 16px, 1.7 line-height',
+				'special' => 'Italic for quotes, small-caps for distinctions'
+			),
+			'mixed_modern' => array(
+				'headings' => 'Display font for h1, sans-serif for h2-h6',
+				'body' => 'System font stack for optimal reading',
+				'special' => 'Variable font weights for hierarchy'
+			)
+		);
+	}
+
+	/**
+	 * Enhance user prompt with dynamic context.
 	 *
 	 * @since 1.0.0
 	 * @param string $prompt Original user prompt.
@@ -340,617 +710,146 @@ COVER BLOCK RULES - NEVER USE IMAGES, ALWAYS USE GRADIENTS:
 	public function enhance_user_prompt( $prompt, $options = array() ) {
 		$enhanced = $prompt;
 		
-		// Add structural guidance
-		$enhanced .= "\n\nIMPORTANT: Keep structure SIMPLE. Use only ONE group wrapper per section. Avoid nesting groups inside groups unless absolutely necessary.";
+		// Add specific variation instructions
+		$variations = $this->get_prompt_variations( $prompt );
+		$enhanced .= "\n\n" . $variations;
 		
-		// Add specific instructions for common sections
-		if ( preg_match( '/hero/i', $prompt ) ) {
-			$enhanced .= "\n\nHero Section: Use a single cover block with background image, no extra group wrappers inside.";
+		// Add structure guidance based on detected sections
+		$structure = $this->analyze_prompt_structure( $prompt );
+		if ( ! empty( $structure ) ) {
+			$enhanced .= "\n\nCreate these sections in order: " . implode( ', ', $structure );
 		}
 		
-		if ( preg_match( '/features?/i', $prompt ) ) {
-			$enhanced .= "\n\nFeatures: Use columns block directly, no group wrapper needed for each column.";
-		}
-		
-		if ( preg_match( '/pricing/i', $prompt ) ) {
-			$enhanced .= "\n\nPricing: Use columns with simple group blocks for cards, avoid deep nesting.";
-		}
-		
-		// Add validation reminder
-		$enhanced .= "\n\nREMEMBER: Every block must have proper closing tags and valid JSON attributes.";
+		// Add randomization hints
+		$enhanced .= "\n\nIMPORTANT: Create unique content. Vary the structure, avoid generic text, and make each section distinctive.";
 		
 		return $enhanced;
 	}
 
 	/**
-	 * Get simplified system prompt.
+	 * Get prompt variations based on content.
 	 *
 	 * @since 1.0.0
-	 * @return string Simplified prompt.
+	 * @param string $prompt User prompt.
+	 * @return string Variation instructions.
 	 */
-	private function get_simplified_system_prompt() {
-		return "Generate WordPress Gutenberg blocks. Output ONLY blocks, no explanations.
-
-CRITICAL RULES:
-1. Start with <!-- wp: and end with -->
-2. Close ALL blocks: <!-- /wp:blockname -->
-3. Use simple JSON: {\"attribute\":\"value\"}
-4. Maximum 3 levels of nesting
-5. Include required classes
-
-STRUCTURE:
-<!-- wp:blockname {\"attribute\":\"value\"} -->
-<div class=\"wp-block-blockname\">
-    content
-</div>
-<!-- /wp:blockname -->
-
-Follow user instructions for sections and layout.";
-	}
-
-	/**
-	 * Initialize pattern library with simpler patterns.
-	 *
-	 * @since 1.0.0
-	 */
-	private function init_pattern_library() {
-		$this->pattern_library = array(
-			'hero_cover' => '<!-- wp:cover {\"url\":\"https://images.unsplash.com/photo-1517180102446-f3ece451e9d8\",\"dimRatio\":50,\"minHeight\":600,\"align\":\"full\"} -->
-<div class="wp-block-cover alignfull" style="min-height:600px"><img class="wp-block-cover__image-background" alt="" src="https://images.unsplash.com/photo-1517180102446-f3ece451e9d8" data-object-fit="cover"/><span aria-hidden="true" class="wp-block-cover__background has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:heading {\"textAlign\":\"center\",\"level\":1,\"textColor\":\"white\",\"fontSize\":\"huge\"} -->
-<h1 class="wp-block-heading has-text-align-center has-white-color has-text-color has-huge-font-size">Welcome to Our Service</h1>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph {\"align\":\"center\",\"textColor\":\"white\",\"fontSize\":\"large\"} -->
-<p class="has-text-align-center has-white-color has-text-color has-large-font-size">Transform your business with our solutions</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-<div class="wp-block-buttons"><!-- wp:button {\"backgroundColor\":\"white\",\"textColor\":\"black\",\"style\":{\"spacing\":{\"padding\":{\"top\":\"15px\",\"bottom\":\"15px\",\"left\":\"40px\",\"right\":\"40px\"}}}} -->
-<div class="wp-block-button"><a class="wp-block-button__link has-black-color has-white-background-color has-text-color has-background wp-element-button" style="padding-top:15px;padding-right:40px;padding-bottom:15px;padding-left:40px">Get Started</a></div>
-<!-- /wp:button -->
-
-<!-- wp:button {\"textColor\":\"white\",\"className\":\"is-style-outline\",\"style\":{\"spacing\":{\"padding\":{\"top\":\"15px\",\"bottom\":\"15px\",\"left\":\"40px\",\"right\":\"40px\"}}}} -->
-<div class="wp-block-button is-style-outline"><a class="wp-block-button__link has-white-color has-text-color wp-element-button" style="padding-top:15px;padding-right:40px;padding-bottom:15px;padding-left:40px">Learn More</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons --></div></div>
-<!-- /wp:cover -->',
-
-			'features_columns' => '<!-- wp:group {\"align\":\"wide\"} -->
-<div class="wp-block-group alignwide"><!-- wp:heading {\"textAlign\":\"center\"} -->
-<h2 class="wp-block-heading has-text-align-center">Our Features</h2>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph {\"align\":\"center\"} -->
-<p class="has-text-align-center">Discover what makes us different</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:spacer {\"height\":\"40px\"} -->
-<div style="height:40px" aria-hidden="true" class="wp-block-spacer"></div>
-<!-- /wp:spacer -->
-
-<!-- wp:columns {\"align\":\"wide\"} -->
-<div class="wp-block-columns alignwide"><!-- wp:column -->
-<div class="wp-block-column"><!-- wp:image {\"width\":\"64px\",\"height\":\"64px\",\"sizeSlug\":\"large\",\"align\":\"center\"} -->
-<figure class="wp-block-image aligncenter size-large is-resized"><img src="https://via.placeholder.com/64x64/0073aa/ffffff?text=1" alt="" style="width:64px;height:64px"/></figure>
-<!-- /wp:image -->
-
-<!-- wp:heading {\"textAlign\":\"center\",\"level\":3} -->
-<h3 class="wp-block-heading has-text-align-center">Fast Performance</h3>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph {\"align\":\"center\"} -->
-<p class="has-text-align-center">Lightning-fast load times across all devices.</p>
-<!-- /wp:paragraph --></div>
-<!-- /wp:column -->
-
-<!-- wp:column -->
-<div class="wp-block-column"><!-- wp:image {\"width\":\"64px\",\"height\":\"64px\",\"sizeSlug\":\"large\",\"align\":\"center\"} -->
-<figure class="wp-block-image aligncenter size-large is-resized"><img src="https://via.placeholder.com/64x64/0073aa/ffffff?text=2" alt="" style="width:64px;height:64px"/></figure>
-<!-- /wp:image -->
-
-<!-- wp:heading {\"textAlign\":\"center\",\"level\":3} -->
-<h3 class="wp-block-heading has-text-align-center">Secure & Reliable</h3>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph {\"align\":\"center\"} -->
-<p class="has-text-align-center">Enterprise-grade security with 99.9% uptime.</p>
-<!-- /wp:paragraph --></div>
-<!-- /wp:column -->
-
-<!-- wp:column -->
-<div class="wp-block-column"><!-- wp:image {\"width\":\"64px\",\"height\":\"64px\",\"sizeSlug\":\"large\",\"align\":\"center\"} -->
-<figure class="wp-block-image aligncenter size-large is-resized"><img src="https://via.placeholder.com/64x64/0073aa/ffffff?text=3" alt="" style="width:64px;height:64px"/></figure>
-<!-- /wp:image -->
-
-<!-- wp:heading {\"textAlign\":\"center\",\"level\":3} -->
-<h3 class="wp-block-heading has-text-align-center">24/7 Support</h3>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph {\"align\":\"center\"} -->
-<p class="has-text-align-center">Round-the-clock customer support.</p>
-<!-- /wp:paragraph --></div>
-<!-- /wp:column --></div>
-<!-- /wp:columns --></div>
-<!-- /wp:group -->',
-
-			'testimonial_quote' => '<!-- wp:columns {\"align\":\"wide\"} -->
-<div class="wp-block-columns alignwide"><!-- wp:column -->
-<div class="wp-block-column"><!-- wp:quote -->
-<blockquote class="wp-block-quote"><!-- wp:paragraph -->
-<p>"This service completely transformed our business. The results speak for themselves!"</p>
-<!-- /wp:paragraph --><cite>Sarah Johnson, CEO TechCorp</cite></blockquote>
-<!-- /wp:quote --></div>
-<!-- /wp:column -->
-
-<!-- wp:column -->
-<div class="wp-block-column"><!-- wp:quote -->
-<blockquote class="wp-block-quote"><!-- wp:paragraph -->
-<p>"Outstanding support and amazing features. Couldn\'t be happier."</p>
-<!-- /wp:paragraph --><cite>Mike Chen, Founder StartupXYZ</cite></blockquote>
-<!-- /wp:quote --></div>
-<!-- /wp:column --></div>
-<!-- /wp:columns -->',
-
-			'pricing_table' => '<!-- wp:table {\"hasFixedLayout\":false,\"className\":\"is-style-stripes\"} -->
-<figure class="wp-block-table is-style-stripes"><table><thead><tr><th>Feature</th><th>Basic</th><th>Professional</th><th>Enterprise</th></tr></thead><tbody><tr><td>Users</td><td>Up to 5</td><td>Up to 25</td><td>Unlimited</td></tr><tr><td>Storage</td><td>10 GB</td><td>100 GB</td><td>Unlimited</td></tr><tr><td>Support</td><td>Email</td><td>Email & Chat</td><td>24/7 Phone</td></tr><tr><td>Price</td><td><strong>$19/mo</strong></td><td><strong>$49/mo</strong></td><td><strong>Custom</strong></td></tr></tbody></table></figure>
-<!-- /wp:table -->',
-
-			'faq_details' => '<!-- wp:group {\"layout\":{\"type\":\"constrained\",\"contentSize\":\"800px\"}} -->
-<div class="wp-block-group"><!-- wp:details -->
-<details class="wp-block-details"><summary>What makes your service different from competitors?</summary><!-- wp:paragraph -->
-<p>Our service stands out through our combination of cutting-edge technology, exceptional customer support, and proven results.</p>
-<!-- /wp:paragraph --></details>
-<!-- /wp:details -->
-
-<!-- wp:details -->
-<details class="wp-block-details"><summary>How long does it take to get started?</summary><!-- wp:paragraph -->
-<p>Getting started is quick and easy! Most clients are up and running within 24 hours of signing up.</p>
-<!-- /wp:paragraph --></details>
-<!-- /wp:details -->
-
-<!-- wp:details -->
-<details class="wp-block-details"><summary>Can I upgrade or downgrade my plan?</summary><!-- wp:paragraph -->
-<p>Absolutely! You can upgrade or downgrade your plan at any moment through your account dashboard.</p>
-<!-- /wp:paragraph --></details>
-<!-- /wp:details --></div>
-<!-- /wp:group -->',
-
-			'cta_section' => '<!-- wp:group {\"align\":\"full\",\"backgroundColor\":\"black\",\"textColor\":\"white\"} -->
-<div class="wp-block-group alignfull has-white-color has-black-background-color has-text-color has-background"><!-- wp:spacer {\"height\":\"60px\"} -->
-<div style="height:60px" aria-hidden="true" class="wp-block-spacer"></div>
-<!-- /wp:spacer -->
-
-<!-- wp:heading {\"textAlign\":\"center\",\"textColor\":\"white\"} -->
-<h2 class="wp-block-heading has-text-align-center has-white-color has-text-color">Ready to Get Started?</h2>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph {\"align\":\"center\",\"textColor\":\"white\"} -->
-<p class="has-text-align-center has-white-color has-text-color">Join thousands of satisfied customers today</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:spacer {\"height\":\"20px\"} -->
-<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
-<!-- /wp:spacer -->
-
-<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-<div class="wp-block-buttons"><!-- wp:button {\"backgroundColor\":\"white\",\"textColor\":\"black\"} -->
-<div class="wp-block-button"><a class="wp-block-button__link has-black-color has-white-background-color has-text-color has-background wp-element-button">Start Free Trial</a></div>
-<!-- /wp:button -->
-
-<!-- wp:button {\"textColor\":\"white\",\"className\":\"is-style-outline\"} -->
-<div class="wp-block-button is-style-outline"><a class="wp-block-button__link has-white-color has-text-color wp-element-button">Contact Sales</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons -->
-
-<!-- wp:spacer {\"height\":\"40px\"} -->
-<div style="height:40px" aria-hidden="true" class="wp-block-spacer"></div>
-<!-- /wp:spacer --></div>
-<!-- /wp:group -->',
-		);
-	}
-
-	/**
-	 * Validate AI output for WordPress compatibility.
-	 *
-	 * @since 1.0.0
-	 * @param string $output AI output to validate.
-	 * @return array Validation results with fixed output if possible.
-	 */
-	public function validate_and_fix_output( $output ) {
-		$issues = array();
-		$fixed_output = $output;
+	private function get_prompt_variations( $prompt ) {
+		$variations = "SPECIFIC VARIATIONS:\n";
 		
-		// Fix common JSON issues
-		$fixed_output = $this->fix_json_attributes( $fixed_output );
-		
-		// Fix missing closing tags
-		$fixed_output = $this->fix_missing_closing_tags( $fixed_output );
-		
-		// Fix class name issues
-		$fixed_output = $this->fix_class_names( $fixed_output );
-		
-		// Check nesting depth
-		$nesting_depth = $this->check_nesting_depth( $fixed_output );
-		if ( $nesting_depth > 4 ) {
-			$issues[] = 'Excessive nesting detected (depth: ' . $nesting_depth . ')';
+		// Hero variations
+		if ( stripos( $prompt, 'hero' ) !== false ) {
+			$hero_types = array(
+				'Create a hero with gradient cover block, large headline, subheadline, and 2 buttons',
+				'Design a hero with gradient background, centered text, and single CTA',
+				'Build a hero with bold statement and supporting paragraph',
+				'Make a hero with question headline and answer subtext'
+			);
+			$variations .= "- Hero: " . $hero_types[ array_rand( $hero_types ) ] . "\n";
 		}
 		
-		// Validate block structure
-		$structure_valid = $this->validate_block_structure( $fixed_output );
-		if ( ! $structure_valid ) {
-			$issues[] = 'Invalid block structure detected';
+		// Features variations
+		if ( stripos( $prompt, 'feature' ) !== false ) {
+			$feature_layouts = array(
+				'Create ' . rand( 3, 6 ) . ' features in columns with icons',
+				'Design features in a ' . rand( 2, 3 ) . ' column grid with numbers',
+				'Build alternating left/right features with media-text blocks',
+				'Make feature cards with colored backgrounds'
+			);
+			$variations .= "- Features: " . $feature_layouts[ array_rand( $feature_layouts ) ] . "\n";
 		}
 		
-		return array(
-			'valid' => empty( $issues ),
-			'issues' => $issues,
-			'fixed_output' => $fixed_output,
-		);
+		// CTA variations
+		if ( stripos( $prompt, 'cta' ) !== false || stripos( $prompt, 'call to action' ) !== false ) {
+			$cta_styles = array(
+				'Create a full-width colored section with centered CTA',
+				'Design a gradient background CTA with dual buttons',
+				'Build a simple centered CTA with spacious padding',
+				'Make a CTA with background pattern and bold text'
+			);
+			$variations .= "- CTA: " . $cta_styles[ array_rand( $cta_styles ) ] . "\n";
+		}
+		
+		// Pricing table variations
+		if ( stripos( $prompt, 'pricing' ) !== false || stripos( $prompt, 'price' ) !== false ) {
+			$pricing_styles = array(
+				'Create pricing columns with heading for tier name, list for features, and button for action',
+				'Design pricing cards with background colors, price in heading, features in list',
+				'Build pricing table with featured/recommended tier having different styling',
+				'Make pricing comparison with consistent structure across all tiers'
+			);
+			$variations .= "- Pricing: " . $pricing_styles[ array_rand( $pricing_styles ) ] . "\n";
+			$variations .= "- Use lists with list-items for features (not empty lists)\n";
+			$variations .= "- Include price, features list, and CTA button in each column\n";
+		}
+		
+		// Table variations
+		if ( stripos( $prompt, 'table' ) !== false ) {
+			$variations .= "- For pricing tables, use columns with lists inside (not core/table block)\n";
+			$variations .= "- Each column should have: heading (tier name), paragraph (price), list (features), button (CTA)\n";
+		}
+		
+		// FAQ variations
+		if ( stripos( $prompt, 'faq' ) !== false || stripos( $prompt, 'question' ) !== false ) {
+			$faq_styles = array(
+				'Use multiple details blocks, each containing a question as summary and answer as content',
+				'Create heading for each question followed by paragraph for answer',
+				'Build accordion-style FAQs using details/summary blocks',
+				'Design Q&A section with alternating background colors'
+			);
+			$variations .= "- FAQ: " . $faq_styles[ array_rand( $faq_styles ) ] . "\n";
+			$variations .= "- Prefer details blocks for collapsible FAQ items\n";
+			$variations .= "- Include at least 3-5 FAQ items with real questions and answers\n";
+		}
+		
+		return $variations;
 	}
 
 	/**
-	 * Fix common JSON attribute issues.
+	 * Analyze prompt structure to identify sections.
 	 *
 	 * @since 1.0.0
-	 * @param string $output Block output.
-	 * @return string Fixed output.
+	 * @param string $prompt User prompt.
+	 * @return array Detected sections.
 	 */
-	private function fix_json_attributes( $output ) {
-		// Fix single quotes in JSON
-		$output = preg_replace_callback(
-			'/<!--\s*wp:[a-z\/\-]+\s*({[^}]+})/i',
-			function( $matches ) {
-				$json = $matches[1];
-				// Replace single quotes with double quotes
-				$json = str_replace( "'", '"', $json );
-				// Fix unquoted keys
-				$json = preg_replace( '/([{,]\s*)([a-zA-Z_]+)(\s*:)/', '$1"$2"$3', $json );
-				return str_replace( $matches[1], $json, $matches[0] );
-			},
-			$output
+	private function analyze_prompt_structure( $prompt ) {
+		$sections = array();
+		$prompt_lower = strtolower( $prompt );
+		
+		// Common section patterns
+		$section_patterns = array(
+			'hero' => array( 'hero', 'banner', 'header section', 'main header' ),
+			'features' => array( 'features', 'services', 'benefits', 'offerings' ),
+			'about' => array( 'about', 'story', 'mission', 'who we are' ),
+			'testimonials' => array( 'testimonial', 'reviews', 'feedback', 'quotes' ),
+			'pricing' => array( 'pricing', 'plans', 'packages', 'cost' ),
+			'team' => array( 'team', 'staff', 'people', 'members' ),
+			'portfolio' => array( 'portfolio', 'work', 'projects', 'gallery' ),
+			'contact' => array( 'contact', 'get in touch', 'reach us', 'connect' ),
+			'faq' => array( 'faq', 'questions', 'q&a', 'help' ),
+			'cta' => array( 'cta', 'call to action', 'get started', 'sign up' )
 		);
 		
-		return $output;
-	}
-
-	/**
-	 * Fix missing closing tags.
-	 *
-	 * @since 1.0.0
-	 * @param string $output Block output.
-	 * @return string Fixed output.
-	 */
-	private function fix_missing_closing_tags( $output ) {
-		// Track opened blocks
-		$open_blocks = array();
-		
-		// Find all opening blocks
-		preg_match_all( '/<!--\s*wp:([a-z\-]+)(?:\s|{)/i', $output, $opens, PREG_OFFSET_CAPTURE );
-		
-		// Find all closing blocks
-		preg_match_all( '/<!--\s*\/wp:([a-z\-]+)\s*-->/i', $output, $closes, PREG_OFFSET_CAPTURE );
-		
-		// Build stack of open blocks
-		foreach ( $opens[1] as $open ) {
-			$open_blocks[] = $open[0];
-		}
-		
-		// Remove closed blocks from stack
-		foreach ( $closes[1] as $close ) {
-			$key = array_search( $close[0], $open_blocks );
-			if ( $key !== false ) {
-				unset( $open_blocks[ $key ] );
-			}
-		}
-		
-		// Add missing closing tags
-		foreach ( array_reverse( $open_blocks ) as $block ) {
-			$output .= "\n<!-- /wp:{$block} -->";
-		}
-		
-		return $output;
-	}
-
-	/**
-	 * Fix class name issues.
-	 *
-	 * @since 1.0.0
-	 * @param string $output Block output.
-	 * @return string Fixed output.
-	 */
-	private function fix_class_names( $output ) {
-		// Ensure wp-block- prefix
-		$output = preg_replace(
-			'/<div class="([^"]*)"/',
-			function( $matches ) {
-				$classes = $matches[1];
-				if ( strpos( $classes, 'wp-block-' ) === false ) {
-					// Try to determine block type from context
-					$classes = 'wp-block-group ' . $classes;
+		foreach ( $section_patterns as $section => $patterns ) {
+			foreach ( $patterns as $pattern ) {
+				if ( stripos( $prompt_lower, $pattern ) !== false ) {
+					$sections[] = $section;
+					break;
 				}
-				return '<div class="' . $classes . '"';
-			},
-			$output
-		);
-		
-		return $output;
-	}
-
-	/**
-	 * Check nesting depth.
-	 *
-	 * @since 1.0.0
-	 * @param string $output Block output.
-	 * @return int Maximum nesting depth.
-	 */
-	private function check_nesting_depth( $output ) {
-		$max_depth = 0;
-		$current_depth = 0;
-		
-		$lines = explode( "\n", $output );
-		foreach ( $lines as $line ) {
-			if ( preg_match( '/<!--\s*wp:([a-z\-]+)(?:\s|{)/i', $line ) ) {
-				$current_depth++;
-				$max_depth = max( $max_depth, $current_depth );
-			} elseif ( preg_match( '/<!--\s*\/wp:([a-z\-]+)/i', $line ) ) {
-				$current_depth--;
 			}
 		}
 		
-		return $max_depth;
-	}
-
-	/**
-	 * Validate block structure.
-	 *
-	 * @since 1.0.0
-	 * @param string $output Block output.
-	 * @return bool True if valid.
-	 */
-	private function validate_block_structure( $output ) {
-		// Check if starts with block comment
-		if ( ! preg_match( '/^\s*<!--\s*wp:/', $output ) ) {
-			return false;
+		// If no specific sections detected, suggest a default structure
+		if ( empty( $sections ) ) {
+			$default_structures = array(
+				array( 'hero', 'features', 'about', 'cta' ),
+				array( 'hero', 'services', 'testimonials', 'contact' ),
+				array( 'hero', 'benefits', 'pricing', 'faq', 'cta' ),
+				array( 'hero', 'portfolio', 'about', 'contact' )
+			);
+			$sections = $default_structures[ array_rand( $default_structures ) ];
 		}
 		
-		// Check balanced tags
-		preg_match_all( '/<!--\s*wp:([a-z\-]+)/i', $output, $opens );
-		preg_match_all( '/<!--\s*\/wp:([a-z\-]+)/i', $output, $closes );
-		
-		return count( $opens[0] ) === count( $closes[0] );
-	}
-
-	/**
-	 * Get example blocks.
-	 *
-	 * @since 1.0.0
-	 * @return string Example blocks.
-	 */
-	private function get_example_blocks() {
-		return "COMPREHENSIVE BLOCK EXAMPLES:
-
-1. HEADING WITH COLORS:
-<!-- wp:heading {\"textAlign\":\"center\",\"level\":2,\"textColor\":\"primary\",\"fontSize\":\"x-large\"} -->
-<h2 class=\"wp-block-heading has-text-align-center has-primary-color has-text-color has-x-large-font-size\">Title</h2>
-<!-- /wp:heading -->
-
-2. PARAGRAPH WITH STYLES:
-<!-- wp:paragraph {\"align\":\"center\",\"backgroundColor\":\"light-gray\",\"textColor\":\"black\",\"fontSize\":\"medium\"} -->
-<p class=\"has-text-align-center has-black-color has-light-gray-background-color has-text-color has-background has-medium-font-size\">Text content here</p>
-<!-- /wp:paragraph -->
-
-3. BUTTONS WITH STYLES:
-<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-<div class=\"wp-block-buttons\"><!-- wp:button {\"backgroundColor\":\"primary\",\"textColor\":\"white\",\"style\":{\"spacing\":{\"padding\":{\"top\":\"12px\",\"bottom\":\"12px\",\"left\":\"24px\",\"right\":\"24px\"}}}} -->
-<div class=\"wp-block-button\"><a class=\"wp-block-button__link has-white-color has-primary-background-color has-text-color has-background wp-element-button\" style=\"padding-top:12px;padding-right:24px;padding-bottom:12px;padding-left:24px\">Primary Button</a></div>
-<!-- /wp:button -->
-
-<!-- wp:button {\"textColor\":\"primary\",\"className\":\"is-style-outline\"} -->
-<div class=\"wp-block-button is-style-outline\"><a class=\"wp-block-button__link has-primary-color has-text-color wp-element-button\">Outline Button</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons -->
-
-4. IMAGE WITH CAPTION:
-<!-- wp:image {\"sizeSlug\":\"large\",\"linkDestination\":\"none\"} -->
-<figure class=\"wp-block-image size-large\"><img src=\"https://images.unsplash.com/photo-1497366216548-37526070297c\" alt=\"Office workspace\"/><figcaption class=\"wp-element-caption\">Modern workspace environment</figcaption></figure>
-<!-- /wp:image -->
-
-5. COLUMNS WITH SPACING:
-<!-- wp:columns {\"style\":{\"spacing\":{\"blockGap\":{\"top\":\"var:preset|spacing|40\",\"left\":\"var:preset|spacing|40\"}}}} -->
-<div class=\"wp-block-columns\"><!-- wp:column {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|30\",\"right\":\"var:preset|spacing|30\",\"bottom\":\"var:preset|spacing|30\",\"left\":\"var:preset|spacing|30\"}}}} -->
-<div class=\"wp-block-column\" style=\"padding-top:var(--wp--preset--spacing--30);padding-right:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30);padding-left:var(--wp--preset--spacing--30)\">
-<!-- content -->
-</div>
-<!-- /wp:column --></div>
-<!-- /wp:columns -->
-
-6. LIST WITH LIST ITEMS:
-<!-- wp:list -->
-<ul class=\"wp-block-list\"><!-- wp:list-item -->
-<li>First item</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
-<li>Second item</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
-<li>Third item</li>
-<!-- /wp:list-item --></ul>
-<!-- /wp:list -->
-
-7. PULLQUOTE:
-<!-- wp:pullquote -->
-<figure class=\"wp-block-pullquote\"><blockquote><p>Innovation distinguishes between a leader and a follower.</p><cite>Steve Jobs</cite></blockquote></figure>
-<!-- /wp:pullquote -->
-
-8. SEPARATOR:
-<!-- wp:separator {\"className\":\"is-style-wide\"} -->
-<hr class=\"wp-block-separator has-alpha-channel-opacity is-style-wide\"/>
-<!-- /wp:separator -->
-
-9. MEDIA & TEXT:
-<!-- wp:media-text {\"mediaId\":1,\"mediaType\":\"image\"} -->
-<div class=\"wp-block-media-text is-stacked-on-mobile\"><figure class=\"wp-block-media-text__media\"><img src=\"https://images.unsplash.com/photo-1551434678-e076c223a692\" alt=\"\"/></figure><div class=\"wp-block-media-text__content\"><!-- wp:heading -->
-<h2 class=\"wp-block-heading\">Media Title</h2>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph -->
-<p>Description text goes here.</p>
-<!-- /wp:paragraph --></div></div>
-<!-- /wp:media-text -->
-
-10. COVER BLOCK WITH GRADIENT:
-<!-- wp:cover {\"dimRatio\":50,\"gradient\":\"cool-to-warm-spectrum\",\"align\":\"full\"} -->
-<div class=\"wp-block-cover alignfull has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background\"><div class=\"wp-block-cover__inner-container\"><!-- wp:heading {\"textAlign\":\"center\",\"level\":1,\"textColor\":\"white\"} -->
-<h1 class=\"wp-block-heading has-text-align-center has-white-color has-text-color\">Hero Title</h1>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph {\"align\":\"center\",\"textColor\":\"white\"} -->
-<p class=\"has-text-align-center has-white-color has-text-color\">Hero description text goes here.</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-<div class=\"wp-block-buttons\"><!-- wp:button {\"backgroundColor\":\"primary\",\"textColor\":\"white\"} -->
-<div class=\"wp-block-button\"><a class=\"wp-block-button__link has-white-color has-primary-background-color has-text-color has-background wp-element-button\">Get Started</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons --></div></div>
-<!-- /wp:cover -->
-
-11. DETAILS/ACCORDION:
-<!-- wp:details -->
-<details class=\"wp-block-details\"><summary>Click to expand</summary><!-- wp:paragraph -->
-<p>Hidden content that appears when expanded.</p>
-<!-- /wp:paragraph --></details>
-<!-- /wp:details -->";
-	}
-
-	/**
-	 * Initialize block examples.
-	 *
-	 * @since 1.0.0
-	 */
-	private function init_block_examples() {
-		$this->block_examples = array(
-			'heading' => '<!-- wp:heading {\"textAlign\":\"center\"} -->
-<h2 class="wp-block-heading has-text-align-center">Title</h2>
-<!-- /wp:heading -->',
-			
-			'paragraph' => '<!-- wp:paragraph {\"align\":\"center\"} -->
-<p class="has-text-align-center">Content here</p>
-<!-- /wp:paragraph -->',
-			
-			'button' => '<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-<div class="wp-block-buttons"><!-- wp:button -->
-<div class="wp-block-button"><a class="wp-block-button__link wp-element-button">Click Here</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons -->',
-			
-			'image' => '<!-- wp:image {\"sizeSlug\":\"large\"} -->
-<figure class="wp-block-image size-large"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c" alt="Description"/></figure>
-<!-- /wp:image -->',
-			
-			'spacer' => '<!-- wp:spacer {\"height\":\"50px\"} -->
-<div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
-<!-- /wp:spacer -->',
-			
-			'gallery' => '<!-- wp:gallery {\"columns\":3,\"linkTo\":\"none\"} -->
-<figure class="wp-block-gallery has-nested-images columns-3 is-cropped"><!-- wp:image -->
-<figure class="wp-block-image"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c" alt=""/></figure>
-<!-- /wp:image -->
-
-<!-- wp:image -->
-<figure class="wp-block-image"><img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2" alt=""/></figure>
-<!-- /wp:image -->
-
-<!-- wp:image -->
-<figure class="wp-block-image"><img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72" alt=""/></figure>
-<!-- /wp:image --></figure>
-<!-- /wp:gallery -->',
-			
-			'social_links' => '<!-- wp:social-links {\"iconColor\":\"primary\",\"className\":\"is-style-logos-only\"} -->
-<ul class="wp-block-social-links has-icon-color is-style-logos-only"><!-- wp:social-link {\"url\":\"https://facebook.com\",\"service\":\"facebook\"} /-->
-
-<!-- wp:social-link {\"url\":\"https://twitter.com\",\"service\":\"twitter\"} /-->
-
-<!-- wp:social-link {\"url\":\"https://instagram.com\",\"service\":\"instagram\"} /--></ul>
-<!-- /wp:social-links -->',
-			
-			'details' => '<!-- wp:details -->
-<details class="wp-block-details"><summary>Question or title</summary><!-- wp:paragraph -->
-<p>Answer or content that appears when expanded.</p>
-<!-- /wp:paragraph --></details>
-<!-- /wp:details -->',
-			
-			'cover' => '<!-- wp:cover {"dimRatio":50,"gradient":"cool-to-warm-spectrum","align":"full"} -->
-<div class="wp-block-cover alignfull has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background"><div class="wp-block-cover__inner-container"><!-- wp:heading {"textAlign":"center","level":1,"textColor":"white"} -->
-<h1 class="wp-block-heading has-text-align-center has-white-color has-text-color">Hero Title</h1>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph {"align":"center","textColor":"white"} -->
-<p class="has-text-align-center has-white-color has-text-color">Hero description text goes here.</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
-<div class="wp-block-buttons"><!-- wp:button {"backgroundColor":"primary","textColor":"white"} -->
-<div class="wp-block-button"><a class="wp-block-button__link has-white-color has-primary-background-color has-text-color has-background wp-element-button">Get Started</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons --></div></div>
-<!-- /wp:cover -->',
-			
-			'media_text' => '<!-- wp:media-text {\"mediaType\":\"image\"} -->
-<div class="wp-block-media-text is-stacked-on-mobile"><figure class="wp-block-media-text__media"><img src="https://images.unsplash.com/photo-1551434678-e076c223a692" alt=""/></figure><div class="wp-block-media-text__content"><!-- wp:heading -->
-<h2 class="wp-block-heading">Title</h2>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph -->
-<p>Description text.</p>
-<!-- /wp:paragraph --></div></div>
-<!-- /wp:media-text -->',
-			
-			'table' => '<!-- wp:table {\"className\":\"is-style-stripes\"} -->
-<figure class="wp-block-table is-style-stripes"><table><thead><tr><th>Header 1</th><th>Header 2</th></tr></thead><tbody><tr><td>Cell 1</td><td>Cell 2</td></tr></tbody></table></figure>
-<!-- /wp:table -->',
-		);
-	}
-
-	/**
-	 * Initialize layout templates.
-	 *
-	 * @since 1.0.0
-	 */
-	private function init_layout_templates() {
-		$this->layout_templates = array(
-			'landing_page' => array(
-				'name' => __( 'Landing Page', 'layoutberg' ),
-				'instructions' => 'Create a landing page with these sections IN ORDER: 1) Hero with cover block, 2) Features in 3 columns, 3) Gallery with 6 images, 4) Pricing in 3 columns, 5) FAQ with details blocks, 6) Team in 3 columns, 7) Contact info, 8) Blog posts. Keep structure SIMPLE - one group wrapper per section maximum.',
-			),
-		);
-	}
-
-	// Remaining methods can stay the same...
-	
-	/**
-	 * Get prompt templates for common layouts.
-	 *
-	 * @since 1.0.0
-	 * @return array Prompt templates.
-	 */
-	public function get_prompt_templates() {
-		return array(
-			'hero_section' => array(
-				'name' => __( 'Hero Section', 'layoutberg' ),
-				'prompt' => 'Create a hero using a single cover block with background image, centered text, and button. No extra group wrappers.',
-			),
-			'features_grid' => array(
-				'name' => __( 'Features Grid', 'layoutberg' ),
-				'prompt' => 'Create a features section with heading, then columns block with 3 columns. Each column has heading and paragraph only.',
-			),
-			'simple_section' => array(
-				'name' => __( 'Simple Section', 'layoutberg' ),
-				'prompt' => 'Create a section with one group wrapper containing heading and paragraph. Keep it simple.',
-			),
-		);
+		return $sections;
 	}
 
 	/**
@@ -968,6 +867,13 @@ Follow user instructions for sections and layout.";
 			);
 		}
 		
+		if ( strlen( $prompt ) > 1000 ) {
+			return new \WP_Error( 
+				'prompt_too_long', 
+				__( 'Please keep your description under 1000 characters.', 'layoutberg' ) 
+			);
+		}
+		
 		return true;
 	}
 
@@ -979,9 +885,15 @@ Follow user instructions for sections and layout.";
 	 * @return int Estimated token count.
 	 */
 	public function estimate_token_count( $text ) {
-		// Rough estimate: ~4 characters = 1 token
-		// This is a simplified estimation. Real tokenization is more complex.
-		return intval( strlen( $text ) / 4 );
+		// More accurate estimation based on common patterns
+		// Average English word is ~4-5 characters, ~1.3 tokens per word
+		$word_count = str_word_count( $text );
+		$char_count = strlen( $text );
+		
+		// Use combination of word and character count for better estimation
+		$token_estimate = ( $word_count * 1.3 ) + ( $char_count * 0.04 );
+		
+		return intval( $token_estimate );
 	}
 
 	/**
@@ -1008,5 +920,99 @@ Follow user instructions for sections and layout.";
 		);
 		
 		return isset( $limits[ $model ] ) ? $limits[ $model ] : $limits['gpt-3.5-turbo'];
+	}
+
+	/**
+	 * Get simple example blocks for reference.
+	 *
+	 * @since 1.0.0
+	 * @return string Example blocks.
+	 */
+	public function get_example_blocks() {
+		// Return minimal examples to save tokens
+		return '## MINIMAL EXAMPLES FOR REFERENCE:
+
+### Heading with Alignment and Font Size
+<!-- wp:heading {"textAlign":"center","level":2,"fontSize":"huge","className":"hero-title"} -->
+<h2 class="wp-block-heading has-text-align-center hero-title has-huge-font-size">Your Title Here</h2>
+<!-- /wp:heading -->
+
+### Cover Block Method 1: With Background Image
+<!-- wp:cover {"url":"https://images.unsplash.com/photo-1555041469-a586c61ea9bc","dimRatio":50,"minHeight":600,"align":"full"} -->
+<div class="wp-block-cover alignfull" style="min-height:600px"><img class="wp-block-cover__image-background" alt="" src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc" data-object-fit="cover"/><span aria-hidden="true" class="wp-block-cover__background has-background-dim"></span><div class="wp-block-cover__inner-container">
+<!-- wp:heading {"textAlign":"center","level":1,"textColor":"white"} -->
+<h1 class="wp-block-heading has-text-align-center has-white-color has-text-color">Hero Title</h1>
+<!-- /wp:heading -->
+</div></div>
+<!-- /wp:cover -->
+
+### Cover Block Method 2: With Gradient
+<!-- wp:cover {"gradient":"cool-to-warm-spectrum","align":"full"} -->
+<div class="wp-block-cover alignfull"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background"></span><div class="wp-block-cover__inner-container">
+<!-- content -->
+</div></div>
+<!-- /wp:cover -->
+
+### Cover Block Method 3: With Custom Gradient
+<!-- wp:cover {"customGradient":"linear-gradient(135deg,#667eea 0%,#764ba2 100%)","align":"full"} -->
+<div class="wp-block-cover alignfull"><span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim has-background-gradient" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)"></span><div class="wp-block-cover__inner-container">
+<!-- content -->
+</div></div>
+<!-- /wp:cover -->
+
+### Buttons with Style Variations
+<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+<div class="wp-block-buttons">
+<!-- wp:button {"backgroundColor":"primary","textColor":"base"} -->
+<div class="wp-block-button"><a class="wp-block-button__link has-base-color has-primary-background-color has-text-color has-background wp-element-button">Default Button</a></div>
+<!-- /wp:button -->
+<!-- wp:button {"backgroundColor":"secondary","textColor":"white","className":"is-style-outline"} -->
+<div class="wp-block-button is-style-outline"><a class="wp-block-button__link has-white-color has-secondary-background-color has-text-color has-background wp-element-button">Outline Button</a></div>
+<!-- /wp:button -->
+</div>
+<!-- /wp:buttons -->
+
+### Paragraph with Proper Alignment
+<!-- wp:paragraph {"align":"center","fontSize":"large","textColor":"contrast"} -->
+<p class="has-text-align-center has-contrast-color has-text-color has-large-font-size">Note: paragraphs use "align" not "textAlign"</p>
+<!-- /wp:paragraph -->
+
+### Group with Direct Padding Values
+<!-- wp:group {"style":{"spacing":{"padding":{"top":"60px","bottom":"60px","left":"40px","right":"40px"}}},"layout":{"type":"constrained"}} -->
+<div class="wp-block-group" style="padding-top:60px;padding-right:40px;padding-bottom:60px;padding-left:40px">
+<!-- content -->
+</div>
+<!-- /wp:group -->
+
+### Spacer
+<!-- wp:spacer {"height":"50px"} -->
+<div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+### List with Items
+<!-- wp:list -->
+<ul class="wp-block-list">
+<!-- wp:list-item -->
+<li>First feature or benefit</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Second feature or benefit</li>
+<!-- /wp:list-item -->
+<!-- wp:list-item -->
+<li>Third feature or benefit</li>
+<!-- /wp:list-item -->
+</ul>
+<!-- /wp:list -->
+
+### Details Block (FAQ/Accordion)
+<!-- wp:details {"summary":"Question goes here?"} -->
+<details class="wp-block-details"><summary>Question goes here?</summary>
+<!-- wp:paragraph -->
+<p>Answer goes here with detailed explanation.</p>
+<!-- /wp:paragraph -->
+</details>
+<!-- /wp:details -->
+
+CRITICAL: The summary text is an attribute {"summary":"text"}, NOT a separate block!';
 	}
 }

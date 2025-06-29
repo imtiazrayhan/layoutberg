@@ -118,6 +118,7 @@ class Block_Generator {
 			'raw'        => $result['content'],
 			'usage'      => $result['usage'],
 			'model'      => $result['model'],
+			'prompts'    => isset( $result['prompts'] ) ? $result['prompts'] : null,
 			'metadata'   => array(
 				'prompt'     => $prompt,
 				'options'    => $options,
@@ -287,30 +288,42 @@ class Block_Generator {
 			$content 
 		);
 		
-		// Fix image src attributes - replace relative paths with placeholder URLs
+		// Fix image src attributes - ensure absolute URLs
 		$content = preg_replace_callback(
-			'/<img\s+([^>]*src=")[^"]*\.(?:jpg|jpeg|png|gif|webp)("[^>]*>)/i',
+			'/<img\s+([^>]*src=")([^"]+)("[^>]*>)/i',
 			function( $matches ) {
 				$before_src = $matches[1];
-				$after_src = $matches[2];
+				$url = $matches[2];
+				$after_src = $matches[3];
 				
-				// Generate a placeholder URL
-				$placeholder_url = 'https://via.placeholder.com/400x300/0073aa/ffffff?text=Placeholder';
+				// Check if URL is already absolute and from allowed source
+				if ( preg_match( '/^https?:\/\//i', $url ) && $this->is_allowed_image_url( $url ) ) {
+					return $matches[0];
+				}
 				
-				return '<img ' . $before_src . $placeholder_url . $after_src;
+				// Generate appropriate placeholder
+				$placeholder_url = $this->generate_placeholder_url();
+				
+				return $before_src . $placeholder_url . $after_src;
 			},
 			$content
 		);
 		
-		// Fix image URLs in block attributes - replace relative paths
+		// Fix image URLs in block attributes
 		$content = preg_replace_callback(
-			'/("url"\s*:\s*")[^"]*\.(?:jpg|jpeg|png|gif|webp)(")/i',
+			'/("url"\s*:\s*")([^"]+)(")/i',
 			function( $matches ) {
 				$before_url = $matches[1];
-				$after_url = $matches[2];
+				$url = $matches[2];
+				$after_url = $matches[3];
 				
-				// Generate a placeholder URL
-				$placeholder_url = 'https://via.placeholder.com/400x300/0073aa/ffffff?text=Placeholder';
+				// Check if URL is already absolute and from allowed source
+				if ( preg_match( '/^https?:\/\//i', $url ) && $this->is_allowed_image_url( $url ) ) {
+					return $matches[0];
+				}
+				
+				// Generate appropriate placeholder
+				$placeholder_url = $this->generate_placeholder_url();
 				
 				return $before_url . $placeholder_url . $after_url;
 			},
@@ -451,7 +464,7 @@ class Block_Generator {
 				$block['innerBlocks'] = $inner_validated;
 			}
 
-			// Additional block-specific validation.
+			// Additional block-specific validation (passed by reference to allow fixes).
 			$specific_validation = $this->validate_specific_block( $block );
 			if ( is_wp_error( $specific_validation ) ) {
 				$validation_errors[] = $specific_validation->get_error_message();
@@ -733,26 +746,52 @@ class Block_Generator {
 		}
 
 		if ( ! $has_alt ) {
+			// Add default alt text
+			$block['attrs']['alt'] = __( 'Decorative image', 'layoutberg' );
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'LayoutBerg Warning: Image block missing alt text for accessibility.' );
+				error_log( 'LayoutBerg: Added default alt text to image block for accessibility.' );
 			}
 		}
 
-		// For image blocks in AI generation, allow placehold.co URLs
+		// CRITICAL: Fix image URLs to ensure absolute paths
 		if ( isset( $block['attrs']['url'] ) ) {
 			$url = $block['attrs']['url'];
-			// Only allow placehold.co URLs
-			if ( strpos( $url, 'https://placehold.co/' ) !== 0 ) {
-				// Replace with a placehold.co URL
-				$block['attrs']['url'] = 'https://placehold.co/600x400/007cba/ffffff?text=Placeholder+Image';
+			
+			// Check if URL is relative or invalid
+			if ( ! preg_match( '/^https?:\/\//i', $url ) ) {
+				// Replace with appropriate placeholder based on context
+				$dimensions = $this->determine_image_dimensions( $block );
+				$block['attrs']['url'] = $this->generate_placeholder_url( $dimensions );
+				
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'LayoutBerg: Replaced non-placehold.co URL with placeholder' );
+					error_log( 'LayoutBerg: Replaced relative/invalid image URL "' . $url . '" with placeholder' );
 				}
 			}
-			// Ensure alt text exists
-			if ( empty( $block['attrs']['alt'] ) ) {
-				$block['attrs']['alt'] = __( 'Placeholder image', 'layoutberg' );
+			// Validate that URL is from allowed sources
+			elseif ( ! $this->is_allowed_image_url( $url ) ) {
+				// Replace with placeholder
+				$dimensions = $this->determine_image_dimensions( $block );
+				$block['attrs']['url'] = $this->generate_placeholder_url( $dimensions );
+				
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'LayoutBerg: Replaced non-allowed image URL with placeholder' );
+				}
 			}
+		}
+		
+		// Fix image URLs in innerHTML
+		if ( isset( $block['innerHTML'] ) && ! empty( $block['innerHTML'] ) ) {
+			$block['innerHTML'] = preg_replace_callback(
+				'/src="([^"]+)"/i',
+				function( $matches ) {
+					$url = $matches[1];
+					if ( ! preg_match( '/^https?:\/\//i', $url ) || ! $this->is_allowed_image_url( $url ) ) {
+						return 'src="' . $this->generate_placeholder_url() . '"';
+					}
+					return $matches[0];
+				},
+				$block['innerHTML']
+			);
 		}
 
 		// Check for reasonable image dimensions.
@@ -760,14 +799,176 @@ class Block_Generator {
 			$width = intval( $block['attrs']['width'] );
 			$height = intval( $block['attrs']['height'] );
 			
-			if ( $width > 5000 || $height > 5000 ) {
+			if ( $width > 2000 || $height > 2000 ) {
+				// Cap dimensions
+				if ( $width > $height ) {
+					$ratio = $height / $width;
+					$block['attrs']['width'] = 1600;
+					$block['attrs']['height'] = intval( 1600 * $ratio );
+				} else {
+					$ratio = $width / $height;
+					$block['attrs']['height'] = 1600;
+					$block['attrs']['width'] = intval( 1600 * $ratio );
+				}
+				
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'LayoutBerg Warning: Image dimensions are very large, consider optimizing for web.' );
+					error_log( 'LayoutBerg: Capped large image dimensions' );
 				}
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if image URL is valid.
+	 *
+	 * @since 1.0.0
+	 * @param string $url Image URL.
+	 * @return bool True if valid.
+	 */
+	private function is_valid_image_url( $url ) {
+		// Check if it's an absolute URL
+		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			return false;
+		}
+		
+		// Check if it starts with https://
+		if ( strpos( $url, 'https://' ) !== 0 ) {
+			return false;
+		}
+		
+		// Check if it's from allowed sources
+		return $this->is_allowed_image_url( $url );
+	}
+	
+	/**
+	 * Fix invalid image URL.
+	 *
+	 * @since 1.0.0
+	 * @param string $url Invalid image URL.
+	 * @return string|false Fixed URL or false if cannot fix.
+	 */
+	private function fix_image_url( $url ) {
+		// If it's a relative path or placeholder text, replace with a real image
+		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) || strpos( $url, 'http' ) !== 0 ) {
+			// Generate a placeholder URL
+			return $this->generate_placeholder_url();
+		}
+		
+		// If it's http, convert to https
+		if ( strpos( $url, 'http://' ) === 0 ) {
+			$url = str_replace( 'http://', 'https://', $url );
+		}
+		
+		// If it's still not from allowed sources, replace with placeholder
+		if ( ! $this->is_allowed_image_url( $url ) ) {
+			return $this->generate_placeholder_url();
+		}
+		
+		return $url;
+	}
+
+	/**
+	 * Check if image URL is from allowed sources.
+	 *
+	 * @since 1.0.0
+	 * @param string $url Image URL.
+	 * @return bool True if allowed.
+	 */
+	private function is_allowed_image_url( $url ) {
+		$allowed_domains = array(
+			'images.unsplash.com',
+			'placehold.co',
+			'via.placeholder.com',
+			'picsum.photos',
+			'source.unsplash.com'
+		);
+		
+		foreach ( $allowed_domains as $domain ) {
+			if ( strpos( $url, 'https://' . $domain . '/' ) === 0 ) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Determine appropriate image dimensions.
+	 *
+	 * @since 1.0.0
+	 * @param array $block Image block.
+	 * @return array Width and height.
+	 */
+	private function determine_image_dimensions( $block ) {
+		$width = 800;
+		$height = 600;
+		
+		if ( isset( $block['attrs']['width'] ) && isset( $block['attrs']['height'] ) ) {
+			$width = intval( $block['attrs']['width'] );
+			$height = intval( $block['attrs']['height'] );
+		} elseif ( isset( $block['attrs']['sizeSlug'] ) ) {
+			switch ( $block['attrs']['sizeSlug'] ) {
+				case 'thumbnail':
+					$width = 150;
+					$height = 150;
+					break;
+				case 'medium':
+					$width = 300;
+					$height = 300;
+					break;
+				case 'large':
+					$width = 1024;
+					$height = 768;
+					break;
+				case 'full':
+					$width = 1600;
+					$height = 1200;
+					break;
+			}
+		}
+		
+		// Check for icon-like dimensions
+		if ( $width <= 100 && $height <= 100 ) {
+			$width = 64;
+			$height = 64;
+		}
+		
+		return array( 'width' => $width, 'height' => $height );
+	}
+
+	/**
+	 * Generate placeholder URL.
+	 *
+	 * @since 1.0.0
+	 * @param array $dimensions Optional dimensions.
+	 * @return string Placeholder URL.
+	 */
+	private function generate_placeholder_url( $dimensions = array() ) {
+		$width = isset( $dimensions['width'] ) ? $dimensions['width'] : 800;
+		$height = isset( $dimensions['height'] ) ? $dimensions['height'] : 600;
+		
+		// For small images (icons), use placehold.co
+		if ( $width <= 100 && $height <= 100 ) {
+			$colors = array( '007cba', '0073aa', '005177', '00669b' );
+			$color = $colors[ array_rand( $colors ) ];
+			return 'https://placehold.co/' . $width . 'x' . $height . '/' . $color . '/ffffff?text=Icon';
+		}
+		
+		// For larger images, use Unsplash
+		$unsplash_ids = array(
+			'photo-1497366216548-37526070297c', // Office
+			'photo-1497366811353-6870744d04b2', // Office 2
+			'photo-1497366754035-f200968a6e72', // Office 3
+			'photo-1497366412874-3415097a27e7', // Abstract
+			'photo-1517180102446-f3ece451e9d8', // Gradient
+			'photo-1551434678-e076c223a692', // Team
+			'photo-1522202176988-66273c2fd55f', // People
+			'photo-1556761175-4b46a572b786'  // Meeting
+		);
+		
+		return 'https://images.unsplash.com/' . $unsplash_ids[ array_rand( $unsplash_ids ) ];
 	}
 
 	/**
@@ -822,10 +1023,53 @@ class Block_Generator {
 	 * @param array $block Block to validate.
 	 * @return true|WP_Error True if valid, error otherwise.
 	 */
-	private function validate_list_block( $block ) {
-		// Validate list has items.
+	private function validate_list_block( &$block ) {
+		// Fix empty lists by adding default items
 		if ( empty( $block['innerBlocks'] ) ) {
-			return new \WP_Error( 'list_empty', __( 'List block must contain at least one list item.', 'layoutberg' ) );
+			// Check if there's content in innerHTML that we can parse
+			if ( ! empty( $block['innerHTML'] ) && preg_match_all( '/<li[^>]*>(.*?)<\/li>/s', $block['innerHTML'], $matches ) ) {
+				// Create list items from innerHTML content
+				$block['innerBlocks'] = array();
+				foreach ( $matches[1] as $item_content ) {
+					$block['innerBlocks'][] = array(
+						'blockName' => 'core/list-item',
+						'attrs' => array(),
+						'innerBlocks' => array(),
+						'innerHTML' => '<li>' . trim( $item_content ) . '</li>',
+						'innerContent' => array( '<li>', trim( $item_content ), '</li>' ),
+					);
+				}
+			} else {
+				// Add default list items if completely empty
+				$default_items = array(
+					__( 'Feature or benefit one', 'layoutberg' ),
+					__( 'Feature or benefit two', 'layoutberg' ),
+					__( 'Feature or benefit three', 'layoutberg' ),
+				);
+				
+				$block['innerBlocks'] = array();
+				foreach ( $default_items as $item_text ) {
+					$block['innerBlocks'][] = array(
+						'blockName' => 'core/list-item',
+						'attrs' => array(),
+						'innerBlocks' => array(),
+						'innerHTML' => '<li>' . esc_html( $item_text ) . '</li>',
+						'innerContent' => array( '<li>', esc_html( $item_text ), '</li>' ),
+					);
+				}
+				
+				// Update innerHTML to match
+				$list_tag = isset( $block['attrs']['ordered'] ) && $block['attrs']['ordered'] ? 'ol' : 'ul';
+				$items_html = '';
+				foreach ( $block['innerBlocks'] as $item ) {
+					$items_html .= $item['innerHTML'];
+				}
+				$block['innerHTML'] = '<' . $list_tag . ' class="wp-block-list">' . $items_html . '</' . $list_tag . '>';
+				
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'LayoutBerg: Fixed empty list block by adding default items' );
+				}
+			}
 		}
 
 		// Validate all children are list items.
@@ -870,50 +1114,145 @@ class Block_Generator {
 			}
 		}
 
-		// Remove URL attribute if present - causes validation failures
-		if ( isset( $block['attrs']['url'] ) ) {
-			unset( $block['attrs']['url'] );
-			
-			// Also remove any image-related styling from innerHTML
-			if ( isset( $block['innerHTML'] ) ) {
-				// Remove background-image styles
-				$block['innerHTML'] = preg_replace(
-					'/style="[^"]*background-image:[^;"]*;?[^"]*"/i',
-					'',
-					$block['innerHTML']
-				);
-				
-				// Remove other background styles that relate to images
-				$block['innerHTML'] = preg_replace(
-					'/style="[^"]*background-(?:size|position|repeat):[^;"]*;?[^"]*"/i',
-					'',
-					$block['innerHTML']
-				);
-				
-				// Clean up empty style attributes
-				$block['innerHTML'] = preg_replace('/style=""/', '', $block['innerHTML']);
+		// Determine if this is an image-based or gradient-based cover
+		$has_image = isset( $block['attrs']['url'] ) && ! empty( $block['attrs']['url'] );
+		$has_gradient = isset( $block['attrs']['gradient'] ) || isset( $block['attrs']['customGradient'] );
+		$has_background_color = isset( $block['attrs']['backgroundColor'] ) || isset( $block['attrs']['customBackgroundColor'] );
+		
+		// Method 1: Image-based cover blocks
+		if ( $has_image ) {
+			// Validate the image URL
+			$image_url = $block['attrs']['url'];
+			if ( ! $this->is_valid_image_url( $image_url ) ) {
+				// Fix the URL if possible
+				$fixed_url = $this->fix_image_url( $image_url );
+				if ( $fixed_url ) {
+					$block['attrs']['url'] = $fixed_url;
+					
+					// Update innerHTML if needed
+					if ( isset( $block['innerHTML'] ) && ! empty( $block['innerHTML'] ) ) {
+						$block['innerHTML'] = str_replace( $image_url, $fixed_url, $block['innerHTML'] );
+					}
+				} else {
+					// If we can't fix it, convert to gradient
+					unset( $block['attrs']['url'] );
+					$has_image = false;
+				}
 			}
+			
+			// Ensure proper image structure in innerHTML for image-based covers
+			if ( $has_image && isset( $block['innerHTML'] ) ) {
+				// Check if img tag exists with proper class
+				if ( strpos( $block['innerHTML'], 'wp-block-cover__image-background' ) === false ) {
+					// Fix innerHTML structure for image covers
+					$img_tag = '<img class="wp-block-cover__image-background" alt="" src="' . esc_url( $block['attrs']['url'] ) . '" data-object-fit="cover"/>';
+					$dim_class = isset( $block['attrs']['dimRatio'] ) && $block['attrs']['dimRatio'] >= 50 ? ' has-background-dim-' . $block['attrs']['dimRatio'] : '';
+					$span_tag = '<span aria-hidden="true" class="wp-block-cover__background has-background-dim' . $dim_class . '"></span>';
+					
+					// Rebuild innerHTML with proper structure
+					if ( preg_match( '/<div[^>]*class="[^"]*wp-block-cover[^"]*"[^>]*>(.*)(<div[^>]*class="[^"]*wp-block-cover__inner-container[^"]*"[^>]*>.*<\/div>)<\/div>/s', $block['innerHTML'], $matches ) ) {
+						$block['innerHTML'] = str_replace( $matches[1], $img_tag . $span_tag, $block['innerHTML'] );
+					}
+				}
+			}
+		}
+		
+		// Method 2: Gradient or color-based cover blocks
+		if ( ! $has_image && ! $has_gradient && ! $has_background_color ) {
+			// List of available gradients
+			$gradients = array(
+				'cool-to-warm-spectrum',
+				'vivid-cyan-blue-to-vivid-purple',
+				'light-green-cyan-to-vivid-green-cyan',
+				'luminous-vivid-amber-to-luminous-vivid-orange',
+				'luminous-vivid-orange-to-vivid-red',
+				'very-light-gray-to-cyan-bluish-gray',
+				'blush-light-purple',
+				'blush-bordeaux',
+				'luminous-dusk',
+				'pale-ocean',
+				'electric-grass',
+				'midnight'
+			);
+			
+			// Pick a random gradient
+			$block['attrs']['gradient'] = $gradients[ array_rand( $gradients ) ];
 			
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'LayoutBerg: Removed URL attribute and image styles from cover block to prevent validation failure' );
+				error_log( 'LayoutBerg: Added gradient ' . $block['attrs']['gradient'] . ' to cover block' );
 			}
 		}
 
-		// Ensure the block has proper background
-		if ( ! isset( $block['attrs']['gradient'] ) && ! isset( $block['attrs']['backgroundColor'] ) && ! isset( $block['attrs']['customBackgroundColor'] ) ) {
-			// Add a default gradient if no background is set
-			$block['attrs']['gradient'] = 'cool-to-warm-spectrum';
-			$block['attrs']['dimRatio'] = 50;
-		}
-
-		// Remove any background spans that may have been generated - WordPress handles gradients differently
-		if ( isset( $block['innerHTML'] ) && ! empty( $block['innerHTML'] ) ) {
-			// Remove background spans for gradient cover blocks as WordPress doesn't include them in saved content
-			$block['innerHTML'] = preg_replace(
-				'/<span[^>]*wp-block-cover__background[^>]*><\/span>/',
-				'',
-				$block['innerHTML']
-			);
+		// Rebuild innerHTML to ensure proper structure
+		if ( isset( $block['innerHTML'] ) ) {
+			// Extract inner content
+			$inner_content = '';
+			if ( preg_match( '/<div[^>]*wp-block-cover__inner-container[^>]*>(.*?)<\/div>/is', $block['innerHTML'], $matches ) ) {
+				$inner_content = $matches[1];
+			}
+			
+			// Build proper classes
+			$classes = 'wp-block-cover';
+			if ( isset( $block['attrs']['align'] ) ) {
+				$classes .= ' align' . $block['attrs']['align'];
+			}
+			if ( isset( $block['attrs']['isDark'] ) && $block['attrs']['isDark'] ) {
+				$classes .= ' is-dark';
+			}
+			
+			// Build style attribute
+			$styles = array();
+			if ( isset( $block['attrs']['minHeight'] ) ) {
+				$unit = isset( $block['attrs']['minHeightUnit'] ) ? $block['attrs']['minHeightUnit'] : 'px';
+				$styles[] = 'min-height:' . esc_attr( $block['attrs']['minHeight'] ) . $unit;
+			}
+			$style_attr = ! empty( $styles ) ? ' style="' . implode( ';', $styles ) . '"' : '';
+			
+			// Method 1: Image-based cover - rebuild with proper structure
+			if ( $has_image ) {
+				$img_tag = '<img class="wp-block-cover__image-background" alt="" src="' . esc_url( $block['attrs']['url'] ) . '" data-object-fit="cover"/>';
+				$dim_class = '';
+				if ( isset( $block['attrs']['dimRatio'] ) && $block['attrs']['dimRatio'] > 0 ) {
+					$dim_class = ' has-background-dim';
+					if ( $block['attrs']['dimRatio'] >= 50 ) {
+						$dim_class .= ' has-background-dim-' . $block['attrs']['dimRatio'];
+					}
+				}
+				$span_tag = '<span aria-hidden="true" class="wp-block-cover__background' . $dim_class . '"></span>';
+				
+				$block['innerHTML'] = '<div class="' . $classes . '"' . $style_attr . '>' . $img_tag . $span_tag . '<div class="wp-block-cover__inner-container">' . $inner_content . '</div></div>';
+			}
+			// Method 2: Gradient-based cover
+			elseif ( $has_gradient ) {
+				$gradient_class = '';
+				$gradient_style = '';
+				
+				if ( isset( $block['attrs']['gradient'] ) ) {
+					$gradient_class = ' has-background-gradient has-' . $block['attrs']['gradient'] . '-gradient-background';
+				} elseif ( isset( $block['attrs']['customGradient'] ) ) {
+					$gradient_class = ' has-background-gradient';
+					$gradient_style = ' style="background:' . esc_attr( $block['attrs']['customGradient'] ) . '"';
+				}
+				
+				$span_tag = '<span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim' . $gradient_class . '"' . $gradient_style . '></span>';
+				
+				$block['innerHTML'] = '<div class="' . $classes . '"' . $style_attr . '>' . $span_tag . '<div class="wp-block-cover__inner-container">' . $inner_content . '</div></div>';
+			}
+			// Method 3: Color-based cover
+			elseif ( $has_background_color ) {
+				$color_class = '';
+				$color_style = '';
+				
+				if ( isset( $block['attrs']['backgroundColor'] ) ) {
+					$color_class = ' has-' . $block['attrs']['backgroundColor'] . '-background-color has-background';
+				} elseif ( isset( $block['attrs']['customBackgroundColor'] ) ) {
+					$color_style = ' style="background-color:' . esc_attr( $block['attrs']['customBackgroundColor'] ) . '"';
+				}
+				
+				$span_tag = '<span aria-hidden="true" class="wp-block-cover__background has-background-dim-100 has-background-dim' . $color_class . '"' . $color_style . '></span>';
+				
+				$block['innerHTML'] = '<div class="' . $classes . '"' . $style_attr . '>' . $span_tag . '<div class="wp-block-cover__inner-container">' . $inner_content . '</div></div>';
+			}
 		}
 
 		return true;
@@ -977,10 +1316,40 @@ class Block_Generator {
 	 * @param array $block Block to validate.
 	 * @return true|WP_Error True if valid, error otherwise.
 	 */
-	private function validate_details_block( $block ) {
+	private function validate_details_block( &$block ) {
 		// Details blocks should have content
 		if ( empty( $block['innerBlocks'] ) && empty( $block['innerHTML'] ) ) {
 			return new \WP_Error( 'details_empty', __( 'Details block should contain summary and content.', 'layoutberg' ) );
+		}
+		
+		// Check for invalid core/summary blocks in innerBlocks
+		if ( ! empty( $block['innerBlocks'] ) ) {
+			$filtered_inner_blocks = array();
+			foreach ( $block['innerBlocks'] as $inner_block ) {
+				// Skip any invalid core/summary blocks
+				if ( $inner_block['blockName'] === 'core/summary' ) {
+					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+						error_log( 'LayoutBerg: Removing invalid core/summary block from details block. Summary should be an attribute, not a separate block.' );
+					}
+					continue;
+				}
+				$filtered_inner_blocks[] = $inner_block;
+			}
+			$block['innerBlocks'] = $filtered_inner_blocks;
+		}
+		
+		// Ensure summary attribute exists
+		if ( ! isset( $block['attrs']['summary'] ) || empty( $block['attrs']['summary'] ) ) {
+			// Try to extract summary from innerHTML
+			if ( preg_match( '/<summary[^>]*>(.*?)<\/summary>/is', $block['innerHTML'], $matches ) ) {
+				$block['attrs']['summary'] = wp_strip_all_tags( $matches[1] );
+			} else {
+				// Add default summary
+				$block['attrs']['summary'] = 'Click to expand';
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'LayoutBerg: Added default summary to details block.' );
+				}
+			}
 		}
 		
 		// Check for summary in innerHTML
@@ -1206,8 +1575,31 @@ class Block_Generator {
 	private function blocks_to_html( $blocks ) {
 		$html = '';
 
-		foreach ( $blocks as $block ) {
-			$html .= render_block( $block );
+		// Wrap in try-catch to prevent fatal errors from invalid blocks
+		try {
+			foreach ( $blocks as $block ) {
+				// Skip null or invalid blocks
+				if ( empty( $block ) || ! is_array( $block ) ) {
+					continue;
+				}
+				
+				// Ensure block has required structure
+				if ( ! isset( $block['blockName'] ) ) {
+					continue;
+				}
+				
+				// Try to render the block
+				$rendered = @render_block( $block );
+				if ( $rendered !== false ) {
+					$html .= $rendered;
+				}
+			}
+		} catch ( \Exception $e ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'LayoutBerg: Error rendering blocks - ' . $e->getMessage() );
+			}
+			// Return what we have so far
+			return $html;
 		}
 
 		return $html;
@@ -1388,57 +1780,79 @@ class Block_Generator {
 	 * @return array Templates.
 	 */
 	public function get_predefined_templates() {
+		// Return dynamic templates that will use our variation system
 		return array(
 			'hero'      => array(
 				'name'        => __( 'Hero Section', 'layoutberg' ),
-				'description' => __( 'Eye-catching hero section with headline and call-to-action', 'layoutberg' ),
-				'prompt'      => 'Create a hero section with a compelling headline, subheadline, and call-to-action button',
+				'description' => __( 'Dynamic hero section with varied layouts', 'layoutberg' ),
+				'prompt'      => 'Create a hero section',
+				'variations'  => true,
 			),
 			'features'  => array(
 				'name'        => __( 'Features Grid', 'layoutberg' ),
-				'description' => __( 'Grid layout showcasing product or service features', 'layoutberg' ),
-				'prompt'      => 'Create a 3-column features section with icons, headings, and descriptions',
+				'description' => __( 'Feature showcase with dynamic column layouts', 'layoutberg' ),
+				'prompt'      => 'Create a features section',
+				'variations'  => true,
 			),
 			'about'     => array(
 				'name'        => __( 'About Section', 'layoutberg' ),
-				'description' => __( 'Company or personal introduction with image', 'layoutberg' ),
-				'prompt'      => 'Create an about section with text on one side and an image on the other',
+				'description' => __( 'Company introduction with varied layouts', 'layoutberg' ),
+				'prompt'      => 'Create an about section',
+				'variations'  => true,
 			),
 			'testimonials' => array(
 				'name'        => __( 'Testimonials', 'layoutberg' ),
-				'description' => __( 'Customer testimonials in a grid or carousel', 'layoutberg' ),
-				'prompt'      => 'Create a testimonials section with 3 customer reviews including names and ratings',
+				'description' => __( 'Customer testimonials with dynamic arrangements', 'layoutberg' ),
+				'prompt'      => 'Create a testimonials section',
+				'variations'  => true,
 			),
 			'cta'       => array(
 				'name'        => __( 'Call to Action', 'layoutberg' ),
-				'description' => __( 'Compelling call-to-action section', 'layoutberg' ),
-				'prompt'      => 'Create a call-to-action section with a strong headline and button',
+				'description' => __( 'Dynamic call-to-action sections', 'layoutberg' ),
+				'prompt'      => 'Create a call-to-action section',
+				'variations'  => true,
 			),
 			'pricing'   => array(
 				'name'        => __( 'Pricing Table', 'layoutberg' ),
-				'description' => __( 'Pricing plans comparison table', 'layoutberg' ),
-				'prompt'      => 'Create a 3-column pricing table with features and call-to-action buttons',
+				'description' => __( 'Pricing plans with varied layouts', 'layoutberg' ),
+				'prompt'      => 'Create a pricing section',
+				'variations'  => true,
 			),
 			'contact'   => array(
 				'name'        => __( 'Contact Section', 'layoutberg' ),
-				'description' => __( 'Contact information and form', 'layoutberg' ),
-				'prompt'      => 'Create a contact section with contact details and a contact form placeholder',
+				'description' => __( 'Contact information with dynamic layouts', 'layoutberg' ),
+				'prompt'      => 'Create a contact section',
+				'variations'  => true,
 			),
 			'portfolio' => array(
 				'name'        => __( 'Portfolio Grid', 'layoutberg' ),
-				'description' => __( 'Project showcase in grid layout', 'layoutberg' ),
-				'prompt'      => 'Create a portfolio grid with 6 project items including images and titles',
+				'description' => __( 'Project showcase with varied grid layouts', 'layoutberg' ),
+				'prompt'      => 'Create a portfolio section',
+				'variations'  => true,
 			),
 			'team'      => array(
 				'name'        => __( 'Team Members', 'layoutberg' ),
-				'description' => __( 'Team member profiles with photos', 'layoutberg' ),
-				'prompt'      => 'Create a team section with 4 team member cards including photos, names, and roles',
+				'description' => __( 'Team profiles with dynamic arrangements', 'layoutberg' ),
+				'prompt'      => 'Create a team section',
+				'variations'  => true,
 			),
 			'faq'       => array(
 				'name'        => __( 'FAQ Section', 'layoutberg' ),
-				'description' => __( 'Frequently asked questions', 'layoutberg' ),
-				'prompt'      => 'Create an FAQ section with 5 common questions and answers',
+				'description' => __( 'FAQ with varied layouts', 'layoutberg' ),
+				'prompt'      => 'Create an FAQ section',
+				'variations'  => true,
 			),
 		);
+	}
+
+	/**
+	 * Check if pattern variations are enabled.
+	 *
+	 * @since 1.0.0
+	 * @return bool True if enabled.
+	 */
+	private function use_pattern_variations() {
+		// Always use variations for better results
+		return true;
 	}
 }

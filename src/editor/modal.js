@@ -27,7 +27,8 @@ import {
     CardDivider,
     __experimentalGrid as Grid,
     __experimentalVStack as VStack,
-    __experimentalHStack as HStack
+    __experimentalHStack as HStack,
+    TabPanel
 } from '@wordpress/components';
 import { layout, starFilled, cog } from '@wordpress/icons';
 
@@ -44,9 +45,11 @@ const LayoutBergModal = ({
     onPromptChange, 
     settings, 
     onSettingsChange,
-    hasSelectedBlocks
+    hasSelectedBlocks,
+    lastResponse
 }) => {
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [showPrompts, setShowPrompts] = useState(false);
     
     // All models have the same completion token limit
     const maxTokensLimit = 4096;
@@ -234,6 +237,55 @@ const LayoutBergModal = ({
                     )}
                 </Card>
 
+                {/* Show Prompts if Available */}
+                {lastResponse && lastResponse.prompts && (
+                    <Card>
+                        <CardHeader>
+                            <HStack>
+                                <FlexBlock>
+                                    <strong>{__('AI Prompts Used', 'layoutberg')}</strong>
+                                </FlexBlock>
+                                <FlexItem>
+                                    <Button
+                                        variant="tertiary"
+                                        size="small"
+                                        onClick={() => setShowPrompts(!showPrompts)}
+                                    >
+                                        {showPrompts ? __('Hide', 'layoutberg') : __('Show', 'layoutberg')}
+                                    </Button>
+                                </FlexItem>
+                            </HStack>
+                        </CardHeader>
+                        {showPrompts && (
+                            <CardBody>
+                                <TabPanel
+                                    className="layoutberg-prompts-tabs"
+                                    tabs={[
+                                        {
+                                            name: 'system',
+                                            title: __('System Prompt', 'layoutberg'),
+                                        },
+                                        {
+                                            name: 'user',
+                                            title: __('Enhanced User Prompt', 'layoutberg'),
+                                        },
+                                    ]}
+                                >
+                                    {(tab) => (
+                                        <div className="layoutberg-prompt-display">
+                                            <pre>
+                                                {tab.name === 'system' 
+                                                    ? lastResponse.prompts.system 
+                                                    : lastResponse.prompts.user}
+                                            </pre>
+                                        </div>
+                                    )}
+                                </TabPanel>
+                            </CardBody>
+                        )}
+                    </Card>
+                )}
+
                 {/* Action Buttons */}
                 <HStack justify="flex-end" spacing={3}>
                     <Button
@@ -297,6 +349,28 @@ const LayoutBergModal = ({
                 .layoutberg-modal-error,
                 .layoutberg-modal-info {
                     margin: 0;
+                }
+                
+                .layoutberg-prompts-tabs {
+                    margin-top: 12px;
+                }
+                
+                .layoutberg-prompt-display {
+                    background: #f0f0f1;
+                    padding: 12px;
+                    border-radius: 4px;
+                    max-height: 300px;
+                    overflow-y: auto;
+                }
+                
+                .layoutberg-prompt-display pre {
+                    margin: 0;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                    font-family: Consolas, Monaco, monospace;
+                    font-size: 12px;
+                    line-height: 1.4;
+                    color: #2c3338;
                 }
             `}</style>
         </Modal>

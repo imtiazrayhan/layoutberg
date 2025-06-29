@@ -53,6 +53,7 @@ const LayoutBergEditor = () => {
     const [generationError, setGenerationError] = useState(null);
     const [prompt, setPrompt] = useState('');
     const [lastGeneratedBlocks, setLastGeneratedBlocks] = useState('');
+    const [lastResponse, setLastResponse] = useState(null);
     const [settings, setSettings] = useState({
         model: 'gpt-3.5-turbo',
         temperature: 0.7,
@@ -115,6 +116,9 @@ const LayoutBergEditor = () => {
             if (response.success && response.data && response.data.blocks) {
                 // Store the generated blocks for potential template saving
                 setLastGeneratedBlocks(response.data.blocks);
+                
+                // Store the response for displaying prompts
+                setLastResponse(response.data);
                 
                 // Parse and insert the generated blocks immediately
                 const parsedBlocks = parse(response.data.blocks);
@@ -331,6 +335,7 @@ const LayoutBergEditor = () => {
                     settings={settings}
                     onSettingsChange={setSettings}
                     hasSelectedBlocks={hasSelectedBlocks}
+                    lastResponse={lastResponse}
                 />
             )}
 
