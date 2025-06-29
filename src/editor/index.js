@@ -220,7 +220,7 @@ const LayoutBergEditor = () => {
     useEffect(() => {
         const handleKeyDown = (event) => {
             // Ctrl+Shift+L or Cmd+Shift+L
-            if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'L') {
+            if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'L' || event.key === 'l')) {
                 event.preventDefault();
                 openModal();
             }

@@ -243,20 +243,17 @@ const LayoutBergModal = ({
                                     help={__('Choose the AI model for generation', 'layoutberg')}
                                 />
 
-                                <RangeControl
-                                    label={__('Creativity Level', 'layoutberg')}
-                                    value={settings.temperature}
-                                    onChange={(value) => updateSetting('temperature', value)}
-                                    min={0}
-                                    max={2}
-                                    step={0.1}
-                                    marks={[
-                                        { value: 0, label: __('Focused', 'layoutberg') },
-                                        { value: 1, label: __('Balanced', 'layoutberg') },
-                                        { value: 2, label: __('Creative', 'layoutberg') }
-                                    ]}
-                                    help={__('Lower values produce more focused results, higher values are more creative', 'layoutberg')}
-                                />
+                                <div className="layoutberg-creativity-slider">
+                                    <RangeControl
+                                        label={__('Creativity Level', 'layoutberg')}
+                                        value={settings.temperature}
+                                        onChange={(value) => updateSetting('temperature', value)}
+                                        min={0}
+                                        max={2}
+                                        step={0.1}
+                                        help={__('Lower values produce more focused results, higher values are more creative', 'layoutberg')}
+                                    />
+                                </div>
 
                                 <RangeControl
                                     label={__('Max Tokens', 'layoutberg')}
@@ -351,63 +348,6 @@ const LayoutBergModal = ({
                 </HStack>
             </VStack>
 
-            <style jsx>{`
-                .layoutberg-generation-modal {
-                    width: 100%;
-                    max-width: 800px;
-                }
-                
-                .layoutberg-modal-badge {
-                    background: #007cba;
-                    color: white;
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                }
-                
-                .layoutberg-quick-prompts .layoutberg-quick-prompt-button {
-                    width: 100%;
-                    height: auto;
-                    white-space: normal;
-                    text-align: center;
-                    padding: 8px;
-                    min-height: 44px;
-                }
-                
-                .layoutberg-prompt-input textarea {
-                    min-height: 100px;
-                    resize: vertical;
-                }
-                
-                .layoutberg-modal-error,
-                .layoutberg-modal-info {
-                    margin: 0;
-                }
-                
-                .layoutberg-prompts-tabs {
-                    margin-top: 12px;
-                }
-                
-                .layoutberg-prompt-display {
-                    background: #f0f0f1;
-                    padding: 12px;
-                    border-radius: 4px;
-                    max-height: 300px;
-                    overflow-y: auto;
-                }
-                
-                .layoutberg-prompt-display pre {
-                    margin: 0;
-                    white-space: pre-wrap;
-                    word-wrap: break-word;
-                    font-family: Consolas, Monaco, monospace;
-                    font-size: 12px;
-                    line-height: 1.4;
-                    color: #2c3338;
-                }
-            `}</style>
         </Modal>
     );
 };
