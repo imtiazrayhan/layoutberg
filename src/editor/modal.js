@@ -199,11 +199,38 @@ const LayoutBergModal = ({
                                 <SelectControl
                                     label={__('AI Model', 'layoutberg')}
                                     value={settings.model}
-                                    options={[
-                                        { label: __('GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg'), value: 'gpt-3.5-turbo' },
-                                        { label: __('GPT-4 (Most Capable)', 'layoutberg'), value: 'gpt-4' },
-                                        { label: __('GPT-4 Turbo (Fast & Capable)', 'layoutberg'), value: 'gpt-4-turbo' }
-                                    ]}
+                                    options={(() => {
+                                        const options = [];
+                                        const models = window.layoutbergEditor?.models || {};
+                                        
+                                        // Build options from available models
+                                        Object.keys(models).forEach(provider => {
+                                            if (models[provider].models) {
+                                                // Add optgroup label
+                                                options.push({ 
+                                                    label: models[provider].label, 
+                                                    value: '', 
+                                                    disabled: true 
+                                                });
+                                                
+                                                // Add models for this provider
+                                                Object.entries(models[provider].models).forEach(([value, label]) => {
+                                                    options.push({ label: `  ${label}`, value });
+                                                });
+                                            }
+                                        });
+                                        
+                                        // Fallback if no models are available
+                                        if (options.length === 0) {
+                                            options.push(
+                                                { label: __('GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg'), value: 'gpt-3.5-turbo' },
+                                                { label: __('GPT-4 (Most Capable)', 'layoutberg'), value: 'gpt-4' },
+                                                { label: __('GPT-4 Turbo (Fast & Capable)', 'layoutberg'), value: 'gpt-4-turbo' }
+                                            );
+                                        }
+                                        
+                                        return options;
+                                    })()}
                                     onChange={(value) => updateSetting('model', value)}
                                     help={__('Choose the AI model for generation', 'layoutberg')}
                                 />

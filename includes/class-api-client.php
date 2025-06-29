@@ -28,10 +28,37 @@ class API_Client {
 	 * @access private
 	 * @var    string
 	 */
-	private $api_endpoint = 'https://api.openai.com/v1/chat/completions';
+	private $api_endpoint;
 
 	/**
-	 * API key.
+	 * Current provider (openai or claude).
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    string
+	 */
+	private $provider;
+
+	/**
+	 * OpenAI API key.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    string
+	 */
+	private $openai_api_key;
+
+	/**
+	 * Claude API key.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 * @var    string
+	 */
+	private $claude_api_key;
+
+	/**
+	 * Current API key in use.
 	 *
 	 * @since  1.0.0
 	 * @access private
@@ -130,13 +157,26 @@ class API_Client {
 	private function load_settings() {
 		$options = get_option( 'layoutberg_options', array() );
 
-		// Get and decrypt API key.
-		$encrypted_key = isset( $options['api_key'] ) ? $options['api_key'] : '';
-		if ( ! empty( $encrypted_key ) ) {
-			$decrypted = $this->security->decrypt_api_key( $encrypted_key );
-			$this->api_key = $decrypted !== false ? $decrypted : '';
+		// Get and decrypt OpenAI API key.
+		$openai_encrypted = isset( $options['openai_api_key'] ) ? $options['openai_api_key'] : '';
+		if ( empty( $openai_encrypted ) && isset( $options['api_key'] ) ) {
+			// Backward compatibility
+			$openai_encrypted = $options['api_key'];
+		}
+		if ( ! empty( $openai_encrypted ) ) {
+			$decrypted = $this->security->decrypt_api_key( $openai_encrypted );
+			$this->openai_api_key = $decrypted !== false ? $decrypted : '';
 		} else {
-			$this->api_key = '';
+			$this->openai_api_key = '';
+		}
+
+		// Get and decrypt Claude API key.
+		$claude_encrypted = isset( $options['claude_api_key'] ) ? $options['claude_api_key'] : '';
+		if ( ! empty( $claude_encrypted ) ) {
+			$decrypted = $this->security->decrypt_api_key( $claude_encrypted );
+			$this->claude_api_key = $decrypted !== false ? $decrypted : '';
+		} else {
+			$this->claude_api_key = '';
 		}
 
 		// Get other settings.
@@ -147,6 +187,27 @@ class API_Client {
 			$this->max_tokens = 4096;
 		}
 		$this->temperature = isset( $options['temperature'] ) ? floatval( $options['temperature'] ) : 0.7;
+		
+		// Determine provider based on model
+		$this->set_provider_from_model( $this->model );
+	}
+	
+	/**
+	 * Set provider and API key based on model.
+	 *
+	 * @since 1.0.0
+	 * @param string $model Model name.
+	 */
+	private function set_provider_from_model( $model ) {
+		if ( strpos( $model, 'claude' ) === 0 ) {
+			$this->provider = 'claude';
+			$this->api_key = $this->claude_api_key;
+			$this->api_endpoint = 'https://api.anthropic.com/v1/messages';
+		} else {
+			$this->provider = 'openai';
+			$this->api_key = $this->openai_api_key;
+			$this->api_endpoint = 'https://api.openai.com/v1/chat/completions';
+		}
 	}
 
 	/**
@@ -167,7 +228,8 @@ class API_Client {
 		
 		// Check if API key is set.
 		if ( empty( $this->api_key ) ) {
-			return new \WP_Error( 'no_api_key', __( 'OpenAI API key is not configured.', 'layoutberg' ) );
+			$provider_name = $this->provider === 'claude' ? 'Claude' : 'OpenAI';
+			return new \WP_Error( 'no_api_key', sprintf( __( '%s API key is not configured.', 'layoutberg' ), $provider_name ) );
 		}
 
 		// Rate limiting removed - unlimited generations allowed
@@ -175,6 +237,8 @@ class API_Client {
 		// Override settings with options if provided
 		if ( isset( $options['model'] ) ) {
 			$this->model = $options['model'];
+			// Update provider based on new model
+			$this->set_provider_from_model( $this->model );
 		}
 		if ( isset( $options['temperature'] ) ) {
 			$this->temperature = floatval( $options['temperature'] );
@@ -242,22 +306,39 @@ class API_Client {
 			}
 		}
 
-		// Prepare request body.
-		$request_body = array(
-			'model'      => $this->model,
-			'messages'   => array(
-				array(
-					'role'    => 'system',
-					'content' => $system_prompt,
+		// Prepare request body based on provider.
+		if ( $this->provider === 'claude' ) {
+			// Claude format - system prompt is separate
+			$request_body = array(
+				'model'       => $this->model,
+				'max_tokens'  => $this->max_tokens,
+				'temperature' => $this->temperature,
+				'system'      => $system_prompt,
+				'messages'    => array(
+					array(
+						'role'    => 'user',
+						'content' => $user_prompt,
+					),
 				),
-				array(
-					'role'    => 'user',
-					'content' => $user_prompt,
+			);
+		} else {
+			// OpenAI format - system prompt in messages
+			$request_body = array(
+				'model'      => $this->model,
+				'messages'   => array(
+					array(
+						'role'    => 'system',
+						'content' => $system_prompt,
+					),
+					array(
+						'role'    => 'user',
+						'content' => $user_prompt,
+					),
 				),
-			),
-			'max_tokens' => $this->max_tokens,
-			'temperature' => $this->temperature,
-		);
+				'max_tokens' => $this->max_tokens,
+				'temperature' => $this->temperature,
+			);
+		}
 
 		// Make API request with retry logic.
 		$response = $this->make_api_request_with_retry( $request_body );
@@ -308,15 +389,21 @@ class API_Client {
 				error_log( sprintf( 'LayoutBerg API Request (Attempt %d/%d): %s', $attempt, $this->max_retries, wp_json_encode( $request_body ) ) );
 			}
 
+			// Prepare headers based on provider.
+			$headers = array( 'Content-Type' => 'application/json' );
+			if ( $this->provider === 'claude' ) {
+				$headers['x-api-key'] = $this->api_key;
+				$headers['anthropic-version'] = '2023-06-01';
+			} else {
+				$headers['Authorization'] = 'Bearer ' . $this->api_key;
+			}
+
 			// Make API request.
 			$response = wp_remote_post(
 				$this->api_endpoint,
 				array(
 					'timeout' => $this->timeout,
-					'headers' => array(
-						'Authorization' => 'Bearer ' . $this->api_key,
-						'Content-Type'  => 'application/json',
-					),
+					'headers' => $headers,
 					'body'    => wp_json_encode( $request_body ),
 				)
 			);
@@ -416,12 +503,22 @@ class API_Client {
 				error_log( 'LayoutBerg Raw API Usage: ' . json_encode( $data['usage'] ) );
 			}
 
-			// Success!
-			return array(
-				'content' => $data['choices'][0]['message']['content'],
-				'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
-				'raw_response' => $data,
-			);
+			// Success! Parse response based on provider
+			if ( $this->provider === 'claude' ) {
+				// Claude response format
+				return array(
+					'content' => isset( $data['content'][0]['text'] ) ? $data['content'][0]['text'] : '',
+					'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
+					'raw_response' => $data,
+				);
+			} else {
+				// OpenAI response format
+				return array(
+					'content' => $data['choices'][0]['message']['content'],
+					'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
+					'raw_response' => $data,
+				);
+			}
 		}
 
 		// All retries exhausted.
@@ -447,16 +544,17 @@ class API_Client {
 		}
 
 		// Provide default messages based on status code
+		$provider_name = $this->provider === 'claude' ? 'Claude' : 'OpenAI';
 		switch ( $status_code ) {
 			case 401:
-				return __( 'Invalid API key. Please check your OpenAI API key.', 'layoutberg' );
+				return sprintf( __( 'Invalid API key. Please check your %s API key.', 'layoutberg' ), $provider_name );
 			case 429:
 				return __( 'Rate limit exceeded. Please try again later.', 'layoutberg' );
 			case 500:
 			case 502:
 			case 503:
 			case 504:
-				return __( 'OpenAI server error. Please try again later.', 'layoutberg' );
+				return sprintf( __( '%s server error. Please try again later.', 'layoutberg' ), $provider_name );
 			default:
 				return __( 'Unknown API error occurred.', 'layoutberg' );
 		}
@@ -592,11 +690,17 @@ class API_Client {
 	 * @return float Cost in USD.
 	 */
 	private function calculate_cost( $tokens ) {
-		// Cost per 1000 tokens.
+		// Cost per 1000 tokens (approximate as of late 2024).
 		$costs = array(
+			// OpenAI models
 			'gpt-3.5-turbo' => 0.002,
 			'gpt-4'         => 0.03,
 			'gpt-4-turbo'   => 0.01,
+			// Claude models (input/output averaged)
+			'claude-3-opus-20240229'     => 0.015,  // $15/1M input, $75/1M output
+			'claude-3-5-sonnet-20241022' => 0.003,  // $3/1M input, $15/1M output
+			'claude-3-sonnet-20240229'   => 0.003,  // $3/1M input, $15/1M output
+			'claude-3-haiku-20240307'    => 0.00025, // $0.25/1M input, $1.25/1M output
 		);
 
 		$cost_per_1k = isset( $costs[ $this->model ] ) ? $costs[ $this->model ] : 0.002;
@@ -649,23 +753,49 @@ class API_Client {
 	}
 
 	/**
-	 * Validate API key with OpenAI.
+	 * Validate API key with provider.
 	 *
 	 * @since 1.0.0
 	 * @param string $api_key API key to validate.
+	 * @param string $provider Provider name (openai or claude).
 	 * @return bool|WP_Error True if valid, WP_Error on failure.
 	 */
-	public static function validate_api_key( $api_key ) {
-		// Make a simple API call to validate the key.
-		$response = wp_remote_get(
-			'https://api.openai.com/v1/models',
-			array(
-				'timeout' => 30,
-				'headers' => array(
-					'Authorization' => 'Bearer ' . $api_key,
-				),
-			)
-		);
+	public static function validate_api_key( $api_key, $provider = 'openai' ) {
+		// Determine endpoint and headers based on provider
+		if ( $provider === 'claude' ) {
+			$endpoint = 'https://api.anthropic.com/v1/messages';
+			$headers = array(
+				'x-api-key' => $api_key,
+				'anthropic-version' => '2023-06-01',
+				'Content-Type' => 'application/json',
+			);
+			// Claude doesn't have a simple GET endpoint, so we'll make a minimal POST request
+			$response = wp_remote_post(
+				$endpoint,
+				array(
+					'timeout' => 30,
+					'headers' => $headers,
+					'body' => wp_json_encode( array(
+						'model' => 'claude-3-haiku-20240307',
+						'max_tokens' => 1,
+						'messages' => array(
+							array( 'role' => 'user', 'content' => 'test' )
+						),
+					) ),
+				)
+			);
+		} else {
+			// OpenAI validation
+			$response = wp_remote_get(
+				'https://api.openai.com/v1/models',
+				array(
+					'timeout' => 30,
+					'headers' => array(
+						'Authorization' => 'Bearer ' . $api_key,
+					),
+				)
+			);
+		}
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -674,7 +804,9 @@ class API_Client {
 		$code = wp_remote_retrieve_response_code( $response );
 		$body = wp_remote_retrieve_body( $response );
 
-		if ( 200 !== $code ) {
+		// Claude returns 200 for success, but with usage exceeded it might be different
+		$valid_codes = $provider === 'claude' ? array( 200 ) : array( 200 );
+		if ( ! in_array( $code, $valid_codes, true ) ) {
 			$error_message = __( 'Invalid API key.', 'layoutberg' );
 			
 			// Try to get more specific error message from response
@@ -686,12 +818,13 @@ class API_Client {
 			}
 			
 			// Common error codes
+			$provider_name = $provider === 'claude' ? 'Claude' : 'OpenAI';
 			if ( 401 === $code ) {
-				$error_message = __( 'Invalid API key. Please check your OpenAI API key.', 'layoutberg' );
+				$error_message = sprintf( __( 'Invalid API key. Please check your %s API key.', 'layoutberg' ), $provider_name );
 			} elseif ( 429 === $code ) {
 				$error_message = __( 'Rate limit exceeded. Please try again later.', 'layoutberg' );
 			} elseif ( 403 === $code ) {
-				$error_message = __( 'Access denied. Please check your OpenAI account status.', 'layoutberg' );
+				$error_message = sprintf( __( 'Access denied. Please check your %s account status.', 'layoutberg' ), $provider_name );
 			}
 			
 			return new \WP_Error( 'invalid_api_key', $error_message );

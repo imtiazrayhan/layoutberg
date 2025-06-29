@@ -15,16 +15,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Get current settings.
 $options = get_option( 'layoutberg_options', array() );
 
-// Handle API key display.
-$api_key_display = '';
-$api_key_status = '';
-if ( ! empty( $options['api_key'] ) ) {
+// Handle OpenAI API key display.
+$openai_key_display = '';
+$openai_key_status = '';
+if ( ! empty( $options['openai_api_key'] ) ) {
+	$security = new \DotCamp\LayoutBerg\Security_Manager();
+	$decrypted = $security->decrypt_api_key( $options['openai_api_key'] );
+	if ( $decrypted ) {
+		// Mask the API key for display.
+		$openai_key_display = substr( $decrypted, 0, 7 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
+		$openai_key_status = 'valid';
+	}
+} elseif ( ! empty( $options['api_key'] ) ) {
+	// Backward compatibility - migrate old api_key to openai_api_key
 	$security = new \DotCamp\LayoutBerg\Security_Manager();
 	$decrypted = $security->decrypt_api_key( $options['api_key'] );
 	if ( $decrypted ) {
+		$openai_key_display = substr( $decrypted, 0, 7 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
+		$openai_key_status = 'valid';
+	}
+}
+
+// Handle Claude API key display.
+$claude_key_display = '';
+$claude_key_status = '';
+if ( ! empty( $options['claude_api_key'] ) ) {
+	$security = new \DotCamp\LayoutBerg\Security_Manager();
+	$decrypted = $security->decrypt_api_key( $options['claude_api_key'] );
+	if ( $decrypted ) {
 		// Mask the API key for display.
-		$api_key_display = substr( $decrypted, 0, 7 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
-		$api_key_status = 'valid';
+		$claude_key_display = substr( $decrypted, 0, 5 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
+		$claude_key_status = 'valid';
 	}
 }
 ?>
@@ -92,10 +113,11 @@ if ( ! empty( $options['api_key'] ) ) {
 
 					<!-- API Settings Tab -->
 					<div id="api-settings" class="layoutberg-settings-tab active">
+						<!-- OpenAI Configuration -->
 						<div class="layoutberg-card">
 							<div class="layoutberg-card-header">
 								<h3 class="layoutberg-card-title"><?php esc_html_e( 'OpenAI API Configuration', 'layoutberg' ); ?></h3>
-								<?php if ( $api_key_status === 'valid' ) : ?>
+								<?php if ( $openai_key_status === 'valid' ) : ?>
 									<span class="layoutberg-api-status valid">
 										<span class="dashicons dashicons-yes-alt"></span>
 										<?php esc_html_e( 'Connected', 'layoutberg' ); ?>
@@ -109,7 +131,7 @@ if ( ! empty( $options['api_key'] ) ) {
 							</div>
 
 							<div class="layoutberg-form-group">
-								<label for="layoutberg_api_key" class="layoutberg-label">
+								<label for="layoutberg_openai_api_key" class="layoutberg-label">
 									<?php esc_html_e( 'OpenAI API Key', 'layoutberg' ); ?>
 								</label>
 								<div class="layoutberg-input-group">
@@ -118,15 +140,15 @@ if ( ! empty( $options['api_key'] ) ) {
 									</div>
 									<input 
 										type="password" 
-										id="layoutberg_api_key" 
-										name="layoutberg_options[api_key]" 
-										value="<?php echo esc_attr( $api_key_display ); ?>" 
+										id="layoutberg_openai_api_key" 
+										name="layoutberg_options[openai_api_key]" 
+										value="<?php echo esc_attr( $openai_key_display ); ?>" 
 										class="layoutberg-input"
 										placeholder="sk-..."
-										data-encrypted="<?php echo ! empty( $options['api_key'] ) ? 'true' : 'false'; ?>"
+										data-encrypted="<?php echo ! empty( $options['openai_api_key'] ) || ! empty( $options['api_key'] ) ? 'true' : 'false'; ?>"
 									/>
-									<?php if ( ! empty( $options['api_key'] ) ) : ?>
-										<input type="hidden" name="layoutberg_options[has_api_key]" value="1" />
+									<?php if ( ! empty( $options['openai_api_key'] ) || ! empty( $options['api_key'] ) ) : ?>
+										<input type="hidden" name="layoutberg_options[has_openai_key]" value="1" />
 									<?php endif; ?>
 								</div>
 								<p class="layoutberg-help-text">
@@ -139,31 +161,115 @@ if ( ! empty( $options['api_key'] ) ) {
 									?>
 								</p>
 								<div class="layoutberg-flex layoutberg-gap-2 layoutberg-mt-2">
-									<button type="button" class="layoutberg-btn layoutberg-btn-secondary" id="test-api-key">
+									<button type="button" class="layoutberg-btn layoutberg-btn-secondary" id="test-openai-key" data-provider="openai">
 										<span class="dashicons dashicons-admin-tools"></span>
 										<?php esc_html_e( 'Test Connection', 'layoutberg' ); ?>
 									</button>
-									<span id="api-key-status"></span>
+									<span id="openai-key-status"></span>
 								</div>
+							</div>
+						</div>
+
+						<!-- Claude Configuration -->
+						<div class="layoutberg-card">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Claude API Configuration', 'layoutberg' ); ?></h3>
+								<?php if ( $claude_key_status === 'valid' ) : ?>
+									<span class="layoutberg-api-status valid">
+										<span class="dashicons dashicons-yes-alt"></span>
+										<?php esc_html_e( 'Connected', 'layoutberg' ); ?>
+									</span>
+								<?php else : ?>
+									<span class="layoutberg-api-status invalid">
+										<span class="dashicons dashicons-warning"></span>
+										<?php esc_html_e( 'Not Connected', 'layoutberg' ); ?>
+									</span>
+								<?php endif; ?>
+							</div>
+
+							<div class="layoutberg-form-group">
+								<label for="layoutberg_claude_api_key" class="layoutberg-label">
+									<?php esc_html_e( 'Claude API Key', 'layoutberg' ); ?>
+								</label>
+								<div class="layoutberg-input-group">
+									<div class="layoutberg-input-group-addon">
+										<span class="dashicons dashicons-admin-network"></span>
+									</div>
+									<input 
+										type="password" 
+										id="layoutberg_claude_api_key" 
+										name="layoutberg_options[claude_api_key]" 
+										value="<?php echo esc_attr( $claude_key_display ); ?>" 
+										class="layoutberg-input"
+										placeholder="sk-ant-..."
+										data-encrypted="<?php echo ! empty( $options['claude_api_key'] ) ? 'true' : 'false'; ?>"
+									/>
+									<?php if ( ! empty( $options['claude_api_key'] ) ) : ?>
+										<input type="hidden" name="layoutberg_options[has_claude_key]" value="1" />
+									<?php endif; ?>
+								</div>
+								<p class="layoutberg-help-text">
+									<?php 
+									printf(
+										/* translators: %s: Anthropic console URL */
+										esc_html__( 'Enter your Claude API key. Get one from %s', 'layoutberg' ),
+										'<a href="https://console.anthropic.com/api-keys" target="_blank">console.anthropic.com</a>'
+									); 
+									?>
+								</p>
+								<div class="layoutberg-flex layoutberg-gap-2 layoutberg-mt-2">
+									<button type="button" class="layoutberg-btn layoutberg-btn-secondary" id="test-claude-key" data-provider="claude">
+										<span class="dashicons dashicons-admin-tools"></span>
+										<?php esc_html_e( 'Test Connection', 'layoutberg' ); ?>
+									</button>
+									<span id="claude-key-status"></span>
+								</div>
+							</div>
+						</div>
+
+						<!-- Model Selection -->
+						<div class="layoutberg-card">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Default Model Selection', 'layoutberg' ); ?></h3>
 							</div>
 
 							<div class="layoutberg-form-group">
 								<label for="layoutberg_model" class="layoutberg-label">
-									<?php esc_html_e( 'AI Model', 'layoutberg' ); ?>
+									<?php esc_html_e( 'Default AI Model', 'layoutberg' ); ?>
 								</label>
 								<select id="layoutberg_model" name="layoutberg_options[model]" class="layoutberg-select">
-									<option value="gpt-3.5-turbo" <?php selected( $options['model'] ?? 'gpt-3.5-turbo', 'gpt-3.5-turbo' ); ?>>
-										<?php esc_html_e( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ); ?>
-									</option>
-									<option value="gpt-4" <?php selected( $options['model'] ?? '', 'gpt-4' ); ?>>
-										<?php esc_html_e( 'GPT-4 (Most Capable)', 'layoutberg' ); ?>
-									</option>
-									<option value="gpt-4-turbo" <?php selected( $options['model'] ?? '', 'gpt-4-turbo' ); ?>>
-										<?php esc_html_e( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ); ?>
-									</option>
+									<?php if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) : ?>
+										<optgroup label="<?php esc_attr_e( 'OpenAI Models', 'layoutberg' ); ?>">
+											<option value="gpt-3.5-turbo" <?php selected( $options['model'] ?? 'gpt-3.5-turbo', 'gpt-3.5-turbo' ); ?>>
+												<?php esc_html_e( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ); ?>
+											</option>
+											<option value="gpt-4" <?php selected( $options['model'] ?? '', 'gpt-4' ); ?>>
+												<?php esc_html_e( 'GPT-4 (Most Capable)', 'layoutberg' ); ?>
+											</option>
+											<option value="gpt-4-turbo" <?php selected( $options['model'] ?? '', 'gpt-4-turbo' ); ?>>
+												<?php esc_html_e( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ); ?>
+											</option>
+										</optgroup>
+									<?php endif; ?>
+									<?php if ( $claude_key_status === 'valid' ) : ?>
+										<optgroup label="<?php esc_attr_e( 'Claude Models', 'layoutberg' ); ?>">
+											<option value="claude-3-opus-20240229" <?php selected( $options['model'] ?? '', 'claude-3-opus-20240229' ); ?>>
+												<?php esc_html_e( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ); ?>
+											</option>
+											<option value="claude-3-5-sonnet-20241022" <?php selected( $options['model'] ?? '', 'claude-3-5-sonnet-20241022' ); ?>>
+												<?php esc_html_e( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ); ?>
+											</option>
+											<option value="claude-3-sonnet-20240229" <?php selected( $options['model'] ?? '', 'claude-3-sonnet-20240229' ); ?>>
+												<?php esc_html_e( 'Claude 3 Sonnet (Balanced)', 'layoutberg' ); ?>
+											</option>
+											<option value="claude-3-haiku-20240307" <?php selected( $options['model'] ?? '', 'claude-3-haiku-20240307' ); ?>>
+												<?php esc_html_e( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ); ?>
+											</option>
+										</optgroup>
+									<?php endif; ?>
 								</select>
 								<p class="layoutberg-help-text">
-									<?php esc_html_e( 'Select the AI model to use for layout generation.', 'layoutberg' ); ?>
+									<?php esc_html_e( 'Select the default AI model to use for layout generation. Only models with configured API keys are shown.', 'layoutberg' ); ?>
 								</p>
 							</div>
 						</div>
@@ -464,17 +570,20 @@ if ( ! empty( $options['api_key'] ) ) {
 	display: block;
 }
 
-#api-key-status {
+#openai-key-status,
+#claude-key-status {
 	margin-left: 10px;
 	font-size: 0.875rem;
 	font-weight: 500;
 }
 
-#api-key-status.success {
+#openai-key-status.success,
+#claude-key-status.success {
 	color: var(--lberg-success);
 }
 
-#api-key-status.error {
+#openai-key-status.error,
+#claude-key-status.error {
 	color: var(--lberg-danger);
 }
 
@@ -564,11 +673,12 @@ jQuery(document).ready(function($) {
 		$('#temperature-value').text($(this).val());
 	});
 
-	// Test API key
-	$('#test-api-key').on('click', function() {
+	// Test API keys
+	$('#test-openai-key, #test-claude-key').on('click', function() {
 		var $button = $(this);
-		var $status = $('#api-key-status');
-		var $input = $('#layoutberg_api_key');
+		var provider = $button.data('provider');
+		var $status = $('#' + provider + '-key-status');
+		var $input = $('#layoutberg_' + provider + '_api_key');
 		var apiKey = $input.val();
 		var isEncrypted = $input.data('encrypted') === true || $input.data('encrypted') === 'true';
 
@@ -591,7 +701,8 @@ jQuery(document).ready(function($) {
 			path: '/layoutberg/v1/validate-key',
 			method: 'POST',
 			data: {
-				api_key: apiKey
+				api_key: apiKey,
+				provider: provider
 			}
 		}).done(function(response) {
 			$status.addClass('success').text('<?php esc_html_e( 'Valid API key!', 'layoutberg' ); ?>');
@@ -629,12 +740,10 @@ jQuery(document).ready(function($) {
 	$('#layoutberg-settings-form').on('submit', function(e) {
 		var $form = $(this);
 		var $submitBtn = $form.find('button[type="submit"]');
-		var $apiKeyInput = $('#layoutberg_api_key');
+		var $openaiKeyInput = $('#layoutberg_openai_api_key');
+		var $claudeKeyInput = $('#layoutberg_claude_api_key');
 		
-		// If API key field is empty but we have a stored key, ensure we send the masked value
-		if (!$apiKeyInput.val() && $apiKeyInput.data('encrypted') === 'true') {
-			// Don't modify the field, the backend will handle it
-		}
+		// If API key fields are empty but we have stored keys, the backend will handle it
 		
 		$submitBtn.prop('disabled', true);
 		$submitBtn.find('.dashicons').addClass('layoutberg-spinner');

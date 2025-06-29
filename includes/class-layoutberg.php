@@ -368,11 +368,43 @@ class LayoutBerg {
 	 * @return array Available models.
 	 */
 	private function get_available_models() {
-		$models = array(
-			'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo', 'layoutberg' ),
-			'gpt-4' => __( 'GPT-4', 'layoutberg' ),
-			'gpt-4-turbo' => __( 'GPT-4 Turbo', 'layoutberg' ),
-		);
+		$models = array();
+		$options = get_option( 'layoutberg_options', array() );
+		$security = new Security_Manager();
+		
+		// Check for OpenAI API key
+		$has_openai_key = false;
+		if ( ! empty( $options['openai_api_key'] ) || ! empty( $options['api_key'] ) ) {
+			$has_openai_key = true;
+		}
+		
+		// Check for Claude API key
+		$has_claude_key = ! empty( $options['claude_api_key'] );
+		
+		// Add OpenAI models if key is configured
+		if ( $has_openai_key ) {
+			$models['openai'] = array(
+				'label' => __( 'OpenAI Models', 'layoutberg' ),
+				'models' => array(
+					'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
+					'gpt-4' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
+					'gpt-4-turbo' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
+				),
+			);
+		}
+		
+		// Add Claude models if key is configured
+		if ( $has_claude_key ) {
+			$models['claude'] = array(
+				'label' => __( 'Claude Models', 'layoutberg' ),
+				'models' => array(
+					'claude-3-opus-20240229' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
+					'claude-3-5-sonnet-20241022' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
+					'claude-3-sonnet-20240229' => __( 'Claude 3 Sonnet (Balanced)', 'layoutberg' ),
+					'claude-3-haiku-20240307' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
+				),
+			);
+		}
 
 		return $models;
 	}

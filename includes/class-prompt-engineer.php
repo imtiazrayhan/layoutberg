@@ -905,6 +905,7 @@ IMPORTANT VARIATION RULES:
 	 */
 	public function get_model_limits( $model ) {
 		$limits = array(
+			// OpenAI models
 			'gpt-3.5-turbo' => array(
 				'total' => 4096,
 				'max_completion' => 4096,
@@ -915,6 +916,23 @@ IMPORTANT VARIATION RULES:
 			),
 			'gpt-4-turbo' => array(
 				'total' => 128000,
+				'max_completion' => 4096,
+			),
+			// Claude models
+			'claude-3-opus-20240229' => array(
+				'total' => 200000,
+				'max_completion' => 4096,
+			),
+			'claude-3-5-sonnet-20241022' => array(
+				'total' => 200000,
+				'max_completion' => 8192,
+			),
+			'claude-3-sonnet-20240229' => array(
+				'total' => 200000,
+				'max_completion' => 4096,
+			),
+			'claude-3-haiku-20240307' => array(
+				'total' => 200000,
 				'max_completion' => 4096,
 			),
 		);

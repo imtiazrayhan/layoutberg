@@ -399,36 +399,82 @@ class Admin {
 	public function sanitize_settings( $input ) {
 		$sanitized = array();
 
-		// Sanitize and encrypt API key.
+		// Get existing options.
 		$existing_options = get_option( 'layoutberg_options', array() );
+		$security = new Security_Manager();
 		
-		if ( isset( $input['api_key'] ) ) {
-			$api_key = sanitize_text_field( $input['api_key'] );
+		// Handle OpenAI API key.
+		if ( isset( $input['openai_api_key'] ) ) {
+			$openai_key = sanitize_text_field( $input['openai_api_key'] );
 			
 			// Check if the API key is masked (contains asterisks) or empty when we have a stored key.
-			if ( ( strpos( $api_key, '*' ) !== false ) || ( empty( $api_key ) && isset( $input['has_api_key'] ) && $input['has_api_key'] == '1' ) ) {
+			if ( ( strpos( $openai_key, '*' ) !== false ) || ( empty( $openai_key ) && isset( $input['has_openai_key'] ) && $input['has_openai_key'] == '1' ) ) {
 				// Keep the existing encrypted key.
-				if ( isset( $existing_options['api_key'] ) ) {
-					$sanitized['api_key'] = $existing_options['api_key'];
+				if ( isset( $existing_options['openai_api_key'] ) ) {
+					$sanitized['openai_api_key'] = $existing_options['openai_api_key'];
+				} elseif ( isset( $existing_options['api_key'] ) ) {
+					// Migrate from old api_key to openai_api_key
+					$sanitized['openai_api_key'] = $existing_options['api_key'];
 				}
-			} elseif ( ! empty( $api_key ) ) {
+			} elseif ( ! empty( $openai_key ) ) {
 				// New API key - encrypt it.
-				$security = new Security_Manager();
-				$sanitized['api_key'] = $security->encrypt_api_key( $api_key );
-			} elseif ( empty( $api_key ) && ! isset( $input['has_api_key'] ) ) {
+				$sanitized['openai_api_key'] = $security->encrypt_api_key( $openai_key );
+			} elseif ( empty( $openai_key ) && ! isset( $input['has_openai_key'] ) ) {
 				// User cleared the API key field intentionally
-				$sanitized['api_key'] = '';
+				$sanitized['openai_api_key'] = '';
 			}
 		} else {
-			// If API key field is not in the input, preserve the existing one
-			if ( isset( $existing_options['api_key'] ) ) {
-				$sanitized['api_key'] = $existing_options['api_key'];
+			// If OpenAI key field is not in the input, preserve the existing one
+			if ( isset( $existing_options['openai_api_key'] ) ) {
+				$sanitized['openai_api_key'] = $existing_options['openai_api_key'];
+			} elseif ( isset( $existing_options['api_key'] ) ) {
+				// Migrate from old api_key to openai_api_key
+				$sanitized['openai_api_key'] = $existing_options['api_key'];
 			}
+		}
+		
+		// Handle Claude API key.
+		if ( isset( $input['claude_api_key'] ) ) {
+			$claude_key = sanitize_text_field( $input['claude_api_key'] );
+			
+			// Check if the API key is masked (contains asterisks) or empty when we have a stored key.
+			if ( ( strpos( $claude_key, '*' ) !== false ) || ( empty( $claude_key ) && isset( $input['has_claude_key'] ) && $input['has_claude_key'] == '1' ) ) {
+				// Keep the existing encrypted key.
+				if ( isset( $existing_options['claude_api_key'] ) ) {
+					$sanitized['claude_api_key'] = $existing_options['claude_api_key'];
+				}
+			} elseif ( ! empty( $claude_key ) ) {
+				// New API key - encrypt it.
+				$sanitized['claude_api_key'] = $security->encrypt_api_key( $claude_key );
+			} elseif ( empty( $claude_key ) && ! isset( $input['has_claude_key'] ) ) {
+				// User cleared the API key field intentionally
+				$sanitized['claude_api_key'] = '';
+			}
+		} else {
+			// If Claude key field is not in the input, preserve the existing one
+			if ( isset( $existing_options['claude_api_key'] ) ) {
+				$sanitized['claude_api_key'] = $existing_options['claude_api_key'];
+			}
+		}
+		
+		// Clean up old api_key field if migration happened
+		if ( isset( $sanitized['openai_api_key'] ) && isset( $existing_options['api_key'] ) ) {
+			// We'll let it be removed by not including it in sanitized
 		}
 
 		// Sanitize model.
 		if ( isset( $input['model'] ) ) {
-			$allowed_models = array( 'gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo' );
+			$allowed_models = array( 
+				// OpenAI models
+				'gpt-3.5-turbo', 
+				'gpt-4', 
+				'gpt-4-turbo',
+				// Claude models
+				'claude-3-opus-20240229',
+				'claude-3-5-sonnet-20241022',
+				'claude-3-sonnet-20240229',
+				'claude-3-haiku-20240307'
+			);
 			if ( in_array( $input['model'], $allowed_models, true ) ) {
 				$sanitized['model'] = $input['model'];
 			}
