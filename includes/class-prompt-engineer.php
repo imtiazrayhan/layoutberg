@@ -79,8 +79,53 @@ class Prompt_Engineer {
 		// Add common pitfalls to avoid
 		$prompt .= "\n\n" . $this->get_common_pitfalls();
 		
+		// Add comprehensive block examples
+		$prompt .= "\n\n" . $this->get_example_blocks();
+		
+		// Add style-specific instructions if provided
+		if ( isset( $options['style'] ) ) {
+			$prompt .= "\n\nSTYLE: Create a " . $options['style'] . " design style.";
+			
+			switch ( $options['style'] ) {
+				case 'modern':
+					$prompt .= " Use clean lines, plenty of whitespace, sans-serif fonts, and minimalist design.";
+					break;
+				case 'classic':
+					$prompt .= " Use traditional layouts, serif fonts, formal structure, and conservative design.";
+					break;
+				case 'creative':
+					$prompt .= " Use bold colors, unique layouts, creative typography, and artistic elements.";
+					break;
+			}
+		}
+		
+		// Add layout-specific instructions if provided
+		if ( isset( $options['layout'] ) ) {
+			$prompt .= "\n\nLAYOUT: Use " . $options['layout'] . " layout.";
+			
+			switch ( $options['layout'] ) {
+				case 'single-column':
+					$prompt .= " Center all content in a single column with maximum width.";
+					break;
+				case 'two-column':
+					$prompt .= " Use two-column layouts for content sections where appropriate.";
+					break;
+				case 'grid':
+					$prompt .= " Use grid layouts with columns for features, services, or gallery items.";
+					break;
+				case 'asymmetric':
+					$prompt .= " Use asymmetric layouts with varied column widths and creative arrangements.";
+					break;
+			}
+		}
+		
+		// Add pattern library reference
+		$prompt .= "\n\nPATTERN LIBRARY: You have access to these pre-built patterns: " . implode( ', ', array_keys( $this->pattern_library ) );
+		$prompt .= "\nUse these patterns as templates when appropriate, adapting content to match user requirements.";
+		
 		// Add user instruction priority
 		$prompt .= "\n\nUSER INSTRUCTIONS: Follow the user's description exactly. They specify what sections to include and in what order.";
+		$prompt .= "\nGenerate ONLY the requested sections - no more, no less.";
 		
 		return $prompt;
 	}
@@ -329,65 +374,157 @@ Follow user instructions for sections and layout.";
 	 */
 	private function init_pattern_library() {
 		$this->pattern_library = array(
-			'simple_section' => '<!-- wp:group {\"align\":\"wide\",\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|60\",\"bottom\":\"var:preset|spacing|60\"}}}} -->
-<div class="wp-block-group alignwide" style="padding-top:var(--wp--preset--spacing--60);padding-bottom:var(--wp--preset--spacing--60)">
-    <!-- wp:heading {\"textAlign\":\"center\"} -->
-    <h2 class="wp-block-heading has-text-align-center">Section Title</h2>
-    <!-- /wp:heading -->
-    
-    <!-- wp:paragraph {\"align\":\"center\"} -->
-    <p class="has-text-align-center">Section description</p>
-    <!-- /wp:paragraph -->
-</div>
+			'hero_cover' => '<!-- wp:cover {\"url\":\"https://images.unsplash.com/photo-1517180102446-f3ece451e9d8\",\"dimRatio\":50,\"minHeight\":600,\"align\":\"full\"} -->
+<div class="wp-block-cover alignfull" style="min-height:600px"><img class="wp-block-cover__image-background" alt="" src="https://images.unsplash.com/photo-1517180102446-f3ece451e9d8" data-object-fit="cover"/><span aria-hidden="true" class="wp-block-cover__background has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:heading {\"textAlign\":\"center\",\"level\":1,\"textColor\":\"white\",\"fontSize\":\"huge\"} -->
+<h1 class="wp-block-heading has-text-align-center has-white-color has-text-color has-huge-font-size">Welcome to Our Service</h1>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {\"align\":\"center\",\"textColor\":\"white\",\"fontSize\":\"large\"} -->
+<p class="has-text-align-center has-white-color has-text-color has-large-font-size">Transform your business with our solutions</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
+<div class="wp-block-buttons"><!-- wp:button {\"backgroundColor\":\"white\",\"textColor\":\"black\",\"style\":{\"spacing\":{\"padding\":{\"top\":\"15px\",\"bottom\":\"15px\",\"left\":\"40px\",\"right\":\"40px\"}}}} -->
+<div class="wp-block-button"><a class="wp-block-button__link has-black-color has-white-background-color has-text-color has-background wp-element-button" style="padding-top:15px;padding-right:40px;padding-bottom:15px;padding-left:40px">Get Started</a></div>
+<!-- /wp:button -->
+
+<!-- wp:button {\"textColor\":\"white\",\"className\":\"is-style-outline\",\"style\":{\"spacing\":{\"padding\":{\"top\":\"15px\",\"bottom\":\"15px\",\"left\":\"40px\",\"right\":\"40px\"}}}} -->
+<div class="wp-block-button is-style-outline"><a class="wp-block-button__link has-white-color has-text-color wp-element-button" style="padding-top:15px;padding-right:40px;padding-bottom:15px;padding-left:40px">Learn More</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons --></div></div>
+<!-- /wp:cover -->',
+
+			'features_columns' => '<!-- wp:group {\"align\":\"wide\"} -->
+<div class="wp-block-group alignwide"><!-- wp:heading {\"textAlign\":\"center\"} -->
+<h2 class="wp-block-heading has-text-align-center">Our Features</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {\"align\":\"center\"} -->
+<p class="has-text-align-center">Discover what makes us different</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:spacer {\"height\":\"40px\"} -->
+<div style="height:40px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:columns {\"align\":\"wide\"} -->
+<div class="wp-block-columns alignwide"><!-- wp:column -->
+<div class="wp-block-column"><!-- wp:image {\"width\":\"64px\",\"height\":\"64px\",\"sizeSlug\":\"large\",\"align\":\"center\"} -->
+<figure class="wp-block-image aligncenter size-large is-resized"><img src="https://via.placeholder.com/64x64/0073aa/ffffff?text=1" alt="" style="width:64px;height:64px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {\"textAlign\":\"center\",\"level\":3} -->
+<h3 class="wp-block-heading has-text-align-center">Fast Performance</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {\"align\":\"center\"} -->
+<p class="has-text-align-center">Lightning-fast load times across all devices.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:image {\"width\":\"64px\",\"height\":\"64px\",\"sizeSlug\":\"large\",\"align\":\"center\"} -->
+<figure class="wp-block-image aligncenter size-large is-resized"><img src="https://via.placeholder.com/64x64/0073aa/ffffff?text=2" alt="" style="width:64px;height:64px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {\"textAlign\":\"center\",\"level\":3} -->
+<h3 class="wp-block-heading has-text-align-center">Secure & Reliable</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {\"align\":\"center\"} -->
+<p class="has-text-align-center">Enterprise-grade security with 99.9% uptime.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:image {\"width\":\"64px\",\"height\":\"64px\",\"sizeSlug\":\"large\",\"align\":\"center\"} -->
+<figure class="wp-block-image aligncenter size-large is-resized"><img src="https://via.placeholder.com/64x64/0073aa/ffffff?text=3" alt="" style="width:64px;height:64px"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:heading {\"textAlign\":\"center\",\"level\":3} -->
+<h3 class="wp-block-heading has-text-align-center">24/7 Support</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {\"align\":\"center\"} -->
+<p class="has-text-align-center">Round-the-clock customer support.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns --></div>
 <!-- /wp:group -->',
 
-			'simple_columns' => '<!-- wp:columns -->
-<div class="wp-block-columns">
-    <!-- wp:column -->
-    <div class="wp-block-column">
-        <!-- wp:heading {\"level\":3} -->
-        <h3 class="wp-block-heading">Column 1</h3>
-        <!-- /wp:heading -->
-        
-        <!-- wp:paragraph -->
-        <p>Content here</p>
-        <!-- /wp:paragraph -->
-    </div>
-    <!-- /wp:column -->
-    
-    <!-- wp:column -->
-    <div class="wp-block-column">
-        <!-- wp:heading {\"level\":3} -->
-        <h3 class="wp-block-heading">Column 2</h3>
-        <!-- /wp:heading -->
-        
-        <!-- wp:paragraph -->
-        <p>Content here</p>
-        <!-- /wp:paragraph -->
-    </div>
-    <!-- /wp:column -->
-</div>
+			'testimonial_quote' => '<!-- wp:columns {\"align\":\"wide\"} -->
+<div class="wp-block-columns alignwide"><!-- wp:column -->
+<div class="wp-block-column"><!-- wp:quote -->
+<blockquote class="wp-block-quote"><!-- wp:paragraph -->
+<p>"This service completely transformed our business. The results speak for themselves!"</p>
+<!-- /wp:paragraph --><cite>Sarah Johnson, CEO TechCorp</cite></blockquote>
+<!-- /wp:quote --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:quote -->
+<blockquote class="wp-block-quote"><!-- wp:paragraph -->
+<p>"Outstanding support and amazing features. Couldn\'t be happier."</p>
+<!-- /wp:paragraph --><cite>Mike Chen, Founder StartupXYZ</cite></blockquote>
+<!-- /wp:quote --></div>
+<!-- /wp:column --></div>
 <!-- /wp:columns -->',
 
-			'simple_hero' => '<!-- wp:cover {\"url\":\"https://placehold.co/1920x800\",\"dimRatio\":50,\"align\":\"full\"} -->
-<div class="wp-block-cover alignfull">
-    <span aria-hidden="true" class="wp-block-cover__background has-background-dim"></span>
-    <img class="wp-block-cover__image-background" alt="" src="https://placehold.co/1920x800" data-object-fit="cover"/>
-    <div class="wp-block-cover__inner-container">
-        <!-- wp:heading {\"textAlign\":\"center\",\"level\":1} -->
-        <h1 class="wp-block-heading has-text-align-center">Hero Title</h1>
-        <!-- /wp:heading -->
-        
-        <!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
-        <div class="wp-block-buttons">
-            <!-- wp:button -->
-            <div class="wp-block-button"><a class="wp-block-button__link wp-element-button">Get Started</a></div>
-            <!-- /wp:button -->
-        </div>
-        <!-- /wp:buttons -->
-    </div>
-</div>
-<!-- /wp:cover -->',
+			'pricing_table' => '<!-- wp:table {\"hasFixedLayout\":false,\"className\":\"is-style-stripes\"} -->
+<figure class="wp-block-table is-style-stripes"><table><thead><tr><th>Feature</th><th>Basic</th><th>Professional</th><th>Enterprise</th></tr></thead><tbody><tr><td>Users</td><td>Up to 5</td><td>Up to 25</td><td>Unlimited</td></tr><tr><td>Storage</td><td>10 GB</td><td>100 GB</td><td>Unlimited</td></tr><tr><td>Support</td><td>Email</td><td>Email & Chat</td><td>24/7 Phone</td></tr><tr><td>Price</td><td><strong>$19/mo</strong></td><td><strong>$49/mo</strong></td><td><strong>Custom</strong></td></tr></tbody></table></figure>
+<!-- /wp:table -->',
+
+			'faq_details' => '<!-- wp:group {\"layout\":{\"type\":\"constrained\",\"contentSize\":\"800px\"}} -->
+<div class="wp-block-group"><!-- wp:details -->
+<details class="wp-block-details"><summary>What makes your service different from competitors?</summary><!-- wp:paragraph -->
+<p>Our service stands out through our combination of cutting-edge technology, exceptional customer support, and proven results.</p>
+<!-- /wp:paragraph --></details>
+<!-- /wp:details -->
+
+<!-- wp:details -->
+<details class="wp-block-details"><summary>How long does it take to get started?</summary><!-- wp:paragraph -->
+<p>Getting started is quick and easy! Most clients are up and running within 24 hours of signing up.</p>
+<!-- /wp:paragraph --></details>
+<!-- /wp:details -->
+
+<!-- wp:details -->
+<details class="wp-block-details"><summary>Can I upgrade or downgrade my plan?</summary><!-- wp:paragraph -->
+<p>Absolutely! You can upgrade or downgrade your plan at any moment through your account dashboard.</p>
+<!-- /wp:paragraph --></details>
+<!-- /wp:details --></div>
+<!-- /wp:group -->',
+
+			'cta_section' => '<!-- wp:group {\"align\":\"full\",\"backgroundColor\":\"black\",\"textColor\":\"white\"} -->
+<div class="wp-block-group alignfull has-white-color has-black-background-color has-text-color has-background"><!-- wp:spacer {\"height\":\"60px\"} -->
+<div style="height:60px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:heading {\"textAlign\":\"center\",\"textColor\":\"white\"} -->
+<h2 class="wp-block-heading has-text-align-center has-white-color has-text-color">Ready to Get Started?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {\"align\":\"center\",\"textColor\":\"white\"} -->
+<p class="has-text-align-center has-white-color has-text-color">Join thousands of satisfied customers today</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:spacer {\"height\":\"20px\"} -->
+<div style="height:20px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
+<div class="wp-block-buttons"><!-- wp:button {\"backgroundColor\":\"white\",\"textColor\":\"black\"} -->
+<div class="wp-block-button"><a class="wp-block-button__link has-black-color has-white-background-color has-text-color has-background wp-element-button">Start Free Trial</a></div>
+<!-- /wp:button -->
+
+<!-- wp:button {\"textColor\":\"white\",\"className\":\"is-style-outline\"} -->
+<div class="wp-block-button is-style-outline"><a class="wp-block-button__link has-white-color has-text-color wp-element-button">Contact Sales</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+
+<!-- wp:spacer {\"height\":\"40px\"} -->
+<div style="height:40px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer --></div>
+<!-- /wp:group -->',
 		);
 	}
 
@@ -569,49 +706,85 @@ Follow user instructions for sections and layout.";
 	 * @return string Example blocks.
 	 */
 	private function get_example_blocks() {
-		return "SIMPLE WORKING EXAMPLES:
+		return "COMPREHENSIVE BLOCK EXAMPLES:
 
-1. HEADING:
-<!-- wp:heading {\"textAlign\":\"center\"} -->
-<h2 class=\"wp-block-heading has-text-align-center\">Title</h2>
+1. HEADING WITH COLORS:
+<!-- wp:heading {\"textAlign\":\"center\",\"level\":2,\"textColor\":\"primary\",\"fontSize\":\"x-large\"} -->
+<h2 class=\"wp-block-heading has-text-align-center has-primary-color has-text-color has-x-large-font-size\">Title</h2>
 <!-- /wp:heading -->
 
-2. PARAGRAPH:
-<!-- wp:paragraph {\"align\":\"center\"} -->
-<p class=\"has-text-align-center\">Text content</p>
+2. PARAGRAPH WITH STYLES:
+<!-- wp:paragraph {\"align\":\"center\",\"backgroundColor\":\"light-gray\",\"textColor\":\"black\",\"fontSize\":\"medium\"} -->
+<p class=\"has-text-align-center has-black-color has-light-gray-background-color has-text-color has-background has-medium-font-size\">Text content here</p>
 <!-- /wp:paragraph -->
 
-3. BUTTON:
-<!-- wp:buttons -->
-<div class=\"wp-block-buttons\">
-    <!-- wp:button -->
-    <div class=\"wp-block-button\"><a class=\"wp-block-button__link wp-element-button\">Click</a></div>
-    <!-- /wp:button -->
-</div>
+3. BUTTONS WITH STYLES:
+<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
+<div class=\"wp-block-buttons\"><!-- wp:button {\"backgroundColor\":\"primary\",\"textColor\":\"white\",\"style\":{\"spacing\":{\"padding\":{\"top\":\"12px\",\"bottom\":\"12px\",\"left\":\"24px\",\"right\":\"24px\"}}}} -->
+<div class=\"wp-block-button\"><a class=\"wp-block-button__link has-white-color has-primary-background-color has-text-color has-background wp-element-button\" style=\"padding-top:12px;padding-right:24px;padding-bottom:12px;padding-left:24px\">Primary Button</a></div>
+<!-- /wp:button -->
+
+<!-- wp:button {\"textColor\":\"primary\",\"className\":\"is-style-outline\"} -->
+<div class=\"wp-block-button is-style-outline\"><a class=\"wp-block-button__link has-primary-color has-text-color wp-element-button\">Outline Button</a></div>
+<!-- /wp:button --></div>
 <!-- /wp:buttons -->
 
-4. SIMPLE GROUP:
-<!-- wp:group {\"style\":{\"spacing\":{\"padding\":{\"top\":\"40px\",\"bottom\":\"40px\"}}}} -->
-<div class=\"wp-block-group\" style=\"padding-top:40px;padding-bottom:40px\">
-    <!-- content here -->
-</div>
-<!-- /wp:group -->
+4. IMAGE WITH CAPTION:
+<!-- wp:image {\"sizeSlug\":\"large\",\"linkDestination\":\"none\"} -->
+<figure class=\"wp-block-image size-large\"><img src=\"https://images.unsplash.com/photo-1497366216548-37526070297c\" alt=\"Office workspace\"/><figcaption class=\"wp-element-caption\">Modern workspace environment</figcaption></figure>
+<!-- /wp:image -->
 
-5. TWO COLUMNS:
-<!-- wp:columns -->
-<div class=\"wp-block-columns\">
-    <!-- wp:column -->
-    <div class=\"wp-block-column\">
-        <!-- content -->
-    </div>
-    <!-- /wp:column -->
-    <!-- wp:column -->
-    <div class=\"wp-block-column\">
-        <!-- content -->
-    </div>
-    <!-- /wp:column -->
+5. COLUMNS WITH SPACING:
+<!-- wp:columns {\"style\":{\"spacing\":{\"blockGap\":{\"top\":\"var:preset|spacing|40\",\"left\":\"var:preset|spacing|40\"}}}} -->
+<div class=\"wp-block-columns\"><!-- wp:column {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|30\",\"right\":\"var:preset|spacing|30\",\"bottom\":\"var:preset|spacing|30\",\"left\":\"var:preset|spacing|30\"}}}} -->
+<div class=\"wp-block-column\" style=\"padding-top:var(--wp--preset--spacing--30);padding-right:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30);padding-left:var(--wp--preset--spacing--30)\">
+<!-- content -->
 </div>
-<!-- /wp:columns -->";
+<!-- /wp:column --></div>
+<!-- /wp:columns -->
+
+6. LIST WITH LIST ITEMS:
+<!-- wp:list -->
+<ul class=\"wp-block-list\"><!-- wp:list-item -->
+<li>First item</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Second item</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Third item</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+7. PULLQUOTE:
+<!-- wp:pullquote -->
+<figure class=\"wp-block-pullquote\"><blockquote><p>Innovation distinguishes between a leader and a follower.</p><cite>Steve Jobs</cite></blockquote></figure>
+<!-- /wp:pullquote -->
+
+8. SEPARATOR:
+<!-- wp:separator {\"className\":\"is-style-wide\"} -->
+<hr class=\"wp-block-separator has-alpha-channel-opacity is-style-wide\"/>
+<!-- /wp:separator -->
+
+9. MEDIA & TEXT:
+<!-- wp:media-text {\"mediaId\":1,\"mediaType\":\"image\"} -->
+<div class=\"wp-block-media-text is-stacked-on-mobile\"><figure class=\"wp-block-media-text__media\"><img src=\"https://images.unsplash.com/photo-1551434678-e076c223a692\" alt=\"\"/></figure><div class=\"wp-block-media-text__content\"><!-- wp:heading -->
+<h2 class=\"wp-block-heading\">Media Title</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Description text goes here.</p>
+<!-- /wp:paragraph --></div></div>
+<!-- /wp:media-text -->
+
+10. DETAILS/ACCORDION:
+<!-- wp:details -->
+<details class=\"wp-block-details\"><summary>Click to expand</summary><!-- wp:paragraph -->
+<p>Hidden content that appears when expanded.</p>
+<!-- /wp:paragraph --></details>
+<!-- /wp:details -->";
 	}
 
 	/**
@@ -621,29 +794,69 @@ Follow user instructions for sections and layout.";
 	 */
 	private function init_block_examples() {
 		$this->block_examples = array(
-			'heading' => '<!-- wp:heading -->
-<h2 class="wp-block-heading">Title</h2>
+			'heading' => '<!-- wp:heading {\"textAlign\":\"center\"} -->
+<h2 class="wp-block-heading has-text-align-center">Title</h2>
 <!-- /wp:heading -->',
 			
-			'paragraph' => '<!-- wp:paragraph -->
-<p>Content here</p>
+			'paragraph' => '<!-- wp:paragraph {\"align\":\"center\"} -->
+<p class="has-text-align-center">Content here</p>
 <!-- /wp:paragraph -->',
 			
-			'button' => '<!-- wp:buttons -->
-<div class="wp-block-buttons">
-	<!-- wp:button -->
-	<div class="wp-block-button"><a class="wp-block-button__link wp-element-button">Click Here</a></div>
-	<!-- /wp:button -->
-</div>
+			'button' => '<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
+<div class="wp-block-buttons"><!-- wp:button -->
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button">Click Here</a></div>
+<!-- /wp:button --></div>
 <!-- /wp:buttons -->',
 			
-			'image' => '<!-- wp:image -->
-<figure class="wp-block-image"><img src="https://placehold.co/600x400" alt="Description"/></figure>
+			'image' => '<!-- wp:image {\"sizeSlug\":\"large\"} -->
+<figure class="wp-block-image size-large"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c" alt="Description"/></figure>
 <!-- /wp:image -->',
 			
-			'spacer' => '<!-- wp:spacer {"height":"50px"} -->
+			'spacer' => '<!-- wp:spacer {\"height\":\"50px\"} -->
 <div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
 <!-- /wp:spacer -->',
+			
+			'gallery' => '<!-- wp:gallery {\"columns\":3,\"linkTo\":\"none\"} -->
+<figure class="wp-block-gallery has-nested-images columns-3 is-cropped"><!-- wp:image -->
+<figure class="wp-block-image"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c" alt=""/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image -->
+<figure class="wp-block-image"><img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2" alt=""/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image -->
+<figure class="wp-block-image"><img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72" alt=""/></figure>
+<!-- /wp:image --></figure>
+<!-- /wp:gallery -->',
+			
+			'social_links' => '<!-- wp:social-links {\"iconColor\":\"primary\",\"className\":\"is-style-logos-only\"} -->
+<ul class="wp-block-social-links has-icon-color is-style-logos-only"><!-- wp:social-link {\"url\":\"https://facebook.com\",\"service\":\"facebook\"} /-->
+
+<!-- wp:social-link {\"url\":\"https://twitter.com\",\"service\":\"twitter\"} /-->
+
+<!-- wp:social-link {\"url\":\"https://instagram.com\",\"service\":\"instagram\"} /--></ul>
+<!-- /wp:social-links -->',
+			
+			'details' => '<!-- wp:details -->
+<details class="wp-block-details"><summary>Question or title</summary><!-- wp:paragraph -->
+<p>Answer or content that appears when expanded.</p>
+<!-- /wp:paragraph --></details>
+<!-- /wp:details -->',
+			
+			'media_text' => '<!-- wp:media-text {\"mediaType\":\"image\"} -->
+<div class="wp-block-media-text is-stacked-on-mobile"><figure class="wp-block-media-text__media"><img src="https://images.unsplash.com/photo-1551434678-e076c223a692" alt=""/></figure><div class="wp-block-media-text__content"><!-- wp:heading -->
+<h2 class="wp-block-heading">Title</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Description text.</p>
+<!-- /wp:paragraph --></div></div>
+<!-- /wp:media-text -->',
+			
+			'table' => '<!-- wp:table {\"className\":\"is-style-stripes\"} -->
+<figure class="wp-block-table is-style-stripes"><table><thead><tr><th>Header 1</th><th>Header 2</th></tr></thead><tbody><tr><td>Cell 1</td><td>Cell 2</td></tr></tbody></table></figure>
+<!-- /wp:table -->',
 		);
 	}
 

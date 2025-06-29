@@ -219,6 +219,51 @@ class Block_Serializer {
 					'close' => '</' . $tag . '>',
 				);
 				
+			case 'core/social-links':
+				$icon_class = isset( $attrs['iconColor'] ) ? ' has-icon-color' : '';
+				return array(
+					'open'  => '<ul class="' . esc_attr( $classes . $icon_class ) . '">',
+					'close' => '</ul>',
+				);
+				
+			case 'core/details':
+				return array(
+					'open'  => '<details class="' . esc_attr( $classes ) . '">',
+					'close' => '</details>',
+				);
+				
+			case 'core/table':
+				return array(
+					'open'  => '<figure class="' . esc_attr( $classes ) . '"><table>',
+					'close' => '</table></figure>',
+				);
+				
+			case 'core/gallery':
+				$columns_class = isset( $attrs['columns'] ) ? ' columns-' . intval( $attrs['columns'] ) : '';
+				return array(
+					'open'  => '<figure class="' . esc_attr( $classes . ' has-nested-images' . $columns_class . ' is-cropped' ) . '">',
+					'close' => '</figure>',
+				);
+				
+			case 'core/quote':
+				return array(
+					'open'  => '<blockquote class="' . esc_attr( $classes ) . '">',
+					'close' => '</blockquote>',
+				);
+				
+			case 'core/pullquote':
+				return array(
+					'open'  => '<figure class="' . esc_attr( $classes ) . '"><blockquote>',
+					'close' => '</blockquote></figure>',
+				);
+				
+			case 'core/media-text':
+				$media_on_right = isset( $attrs['mediaPosition'] ) && $attrs['mediaPosition'] === 'right' ? ' has-media-on-the-right' : '';
+				return array(
+					'open'  => '<div class="' . esc_attr( $classes . ' is-stacked-on-mobile' . $media_on_right ) . '">',
+					'close' => '</div>',
+				);
+				
 			default:
 				return array(
 					'open'  => '',

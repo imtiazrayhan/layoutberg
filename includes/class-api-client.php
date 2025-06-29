@@ -465,15 +465,17 @@ class API_Client {
 	 * @return string System prompt.
 	 */
 	private function build_system_prompt( $options ) {
+		// This method is deprecated - using Prompt_Engineer class instead
+		// Kept for backward compatibility
 		$prompt = "You are a WordPress Gutenberg layout designer. Generate valid Gutenberg block markup following these rules:\n";
-		$prompt .= "1. Use only core WordPress blocks or specified custom blocks\n";
-		$prompt .= "2. Follow proper block comment syntax: <!-- wp:block-name {\"attributes\"} -->\n";
-		$prompt .= "3. Ensure all blocks are properly nested and closed\n";
-		$prompt .= "4. Include responsive design considerations\n";
-		$prompt .= "5. Follow accessibility best practices\n";
+		$prompt .= "1. Use only core WordPress blocks\n";
+		$prompt .= "2. Follow exact block comment syntax: <!-- wp:block-name {\"attributes\"} -->\n";
+		$prompt .= "3. Ensure all blocks are properly closed: <!-- /wp:block-name -->\n";
+		$prompt .= "4. Use wp-block-heading class for all headings\n";
+		$prompt .= "5. Use wp-element-button class for all button links\n";
 		$prompt .= "6. Output only valid block markup, no explanations\n";
-		$prompt .= "7. Use semantic HTML structure\n";
-		$prompt .= "8. Include appropriate ARIA labels where needed\n";
+		$prompt .= "7. Use proper cover block structure with image, background dim span, and inner container\n";
+		$prompt .= "8. For images use Unsplash or placeholder services\n";
 
 		// Add style preferences if provided.
 		if ( isset( $options['style'] ) ) {

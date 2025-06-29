@@ -246,6 +246,47 @@ class Block_Generator {
 		// Remove extra whitespace between blocks.
 		$content = preg_replace( '/-->\s+<!-- wp:/', "-->\n\n<!-- wp:", $content );
 		
+		// Fix common class name issues
+		// Ensure wp-block-heading class is present
+		$content = preg_replace(
+			'/<h([1-6])(\s+class="[^"]*")?>/i',
+			function( $matches ) {
+				$level = $matches[1];
+				$class_attr = isset( $matches[2] ) ? $matches[2] : '';
+				
+				if ( empty( $class_attr ) ) {
+					return '<h' . $level . ' class="wp-block-heading">';
+				} elseif ( strpos( $class_attr, 'wp-block-heading' ) === false ) {
+					// Add wp-block-heading to existing classes
+					$class_attr = str_replace( 'class="', 'class="wp-block-heading ', $class_attr );
+					return '<h' . $level . $class_attr . '>';
+				}
+				
+				return $matches[0];
+			},
+			$content
+		);
+		
+		// Ensure button links have wp-element-button class
+		$content = preg_replace(
+			'/<a\s+class="wp-block-button__link([^"]*)"/',
+			function( $matches ) {
+				$extra_classes = $matches[1];
+				if ( strpos( $extra_classes, 'wp-element-button' ) === false ) {
+					return '<a class="wp-block-button__link' . $extra_classes . ' wp-element-button"';
+				}
+				return $matches[0];
+			},
+			$content
+		);
+		
+		// Fix self-closing social links
+		$content = preg_replace( 
+			'/<!-- wp:social-link ([^>]+) \/-->/', 
+			'<!-- wp:social-link $1 /-->', 
+			$content 
+		);
+		
 		return trim( $content );
 	}
 
@@ -519,6 +560,18 @@ class Block_Generator {
 
 			case 'core/separator':
 				return $this->validate_separator_block( $block );
+				
+			case 'core/details':
+				return $this->validate_details_block( $block );
+				
+			case 'core/table':
+				return $this->validate_table_block( $block );
+				
+			case 'core/gallery':
+				return $this->validate_gallery_block( $block );
+				
+			case 'core/social-links':
+				return $this->validate_social_links_block( $block );
 		}
 
 		return true;
@@ -856,6 +909,110 @@ class Block_Generator {
 	}
 
 	/**
+	 * Validate details block.
+	 *
+	 * @since 1.0.0
+	 * @param array $block Block to validate.
+	 * @return true|WP_Error True if valid, error otherwise.
+	 */
+	private function validate_details_block( $block ) {
+		// Details blocks should have content
+		if ( empty( $block['innerBlocks'] ) && empty( $block['innerHTML'] ) ) {
+			return new \WP_Error( 'details_empty', __( 'Details block should contain summary and content.', 'layoutberg' ) );
+		}
+		
+		// Check for summary in innerHTML
+		if ( strpos( $block['innerHTML'], '<summary>' ) === false ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'LayoutBerg Warning: Details block missing summary element.' );
+			}
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Validate table block.
+	 *
+	 * @since 1.0.0
+	 * @param array $block Block to validate.
+	 * @return true|WP_Error True if valid, error otherwise.
+	 */
+	private function validate_table_block( $block ) {
+		// Table should have content
+		if ( empty( $block['innerHTML'] ) || strpos( $block['innerHTML'], '<table' ) === false ) {
+			return new \WP_Error( 'table_empty', __( 'Table block must contain a table element.', 'layoutberg' ) );
+		}
+		
+		// Check for proper table structure
+		if ( strpos( $block['innerHTML'], '<thead' ) === false && strpos( $block['innerHTML'], '<tbody' ) === false ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'LayoutBerg Warning: Table missing thead or tbody elements.' );
+			}
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Validate gallery block.
+	 *
+	 * @since 1.0.0
+	 * @param array $block Block to validate.
+	 * @return true|WP_Error True if valid, error otherwise.
+	 */
+	private function validate_gallery_block( $block ) {
+		// Gallery should have image blocks
+		if ( empty( $block['innerBlocks'] ) ) {
+			return new \WP_Error( 'gallery_empty', __( 'Gallery block must contain at least one image.', 'layoutberg' ) );
+		}
+		
+		// Validate all children are images
+		foreach ( $block['innerBlocks'] as $image ) {
+			if ( $image['blockName'] !== 'core/image' ) {
+				return new \WP_Error( 'gallery_invalid_child', __( 'Gallery block can only contain image blocks.', 'layoutberg' ) );
+			}
+		}
+		
+		// Check for reasonable gallery size
+		if ( count( $block['innerBlocks'] ) > 20 ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'LayoutBerg Warning: Gallery contains many images, consider pagination.' );
+			}
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Validate social links block.
+	 *
+	 * @since 1.0.0
+	 * @param array $block Block to validate.
+	 * @return true|WP_Error True if valid, error otherwise.
+	 */
+	private function validate_social_links_block( $block ) {
+		// Social links should have social link children
+		if ( empty( $block['innerBlocks'] ) ) {
+			return new \WP_Error( 'social_links_empty', __( 'Social links block must contain at least one social link.', 'layoutberg' ) );
+		}
+		
+		// Validate all children are social links
+		foreach ( $block['innerBlocks'] as $link ) {
+			if ( $link['blockName'] !== 'core/social-link' ) {
+				return new \WP_Error( 'social_links_invalid_child', __( 'Social links block can only contain social link blocks.', 'layoutberg' ) );
+			}
+			
+			// Validate service attribute
+			if ( ! isset( $link['attrs']['service'] ) ) {
+				return new \WP_Error( 'social_link_missing_service', __( 'Social link must specify a service.', 'layoutberg' ) );
+			}
+		}
+		
+		return true;
+	}
+
+	/**
 	 * Validate block attributes.
 	 *
 	 * @since 1.0.0
@@ -910,6 +1067,7 @@ class Block_Generator {
 			'core/verse',
 			'core/preformatted',
 			'core/code',
+			'core/details',  // Added for FAQ sections
 
 			// Media blocks.
 			'core/image',
@@ -925,6 +1083,7 @@ class Block_Generator {
 			'core/more',
 			'core/nextpage',
 			'core/page-break',
+			'core/table',
 
 			// Widget blocks.
 			'core/shortcode',
