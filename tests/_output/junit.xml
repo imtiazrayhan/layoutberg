@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="DotCamp\LayoutBerg\Tests\Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" tests="9" assertions="0" errors="9" warnings="0" failures="0" skipped="0" time="0.038233">
+    <testcase name="test_block_generator_instantiation" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="40" assertions="0" time="0.037778">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_block_generator_instantiation
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:41</error>
+    </testcase>
+    <testcase name="test_parse_ai_response_valid_json" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="48" assertions="0" time="0.000097">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_parse_ai_response_valid_json
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:49</error>
+    </testcase>
+    <testcase name="test_parse_ai_response_invalid_json" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="63" assertions="0" time="0.000058">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_parse_ai_response_invalid_json
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:64</error>
+    </testcase>
+    <testcase name="test_validate_block_structure_valid" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="77" assertions="0" time="0.000053">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_validate_block_structure_valid
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:78</error>
+    </testcase>
+    <testcase name="test_validate_block_structure_invalid" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="90" assertions="0" time="0.000049">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_validate_block_structure_invalid
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:91</error>
+    </testcase>
+    <testcase name="test_sanitize_blocks" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="103" assertions="0" time="0.000049">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_sanitize_blocks
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:104</error>
+    </testcase>
+    <testcase name="test_generate_fallback_content" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="120" assertions="0" time="0.000050">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_generate_fallback_content
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:121</error>
+    </testcase>
+    <testcase name="test_count_blocks" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="138" assertions="0" time="0.000049">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_count_blocks
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:139</error>
+    </testcase>
+    <testcase name="test_extract_block_types" class="DotCamp\LayoutBerg\Tests\Test_Block_Generator" classname="DotCamp.LayoutBerg.Tests.Test_Block_Generator" file="/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php" line="151" assertions="0" time="0.000049">
+      <error type="Error">DotCamp\LayoutBerg\Tests\Test_Block_Generator::test_extract_block_types
+Error: Call to undefined function DotCamp\LayoutBerg\wp_salt()
+
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-security-manager.php:107
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:136
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-api-client.php:122
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/includes/class-block-generator.php:58
+/Users/imtiazrayhan/Local Sites/layoutberg/app/public/wp-content/plugins/layoutberg/tests/phpunit/Test_Block_Generator.php:152</error>
+    </testcase>
+  </testsuite>
+</testsuites>

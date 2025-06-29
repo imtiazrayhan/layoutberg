@@ -101,6 +101,44 @@ $templates_count = $wpdb->get_var(
 		$user_id
 	)
 );
+
+// System status checks.
+$system_status = array();
+
+// Check database tables.
+$required_tables = array(
+	$wpdb->prefix . 'layoutberg_generations',
+	$wpdb->prefix . 'layoutberg_templates', 
+	$wpdb->prefix . 'layoutberg_usage',
+	$wpdb->prefix . 'layoutberg_settings'
+);
+
+$missing_tables = array();
+foreach ( $required_tables as $table ) {
+	if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) {
+		$missing_tables[] = $table;
+	}
+}
+
+$system_status['database'] = empty( $missing_tables );
+
+// Check API connectivity (simple test).
+$system_status['api_connection'] = $has_api_key;
+
+// Check file permissions.
+$upload_dir = wp_upload_dir();
+$system_status['file_permissions'] = wp_is_writable( $upload_dir['basedir'] );
+
+// Check PHP version.
+$system_status['php_version'] = version_compare( PHP_VERSION, '8.0', '>=' );
+
+// Check WordPress version.
+global $wp_version;
+$system_status['wp_version'] = version_compare( $wp_version, '6.0', '>=' );
+
+// Overall health score.
+$health_checks = array_filter( $system_status );
+$health_score = count( $health_checks ) / count( $system_status ) * 100;
 ?>
 
 <div class="layoutberg-admin-page">
@@ -144,7 +182,7 @@ $templates_count = $wpdb->get_var(
 		<?php endif; ?>
 
 		<!-- Stats Grid -->
-		<div class="layoutberg-grid layoutberg-grid-4 layoutberg-mb-4">
+		<div class="layoutberg-grid layoutberg-grid-5 layoutberg-mb-4">
 			<!-- Today's Generations -->
 			<div class="layoutberg-stat-card layoutberg-fade-in">
 				<div class="layoutberg-stat-icon primary">
@@ -182,6 +220,15 @@ $templates_count = $wpdb->get_var(
 				</div>
 				<p class="layoutberg-stat-value"><?php echo $has_api_key ? esc_html__( 'Active', 'layoutberg' ) : esc_html__( 'Inactive', 'layoutberg' ); ?></p>
 				<p class="layoutberg-stat-label"><?php esc_html_e( 'API Status', 'layoutberg' ); ?></p>
+			</div>
+
+			<!-- System Health -->
+			<div class="layoutberg-stat-card layoutberg-fade-in">
+				<div class="layoutberg-stat-icon <?php echo $health_score >= 80 ? 'success' : ($health_score >= 60 ? 'warning' : 'danger'); ?>">
+					<span class="dashicons dashicons-<?php echo $health_score >= 80 ? 'yes-alt' : ($health_score >= 60 ? 'warning' : 'dismiss'); ?>"></span>
+				</div>
+				<p class="layoutberg-stat-value"><?php echo round( $health_score ); ?>%</p>
+				<p class="layoutberg-stat-label"><?php esc_html_e( 'System Health', 'layoutberg' ); ?></p>
 			</div>
 		</div>
 
@@ -353,6 +400,67 @@ $templates_count = $wpdb->get_var(
 					<span class="dashicons dashicons-groups"></span>
 					<?php esc_html_e( 'Community', 'layoutberg' ); ?>
 				</a>
+			</div>
+		</div>
+
+		<!-- System Status Details -->
+		<div class="layoutberg-card layoutberg-mt-4 layoutberg-fade-in">
+			<div class="layoutberg-card-header">
+				<h3 class="layoutberg-card-title"><?php esc_html_e( 'System Status', 'layoutberg' ); ?></h3>
+				<span class="layoutberg-badge <?php echo $health_score >= 80 ? 'success' : ($health_score >= 60 ? 'warning' : 'danger'); ?>">
+					<?php echo round( $health_score ); ?>% <?php esc_html_e( 'Healthy', 'layoutberg' ); ?>
+				</span>
+			</div>
+			
+			<div class="layoutberg-grid layoutberg-grid-2">
+				<!-- Database Status -->
+				<div class="layoutberg-status-item">
+					<div class="layoutberg-status-indicator <?php echo $system_status['database'] ? 'success' : 'danger'; ?>">
+						<span class="dashicons dashicons-<?php echo $system_status['database'] ? 'yes-alt' : 'warning'; ?>"></span>
+					</div>
+					<div class="layoutberg-status-content">
+						<h4><?php esc_html_e( 'Database Tables', 'layoutberg' ); ?></h4>
+						<p><?php echo $system_status['database'] ? esc_html__( 'All required tables are present', 'layoutberg' ) : esc_html__( 'Missing required database tables', 'layoutberg' ); ?></p>
+						<?php if ( ! $system_status['database'] && ! empty( $missing_tables ) ) : ?>
+							<small><?php echo esc_html( sprintf( __( 'Missing: %s', 'layoutberg' ), implode( ', ', $missing_tables ) ) ); ?></small>
+						<?php endif; ?>
+					</div>
+				</div>
+
+				<!-- API Connection Status -->
+				<div class="layoutberg-status-item">
+					<div class="layoutberg-status-indicator <?php echo $system_status['api_connection'] ? 'success' : 'warning'; ?>">
+						<span class="dashicons dashicons-<?php echo $system_status['api_connection'] ? 'admin-network' : 'warning'; ?>"></span>
+					</div>
+					<div class="layoutberg-status-content">
+						<h4><?php esc_html_e( 'API Configuration', 'layoutberg' ); ?></h4>
+						<p><?php echo $system_status['api_connection'] ? esc_html__( 'API key is configured', 'layoutberg' ) : esc_html__( 'API key not configured', 'layoutberg' ); ?></p>
+					</div>
+				</div>
+
+				<!-- File Permissions -->  
+				<div class="layoutberg-status-item">
+					<div class="layoutberg-status-indicator <?php echo $system_status['file_permissions'] ? 'success' : 'warning'; ?>">
+						<span class="dashicons dashicons-<?php echo $system_status['file_permissions'] ? 'admin-media' : 'warning'; ?>"></span>
+					</div>
+					<div class="layoutberg-status-content">
+						<h4><?php esc_html_e( 'File Permissions', 'layoutberg' ); ?></h4>
+						<p><?php echo $system_status['file_permissions'] ? esc_html__( 'Upload directory is writable', 'layoutberg' ) : esc_html__( 'Upload directory is not writable', 'layoutberg' ); ?></p>
+					</div>
+				</div>
+
+				<!-- PHP Version -->
+				<div class="layoutberg-status-item">
+					<div class="layoutberg-status-indicator <?php echo $system_status['php_version'] ? 'success' : 'warning'; ?>">
+						<span class="dashicons dashicons-<?php echo $system_status['php_version'] ? 'yes-alt' : 'info'; ?>"></span>
+					</div>
+					<div class="layoutberg-status-content">
+						<h4><?php esc_html_e( 'PHP Version', 'layoutberg' ); ?></h4>
+						<p><?php echo esc_html( sprintf( __( 'PHP %s', 'layoutberg' ), PHP_VERSION ) ); ?> 
+						   <?php echo $system_status['php_version'] ? esc_html__( '(Recommended)', 'layoutberg' ) : esc_html__( '(Upgrade recommended)', 'layoutberg' ); ?>
+						</p>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

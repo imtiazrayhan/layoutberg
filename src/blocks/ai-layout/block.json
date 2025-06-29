@@ -1,0 +1,35 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "layoutberg/ai-layout",
+	"version": "1.0.0",
+	"title": "AI Layout",
+	"category": "layoutberg",
+	"icon": "layout",
+	"description": "Generate layouts using AI-powered prompts.",
+	"keywords": ["ai", "layout", "generate", "blocks"],
+	"supports": {
+		"html": false,
+		"align": ["wide", "full"],
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"attributes": {
+		"prompt": {
+			"type": "string",
+			"default": ""
+		},
+		"generatedBlocks": {
+			"type": "string",
+			"default": ""
+		},
+		"timestamp": {
+			"type": "number",
+			"default": 0
+		}
+	},
+	"textdomain": "layoutberg",
+	"editorScript": "file:./index.js"
+}
