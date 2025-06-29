@@ -46,8 +46,8 @@ class Admin {
 	 * @since 1.0.0
 	 */
 	public function enqueue_styles() {
-		// Only enqueue on our admin pages or Gutenberg editor.
-		if ( ! $this->is_layoutberg_admin_page() && ! $this->is_block_editor() ) {
+		// Only enqueue on our admin pages, NOT in the block editor.
+		if ( ! $this->is_layoutberg_admin_page() ) {
 			return;
 		}
 
@@ -66,8 +66,15 @@ class Admin {
 	 * @since 1.0.0
 	 */
 	public function enqueue_scripts() {
-		// Only enqueue on our admin pages or Gutenberg editor.
-		if ( ! $this->is_layoutberg_admin_page() && ! $this->is_block_editor() ) {
+		// Handle admin scripts and editor scripts separately.
+		if ( $this->is_block_editor() ) {
+			// Load only editor scripts in the block editor.
+			$this->enqueue_editor_scripts();
+			return;
+		}
+		
+		// Only enqueue admin scripts on our admin pages.
+		if ( ! $this->is_layoutberg_admin_page() ) {
 			return;
 		}
 
@@ -102,11 +109,6 @@ class Admin {
 
 		// Set script translations.
 		wp_set_script_translations( 'layoutberg-admin', 'layoutberg' );
-
-		// Enqueue editor script for Gutenberg.
-		if ( $this->is_block_editor() ) {
-			$this->enqueue_editor_scripts();
-		}
 	}
 
 	/**
@@ -236,6 +238,16 @@ class Admin {
 			array( $this, 'display_analytics_page' )
 		);
 
+		// History submenu.
+		add_submenu_page(
+			'layoutberg',
+			__( 'Generation History', 'layoutberg' ),
+			__( 'History', 'layoutberg' ),
+			'layoutberg_view_analytics',
+			'layoutberg-history',
+			array( $this, 'display_history_page' )
+		);
+
 		// Temporary: Add hidden upgrade page
 		add_submenu_page(
 			null, // Hidden from menu
@@ -293,6 +305,15 @@ class Admin {
 	 */
 	public function display_templates_page() {
 		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-templates.php';
+	}
+
+	/**
+	 * Display the history page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function display_history_page() {
+		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-history.php';
 	}
 
 	/**
@@ -797,7 +818,87 @@ class Admin {
 			wp_send_json_error( $template->get_error_message() );
 		}
 
+		// Generate HTML preview if requested.
+		$include_preview = isset( $_GET['include_preview'] ) && $_GET['include_preview'] == '1';
+		if ( $include_preview && ! empty( $template['content'] ) ) {
+			$template['html_preview'] = $this->generate_template_preview_html( $template['content'] );
+		}
+
 		wp_send_json_success( $template );
+	}
+
+	/**
+	 * Generate HTML preview for template content.
+	 *
+	 * @since 1.0.0
+	 * @param string $content Block content.
+	 * @return string Generated HTML preview.
+	 */
+	private function generate_template_preview_html( $content ) {
+		// Parse the block content.
+		$blocks = parse_blocks( $content );
+		
+		if ( empty( $blocks ) ) {
+			return '<p>' . __( 'No blocks found in template.', 'layoutberg' ) . '</p>';
+		}
+
+		// Generate HTML using WordPress render_block function.
+		$html = '';
+		foreach ( $blocks as $block ) {
+			$html .= render_block( $block );
+		}
+
+		// Wrap in a container with some basic styling for preview.
+		$preview_html = '<div class="layoutberg-template-preview-wrapper">';
+		$preview_html .= '<style>
+			.layoutberg-template-preview-wrapper {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+				line-height: 1.6;
+				color: #23282d;
+				background: #fff;
+				max-width: 100%;
+				overflow-x: auto;
+			}
+			.layoutberg-template-preview-wrapper h1,
+			.layoutberg-template-preview-wrapper h2,
+			.layoutberg-template-preview-wrapper h3,
+			.layoutberg-template-preview-wrapper h4,
+			.layoutberg-template-preview-wrapper h5,
+			.layoutberg-template-preview-wrapper h6 {
+				color: #1e1e1e;
+				margin-top: 0;
+				margin-bottom: 0.5em;
+			}
+			.layoutberg-template-preview-wrapper p {
+				margin-bottom: 1em;
+			}
+			.layoutberg-template-preview-wrapper img {
+				max-width: 100%;
+				height: auto;
+			}
+			.layoutberg-template-preview-wrapper .wp-block-group,
+			.layoutberg-template-preview-wrapper .wp-block-columns {
+				margin-bottom: 1em;
+			}
+			.layoutberg-template-preview-wrapper .wp-block-column {
+				padding: 0 1em;
+			}
+			.layoutberg-template-preview-wrapper .wp-block-button {
+				margin-bottom: 0.5em;
+			}
+			.layoutberg-template-preview-wrapper .wp-block-button__link {
+				background-color: #007cba;
+				color: #fff;
+				padding: 8px 16px;
+				text-decoration: none;
+				border-radius: 3px;
+				display: inline-block;
+			}
+		</style>';
+		$preview_html .= $html;
+		$preview_html .= '</div>';
+
+		return $preview_html;
 	}
 
 	/**
@@ -889,5 +990,140 @@ class Admin {
 		}
 
 		wp_send_json_success( __( 'Template imported successfully.', 'layoutberg' ) );
+	}
+
+	/**
+	 * AJAX handler to get generation result for preview.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_get_generation_result() {
+		// Check nonce.
+		if ( ! check_ajax_referer( 'layoutberg_nonce', '_wpnonce', false ) ) {
+			wp_send_json_error( __( 'Invalid security token.', 'layoutberg' ) );
+		}
+
+		// Check permissions.
+		if ( ! current_user_can( 'layoutberg_view_analytics' ) ) {
+			wp_send_json_error( __( 'You do not have permission to view generation results.', 'layoutberg' ) );
+		}
+
+		// Get generation ID.
+		$generation_id = isset( $_POST['generation_id'] ) ? absint( $_POST['generation_id'] ) : 0;
+		if ( ! $generation_id ) {
+			wp_send_json_error( __( 'Invalid generation ID.', 'layoutberg' ) );
+		}
+
+		// Get generation from database.
+		global $wpdb;
+		$table_generations = $wpdb->prefix . 'layoutberg_generations';
+		
+		$generation = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$table_generations} WHERE id = %d AND user_id = %d",
+				$generation_id,
+				get_current_user_id()
+			)
+		);
+
+		if ( ! $generation ) {
+			wp_send_json_error( __( 'Generation not found.', 'layoutberg' ) );
+		}
+
+		// Prepare response data.
+		$response_data = array(
+			'id'      => $generation->id,
+			'prompt'  => $generation->prompt,
+			'status'  => $generation->status,
+			'content' => '',
+		);
+
+		// If generation was successful, process the result.
+		if ( $generation->status === 'completed' && ! empty( $generation->result_data ) ) {
+			$result_data = json_decode( $generation->result_data, true );
+			
+			if ( $result_data && isset( $result_data['serialized'] ) ) {
+				$response_data['content'] = $result_data['serialized'];
+				
+				// Generate HTML preview.
+				$response_data['html_preview'] = $this->generate_generation_preview_html( $result_data['serialized'] );
+			}
+		}
+
+		wp_send_json_success( $response_data );
+	}
+
+	/**
+	 * Generate HTML preview for generation result.
+	 *
+	 * @since 1.0.0
+	 * @param string $content Block content.
+	 * @return string Generated HTML preview.
+	 */
+	private function generate_generation_preview_html( $content ) {
+		// Parse the block content.
+		$blocks = parse_blocks( $content );
+		
+		if ( empty( $blocks ) ) {
+			return '<p>' . __( 'No blocks found in generation result.', 'layoutberg' ) . '</p>';
+		}
+
+		// Generate HTML using WordPress render_block function.
+		$html = '';
+		foreach ( $blocks as $block ) {
+			$html .= render_block( $block );
+		}
+
+		// Wrap in a container with some basic styling for preview.
+		$preview_html = '<div class="layoutberg-generation-preview-wrapper">';
+		$preview_html .= '<style>
+			.layoutberg-generation-preview-wrapper {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+				line-height: 1.6;
+				color: #23282d;
+				background: #fff;
+				max-width: 100%;
+				overflow-x: auto;
+			}
+			.layoutberg-generation-preview-wrapper h1,
+			.layoutberg-generation-preview-wrapper h2,
+			.layoutberg-generation-preview-wrapper h3,
+			.layoutberg-generation-preview-wrapper h4,
+			.layoutberg-generation-preview-wrapper h5,
+			.layoutberg-generation-preview-wrapper h6 {
+				color: #1e1e1e;
+				margin-top: 0;
+				margin-bottom: 0.5em;
+			}
+			.layoutberg-generation-preview-wrapper p {
+				margin-bottom: 1em;
+			}
+			.layoutberg-generation-preview-wrapper img {
+				max-width: 100%;
+				height: auto;
+			}
+			.layoutberg-generation-preview-wrapper .wp-block-group,
+			.layoutberg-generation-preview-wrapper .wp-block-columns {
+				margin-bottom: 1em;
+			}
+			.layoutberg-generation-preview-wrapper .wp-block-column {
+				padding: 0 1em;
+			}
+			.layoutberg-generation-preview-wrapper .wp-block-button {
+				margin-bottom: 0.5em;
+			}
+			.layoutberg-generation-preview-wrapper .wp-block-button__link {
+				background-color: #007cba;
+				color: #fff;
+				padding: 8px 16px;
+				text-decoration: none;
+				border-radius: 3px;
+				display: inline-block;
+			}
+		</style>';
+		$preview_html .= $html;
+		$preview_html .= '</div>';
+
+		return $preview_html;
 	}
 }
