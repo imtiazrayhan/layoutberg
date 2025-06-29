@@ -229,13 +229,78 @@ const LayoutBergEditor = () => {
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, []);
+    
+    /**
+     * Prevent pattern modal from opening if requested
+     */
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('hide_pattern_modal') === '1') {
+            // Override the pattern modal behavior
+            const { dispatch } = wp.data;
+            if (dispatch('core/edit-post')) {
+                // Close the pattern modal if it's open
+                dispatch('core/edit-post').closeGeneralSidebar();
+                
+                // Prevent it from auto-opening
+                const unsubscribe = wp.data.subscribe(() => {
+                    const isModalOpen = wp.data.select('core/edit-post')?.isModalActive('core/edit-post/start-page-options');
+                    if (isModalOpen) {
+                        dispatch('core/edit-post').closeModal();
+                    }
+                });
+                
+                // Clean up after a few seconds
+                setTimeout(() => unsubscribe(), 5000);
+            }
+        }
+    }, []);
 
     /**
-     * Load template if specified in URL
+     * Load template if specified in URL or open modal if requested
      */
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const templateId = urlParams.get('layoutberg_template');
+        const openModal = urlParams.get('layoutberg_open_modal');
+        const hidePatternModal = urlParams.get('hide_pattern_modal');
+        const prefilledPrompt = urlParams.get('layoutberg_prompt');
+        
+        // Prevent WordPress pattern modal from opening if requested
+        if (hidePatternModal === '1') {
+            // Close any open modals first
+            const closeExistingModals = () => {
+                const modalCloseButtons = document.querySelectorAll('.components-modal__header button[aria-label="Close"]');
+                modalCloseButtons.forEach(button => button.click());
+            };
+            
+            // Try to close immediately and after a delay
+            closeExistingModals();
+            setTimeout(closeExistingModals, 100);
+            setTimeout(closeExistingModals, 500);
+            
+            // Remove the parameter
+            urlParams.delete('hide_pattern_modal');
+        }
+        
+        // Check if we should open the modal
+        if (openModal === '1') {
+            // Set pre-filled prompt if provided
+            if (prefilledPrompt) {
+                setPrompt(decodeURIComponent(prefilledPrompt));
+                urlParams.delete('layoutberg_prompt');
+            }
+            
+            // Small delay to ensure editor is fully loaded
+            setTimeout(() => {
+                setIsModalOpen(true);
+            }, 1000);
+            
+            // Remove the parameter from URL to prevent reopening on refresh
+            urlParams.delete('layoutberg_open_modal');
+            const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, '', newUrl);
+        }
         
         if (templateId) {
             // Load and insert the template

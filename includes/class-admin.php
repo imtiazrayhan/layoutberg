@@ -837,6 +837,39 @@ class Admin {
 	}
 
 	/**
+	 * Handle AJAX clear cache request.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_clear_cache() {
+		// Verify nonce.
+		if ( ! check_ajax_referer( 'layoutberg_admin_nonce', 'nonce', false ) ) {
+			wp_send_json_error( __( 'Security check failed.', 'layoutberg' ) );
+		}
+
+		// Check capabilities.
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Insufficient permissions.', 'layoutberg' ) );
+		}
+
+		// Clear the cache.
+		$cache_manager = new Cache_Manager();
+		$result = $cache_manager->flush();
+
+		if ( $result ) {
+			// Get cache stats after clearing.
+			$stats = $cache_manager->get_stats();
+			
+			wp_send_json_success( array(
+				'message' => __( 'Cache cleared successfully!', 'layoutberg' ),
+				'stats' => $stats
+			) );
+		} else {
+			wp_send_json_error( __( 'Failed to clear cache.', 'layoutberg' ) );
+		}
+	}
+
+	/**
 	 * Check if current page is a LayoutBerg admin page.
 	 *
 	 * @since 1.0.0

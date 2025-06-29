@@ -182,6 +182,7 @@ class LayoutBerg {
 		$this->loader->add_action( 'wp_ajax_layoutberg_update_template', $admin, 'ajax_update_template' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_import_template', $admin, 'ajax_import_template' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_get_generation_result', $admin, 'ajax_get_generation_result' );
+		$this->loader->add_action( 'wp_ajax_layoutberg_clear_cache', $admin, 'ajax_clear_cache' );
 
 		// Settings save.
 		$this->loader->add_action( 'admin_init', $admin, 'register_settings' );

@@ -241,12 +241,12 @@ $health_score = count( $health_checks ) / count( $system_status ) * 100;
 				</div>
 				
 				<div class="layoutberg-grid layoutberg-grid-2 layoutberg-gap-2">
-					<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=page' ) ); ?>" class="layoutberg-btn layoutberg-btn-primary layoutberg-btn-lg" style="width: 100%; justify-content: center;">
+					<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=page&layoutberg_open_modal=1&hide_pattern_modal=1' ) ); ?>" class="layoutberg-btn layoutberg-btn-primary layoutberg-btn-lg" style="width: 100%; justify-content: center;">
 						<span class="dashicons dashicons-layout"></span>
 						<?php esc_html_e( 'New Page Layout', 'layoutberg' ); ?>
 					</a>
 					
-					<a href="<?php echo esc_url( admin_url( 'post-new.php' ) ); ?>" class="layoutberg-btn layoutberg-btn-primary layoutberg-btn-lg" style="width: 100%; justify-content: center;">
+					<a href="<?php echo esc_url( admin_url( 'post-new.php?layoutberg_open_modal=1' ) ); ?>" class="layoutberg-btn layoutberg-btn-primary layoutberg-btn-lg" style="width: 100%; justify-content: center;">
 						<span class="dashicons dashicons-welcome-write-blog"></span>
 						<?php esc_html_e( 'New Blog Post', 'layoutberg' ); ?>
 					</a>
@@ -267,15 +267,29 @@ $health_score = count( $health_checks ) / count( $system_status ) * 100;
 					<div class="layoutberg-grid layoutberg-gap-1">
 						<?php
 						$templates = array(
-							'hero' => __( 'Hero Section', 'layoutberg' ),
-							'features' => __( 'Features Grid', 'layoutberg' ),
-							'testimonials' => __( 'Testimonials', 'layoutberg' ),
-							'pricing' => __( 'Pricing Table', 'layoutberg' ),
+							'hero' => array(
+								'name' => __( 'Hero Section', 'layoutberg' ),
+								'prompt' => __( 'Create a modern hero section with a compelling headline, descriptive subtext, and a prominent call-to-action button. Include a gradient background.', 'layoutberg' )
+							),
+							'features' => array(
+								'name' => __( 'Features Grid', 'layoutberg' ),
+								'prompt' => __( 'Create a 3-column features grid showcasing product or service features. Each feature should have an icon, title, and description. Use a clean, modern design.', 'layoutberg' )
+							),
+							'testimonials' => array(
+								'name' => __( 'Testimonials', 'layoutberg' ),
+								'prompt' => __( 'Create a testimonials section with customer reviews. Include customer names, photos, ratings, and their testimonial text. Use a card-based layout.', 'layoutberg' )
+							),
+							'pricing' => array(
+								'name' => __( 'Pricing Table', 'layoutberg' ),
+								'prompt' => __( 'Create a pricing table with 3 tiers (Basic, Pro, Enterprise). Include features list, pricing, and call-to-action buttons for each tier. Highlight the recommended plan.', 'layoutberg' )
+							),
 						);
-						foreach ( $templates as $key => $name ) :
+						foreach ( $templates as $key => $template ) :
 						?>
-							<button class="layoutberg-btn layoutberg-btn-secondary layoutberg-btn-sm" data-template="<?php echo esc_attr( $key ); ?>">
-								<?php echo esc_html( $name ); ?>
+							<button class="layoutberg-btn layoutberg-btn-secondary layoutberg-btn-sm" 
+								data-template="<?php echo esc_attr( $key ); ?>"
+								data-prompt="<?php echo esc_attr( $template['prompt'] ); ?>">
+								<?php echo esc_html( $template['name'] ); ?>
 							</button>
 						<?php endforeach; ?>
 					</div>
@@ -494,8 +508,11 @@ jQuery(document).ready(function($) {
 	// Template quick actions
 	$('[data-template]').on('click', function() {
 		var template = $(this).data('template');
-		// Redirect to new page with template parameter
-		window.location.href = '<?php echo esc_url( admin_url( 'post-new.php?post_type=page&layoutberg_template=' ) ); ?>' + template;
+		var prompt = $(this).data('prompt');
+		// Redirect to new page with modal open and prompt pre-filled
+		var url = '<?php echo esc_url( admin_url( 'post-new.php?post_type=page&layoutberg_open_modal=1&hide_pattern_modal=1' ) ); ?>';
+		url += '&layoutberg_prompt=' + encodeURIComponent(prompt);
+		window.location.href = url;
 	});
 });
 </script>

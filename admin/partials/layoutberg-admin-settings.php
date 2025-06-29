@@ -552,20 +552,57 @@ jQuery(document).ready(function($) {
 	// Clear cache
 	$('#clear-cache').on('click', function() {
 		var $button = $(this);
+		var originalText = $button.html();
+		
 		$button.prop('disabled', true);
+		$button.html('<span class="dashicons dashicons-update layoutberg-spinner"></span> <?php esc_html_e( 'Clearing...', 'layoutberg' ); ?>');
 
-		// Simulate cache clearing
-		setTimeout(function() {
-			$button.prop('disabled', false);
-			// Show temporary success message
-			var $success = $('<span class="layoutberg-badge layoutberg-badge-success layoutberg-ml-2"><?php esc_html_e( 'Cache cleared!', 'layoutberg' ); ?></span>');
-			$button.after($success);
+		// Make AJAX request to clear cache
+		jQuery.post(ajaxurl, {
+			action: 'layoutberg_clear_cache',
+			nonce: '<?php echo wp_create_nonce( 'layoutberg_admin_nonce' ); ?>'
+		})
+		.done(function(response) {
+			if (response.success) {
+				// Show success message
+				var $success = $('<span class="layoutberg-badge layoutberg-badge-success layoutberg-ml-2">' + response.data.message + '</span>');
+				$button.after($success);
+				
+				// Log cache stats if available
+				if (response.data.stats) {
+					console.log('Cache stats after clearing:', response.data.stats);
+				}
+				
+				setTimeout(function() {
+					$success.fadeOut(function() {
+						$(this).remove();
+					});
+				}, 3000);
+			} else {
+				// Show error message
+				var $error = $('<span class="layoutberg-badge layoutberg-badge-danger layoutberg-ml-2">' + response.data + '</span>');
+				$button.after($error);
+				setTimeout(function() {
+					$error.fadeOut(function() {
+						$(this).remove();
+					});
+				}, 3000);
+			}
+		})
+		.fail(function() {
+			// Show generic error message
+			var $error = $('<span class="layoutberg-badge layoutberg-badge-danger layoutberg-ml-2"><?php esc_html_e( 'Failed to clear cache', 'layoutberg' ); ?></span>');
+			$button.after($error);
 			setTimeout(function() {
-				$success.fadeOut(function() {
+				$error.fadeOut(function() {
 					$(this).remove();
 				});
 			}, 3000);
-		}, 1000);
+		})
+		.always(function() {
+			$button.prop('disabled', false);
+			$button.html(originalText);
+		});
 	});
 
 	// Form validation
