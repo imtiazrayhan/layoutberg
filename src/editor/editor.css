@@ -165,29 +165,29 @@
     box-shadow: 0 0 0 1px #6366f1;
 }
 
-/* Card Enhancements */
-.components-card {
+/* Card Enhancements - Scoped to LayoutBerg */
+.layoutberg-generation-modal .components-card {
     border: 1px solid #e5e7eb;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.2s ease;
 }
 
-.components-card:hover {
+.layoutberg-generation-modal .components-card:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.components-card__header {
+.layoutberg-generation-modal .components-card__header {
     background: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
     padding: 16px 20px;
 }
 
-.components-card__body {
+.layoutberg-generation-modal .components-card__body {
     padding: 20px;
 }
 
-/* Range Control Enhancements */
-.components-range-control__marks {
+/* Range Control Enhancements - Scoped to LayoutBerg */
+.layoutberg-generation-modal .components-range-control__marks {
     display: flex;
     justify-content: space-between;
     margin-top: 8px;
@@ -195,11 +195,11 @@
     color: #6b7280;
 }
 
-.components-range-control__track {
+.layoutberg-generation-modal .components-range-control__track {
     background: linear-gradient(to right, #6366f1, #8b5cf6);
 }
 
-.components-range-control__thumb {
+.layoutberg-generation-modal .components-range-control__thumb {
     background: white;
     border: 2px solid #6366f1;
     box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
@@ -220,42 +220,46 @@
     border-left: 4px solid #3b82f6;
 }
 
-/* Button Enhancements */
-.components-button.is-primary {
+/* Button Enhancements - Scoped to LayoutBerg */
+.layoutberg-generation-modal .components-button.is-primary,
+.layoutberg-save-template-modal .components-button.is-primary {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     border: none;
     font-weight: 600;
     transition: all 0.2s ease;
 }
 
-.components-button.is-primary:hover {
+.layoutberg-generation-modal .components-button.is-primary:hover,
+.layoutberg-save-template-modal .components-button.is-primary:hover {
     background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
 }
 
-.components-button.is-primary:disabled {
+.layoutberg-generation-modal .components-button.is-primary:disabled,
+.layoutberg-save-template-modal .components-button.is-primary:disabled {
     background: #9ca3af;
     transform: none;
     box-shadow: none;
 }
 
-/* Spinner in button */
-.components-button .components-spinner {
+/* Spinner in button - Scoped to LayoutBerg */
+.layoutberg-generation-modal .components-button .components-spinner,
+.layoutberg-save-template-modal .components-button .components-spinner {
     margin-right: 8px;
 }
 
-/* Grid Layout */
-.components-grid {
+/* Grid Layout - Scoped to LayoutBerg */
+.layoutberg-generation-modal .components-grid {
     display: grid;
     gap: 16px;
 }
 
-.components-grid[data-columns="2"] {
+.layoutberg-generation-modal .components-grid[data-columns="2"] {
     grid-template-columns: repeat(2, 1fr);
 }
 
-.components-grid[data-columns="3"] {
+.layoutberg-generation-modal .components-grid[data-columns="3"] {
     grid-template-columns: repeat(3, 1fr);
 }
 
@@ -271,11 +275,11 @@
         padding: 16px;
     }
     
-    .components-grid[data-columns="3"] {
+    .layoutberg-generation-modal .components-grid[data-columns="3"] {
         grid-template-columns: 1fr;
     }
     
-    .components-grid[data-columns="2"] {
+    .layoutberg-generation-modal .components-grid[data-columns="2"] {
         grid-template-columns: 1fr;
     }
     
@@ -349,10 +353,14 @@
     padding: 20px;
 }
 
-/* Dark Mode Support */
+/* Dark Mode Support - Scoped to LayoutBerg */
 @media (prefers-color-scheme: dark) {
-    .layoutberg-sidebar-card,
-    .components-card {
+    .layoutberg-sidebar-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .layoutberg-generation-modal .components-card {
         background: #1f2937;
         border-color: #374151;
     }
@@ -370,7 +378,7 @@
         color: #d1d5db;
     }
     
-    .components-card__header {
+    .layoutberg-generation-modal .components-card__header {
         background: #374151;
         border-bottom-color: #4b5563;
     }

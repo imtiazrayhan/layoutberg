@@ -264,7 +264,30 @@ $categories = array(
 		</div>
 		<div class="layoutberg-modal-body">
 			<div class="template-preview-container">
-				<div class="template-preview-content"></div>
+				<div class="template-preview-tabs">
+					<button class="template-preview-tab active" data-tab="visual">
+						<?php esc_html_e( 'Visual Preview', 'layoutberg' ); ?>
+					</button>
+					<button class="template-preview-tab" data-tab="code">
+						<?php esc_html_e( 'Block Code', 'layoutberg' ); ?>
+					</button>
+				</div>
+				<div class="template-preview-content">
+					<div class="template-preview-panel active" id="visual-panel">
+						<div class="template-preview-info"></div>
+						<div class="template-visual-preview">
+							<div class="template-loading">
+								<?php esc_html_e( 'Loading preview...', 'layoutberg' ); ?>
+							</div>
+						</div>
+					</div>
+					<div class="template-preview-panel" id="code-panel">
+						<div class="template-code-preview">
+							<h4><?php esc_html_e( 'Block Structure', 'layoutberg' ); ?></h4>
+							<pre><code class="template-code-content"></code></pre>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="layoutberg-modal-footer">
@@ -560,9 +583,9 @@ $categories = array(
 	background: #fff;
 	border-radius: 4px;
 	box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
-	max-width: 800px;
-	width: 90%;
-	max-height: 90vh;
+	max-width: 1200px;
+	width: 95%;
+	max-height: 95vh;
 	display: flex;
 	flex-direction: column;
 }
@@ -649,16 +672,111 @@ $categories = array(
 .template-preview-container {
 	border: 1px solid #ddd;
 	border-radius: 4px;
-	padding: 20px;
+	padding: 0;
 	background: #f9f9f9;
-	min-height: 400px;
+	min-height: 500px;
+	display: flex;
+	flex-direction: column;
 }
 
 .template-preview-content {
+	flex: 1;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+}
+
+.template-preview-tabs {
+	display: flex;
+	background: #fff;
+	border-bottom: 1px solid #ddd;
+}
+
+.template-preview-tab {
+	padding: 12px 20px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 14px;
+	color: #666;
+	border-bottom: 2px solid transparent;
+	transition: all 0.2s;
+}
+
+.template-preview-tab.active {
+	color: #007cba;
+	border-bottom-color: #007cba;
+}
+
+.template-preview-tab:hover {
+	color: #333;
+	background: #f8f9fa;
+}
+
+.template-preview-panel {
+	display: none;
+	flex: 1;
+	overflow-y: auto;
+}
+
+.template-preview-panel.active {
+	display: block;
+}
+
+.template-visual-preview {
+	padding: 20px;
+	background: #fff;
+	min-height: 400px;
+}
+
+.template-code-preview {
 	background: #fff;
 	padding: 20px;
+}
+
+.template-code-preview pre {
+	background: #f5f5f5;
+	padding: 15px;
 	border-radius: 4px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	overflow-x: auto;
+	max-height: 400px;
+	overflow-y: auto;
+	margin: 0;
+}
+
+.template-loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 200px;
+	color: #666;
+	font-style: italic;
+}
+
+.template-loading::before {
+	content: '';
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border: 2px solid #ddd;
+	border-top-color: #007cba;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin-right: 8px;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.template-visual-preview iframe {
+	width: 100%;
+	border: none;
+	min-height: 400px;
+	border-radius: 4px;
+	background: #fff;
 }
 
 .template-preview-info {
@@ -835,45 +953,58 @@ document.addEventListener('DOMContentLoaded', function() {
 			const modal = showModal('layoutberg-template-preview-modal');
 			if (!modal) return;
 			
-			// Load template content
+			// Load template content with visual preview
 			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
 				method: 'GET',
 				data: {
 					action: 'layoutberg_get_template',
 					template_id: templateId,
+					include_preview: '1',
 					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
 				},
 				beforeSend: function() {
 					console.log('Sending AJAX request for preview template ID:', templateId);
+					// Show loading state
+					const loadingDiv = document.querySelector('.template-loading');
+					if (loadingDiv) {
+						loadingDiv.textContent = 'Loading preview...';
+					}
 				}
 			}).then(response => {
 				console.log('Preview AJAX response:', response);
 				if (response.success && response.data) {
-					// Show template info and block structure
-					let previewHtml = '<div class="template-preview-info">';
-					previewHtml += '<h3>' + response.data.name + '</h3>';
+					// Update template info
+					let infoHtml = '<h3>' + response.data.name + '</h3>';
 					if (response.data.description) {
-						previewHtml += '<p class="template-description">' + response.data.description + '</p>';
+						infoHtml += '<p class="template-description">' + response.data.description + '</p>';
 					}
-					previewHtml += '<div class="template-meta">';
-					previewHtml += '<span><strong>Category:</strong> ' + response.data.category + '</span>';
+					infoHtml += '<div class="template-meta">';
+					infoHtml += '<span><strong>Category:</strong> ' + response.data.category + '</span>';
 					if (response.data.tags && response.data.tags.length) {
-						previewHtml += '<span><strong>Tags:</strong> ' + response.data.tags.join(', ') + '</span>';
+						infoHtml += '<span><strong>Tags:</strong> ' + response.data.tags.join(', ') + '</span>';
 					}
-					previewHtml += '</div>';
-					previewHtml += '</div>';
+					infoHtml += '</div>';
 					
-					// Show block code in a code block
-					previewHtml += '<div class="template-code-preview">';
-					previewHtml += '<h4><?php esc_html_e( "Block Structure", "layoutberg" ); ?></h4>';
-					previewHtml += '<pre><code>' + response.data.content.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
-					previewHtml += '</div>';
-					
-					const previewContent = document.querySelector('.template-preview-content');
-					if (previewContent) {
-						previewContent.innerHTML = previewHtml;
+					const infoContainer = document.querySelector('.template-preview-info');
+					if (infoContainer) {
+						infoContainer.innerHTML = infoHtml;
 					}
 					
+					// Update visual preview
+					const visualPreview = document.querySelector('.template-visual-preview');
+					if (visualPreview && response.data.html_preview) {
+						visualPreview.innerHTML = response.data.html_preview;
+					} else if (visualPreview) {
+						visualPreview.innerHTML = '<p>Visual preview not available for this template.</p>';
+					}
+					
+					// Update code preview
+					const codeContent = document.querySelector('.template-code-content');
+					if (codeContent) {
+						codeContent.textContent = response.data.content;
+					}
+					
+					// Update use template button
 					const useTemplateBtn = document.querySelector('.layoutberg-use-template-modal');
 					if (useTemplateBtn) {
 						useTemplateBtn.setAttribute('data-template-id', templateId);
@@ -881,9 +1012,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}).catch(error => {
 				console.log('Preview AJAX error:', error);
-				const previewContent = document.querySelector('.template-preview-content');
-				if (previewContent) {
-					previewContent.innerHTML = '<p>Error loading template: ' + error.message + '</p>';
+				const visualPreview = document.querySelector('.template-visual-preview');
+				if (visualPreview) {
+					visualPreview.innerHTML = '<p>Error loading template: ' + error.message + '</p>';
 				}
 			});
 		}
@@ -1052,6 +1183,30 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Redirect anyway even if usage increment fails
 				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
 			});
+		}
+	});
+	
+	// Template preview tab switching
+	document.addEventListener('click', function(e) {
+		if (e.target.classList.contains('template-preview-tab')) {
+			const targetTab = e.target.getAttribute('data-tab');
+			
+			// Update tab buttons
+			const tabs = document.querySelectorAll('.template-preview-tab');
+			tabs.forEach(tab => tab.classList.remove('active'));
+			e.target.classList.add('active');
+			
+			// Update panels
+			const panels = document.querySelectorAll('.template-preview-panel');
+			panels.forEach(panel => panel.classList.remove('active'));
+			
+			const targetPanel = targetTab === 'visual' ? 
+				document.getElementById('visual-panel') : 
+				document.getElementById('code-panel');
+			
+			if (targetPanel) {
+				targetPanel.classList.add('active');
+			}
 		}
 	});
 	
