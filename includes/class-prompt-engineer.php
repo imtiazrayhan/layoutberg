@@ -57,6 +57,11 @@ class Prompt_Engineer {
 	 * @return string System prompt.
 	 */
 	public function build_system_prompt( $options = array() ) {
+		// Debug logging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'LayoutBerg Prompt Engineer - Options received: ' . print_r( $options, true ) );
+		}
+		
 		$prompt = $this->get_base_system_prompt();
 		
 		// Add specific layout type instructions.
@@ -65,32 +70,32 @@ class Prompt_Engineer {
 		}
 		
 		// Add style-specific instructions.
-		if ( isset( $options['style'] ) ) {
+		if ( isset( $options['style'] ) && $options['style'] !== 'default' ) {
 			$prompt .= "\n\n" . $this->get_style_instructions( $options['style'] );
 		}
 		
 		// Add layout-specific instructions.
-		if ( isset( $options['layout'] ) ) {
+		if ( isset( $options['layout'] ) && $options['layout'] !== 'default' ) {
 			$prompt .= "\n\n" . $this->get_layout_instructions( $options['layout'] );
 		}
 		
 		// Add color scheme instructions.
-		if ( isset( $options['color_scheme'] ) ) {
+		if ( isset( $options['color_scheme'] ) && $options['color_scheme'] !== 'default' && $options['color_scheme'] !== null ) {
 			$prompt .= "\n\n" . $this->get_color_scheme_instructions( $options['color_scheme'] );
 		}
 		
 		// Add layout density instructions.
-		if ( isset( $options['density'] ) ) {
+		if ( isset( $options['density'] ) && $options['density'] !== 'normal' && $options['density'] !== null ) {
 			$prompt .= "\n\n" . $this->get_density_instructions( $options['density'] );
 		}
 		
 		// Add audience targeting instructions.
-		if ( isset( $options['audience'] ) ) {
+		if ( isset( $options['audience'] ) && $options['audience'] !== 'general' && $options['audience'] !== null ) {
 			$prompt .= "\n\n" . $this->get_audience_instructions( $options['audience'] );
 		}
 		
 		// Add industry-specific instructions.
-		if ( isset( $options['industry'] ) ) {
+		if ( isset( $options['industry'] ) && $options['industry'] !== 'general' && $options['industry'] !== null ) {
 			$prompt .= "\n\n" . $this->get_industry_instructions( $options['industry'] );
 		}
 		
@@ -107,6 +112,21 @@ class Prompt_Engineer {
 		
 		// Add example blocks.
 		$prompt .= "\n\n" . $this->get_example_blocks();
+		
+		// Add final reinforcement
+		$prompt .= "\n\nFINAL CRITICAL REMINDER:\n";
+		$prompt .= "You MUST follow ALL the specific instructions provided above.\n";
+		$prompt .= "Pay special attention to:\n";
+		if ( isset( $options['style'] ) && $options['style'] !== 'default' ) {
+			$prompt .= "- " . strtoupper( $options['style'] ) . " style requirements\n";
+		}
+		if ( isset( $options['color_scheme'] ) && $options['color_scheme'] !== 'default' ) {
+			$prompt .= "- " . strtoupper( $options['color_scheme'] ) . " color scheme (USE ONLY THESE COLORS)\n";
+		}
+		if ( isset( $options['density'] ) && $options['density'] !== 'normal' ) {
+			$prompt .= "- " . strtoupper( $options['density'] ) . " density (EXACT spacer sizes)\n";
+		}
+		$prompt .= "These are NOT optional - they are MANDATORY requirements.";
 		
 		return $prompt;
 	}
@@ -125,6 +145,8 @@ CRITICAL OUTPUT RULES:
 2. Start immediately with <!-- wp: and end with --> 
 3. Do NOT include any introductory text like 'Here is the layout:' or code block markers
 4. Do NOT include any concluding text or explanations after the blocks
+5. YOU MUST STRICTLY FOLLOW ALL STYLE, COLOR, DENSITY, AND OTHER SPECIFIC INSTRUCTIONS PROVIDED BELOW
+6. Any instructions marked as MANDATORY or MUST are ABSOLUTE REQUIREMENTS - not suggestions
 
 BLOCK SYNTAX REQUIREMENTS:
 1. Use ONLY core WordPress blocks unless specifically requested otherwise
@@ -197,45 +219,45 @@ COMMON MISTAKES TO AVOID:
 	 */
 	private function get_style_instructions( $style ) {
 		$style_guides = array(
-			'modern' => "Apply modern design principles:
-- Use generous whitespace with spacer blocks
-- Implement card-based layouts with group blocks and shadows
-- Add gradient backgrounds to cover blocks
-- Use large, bold typography for headings
-- Include rounded corners via additional CSS classes
-- Implement asymmetric column layouts
-- Apply contemporary color palettes (vibrant gradients, bold contrasts)
-- Use micro-interactions and hover states where applicable",
+			'modern' => "MANDATORY MODERN DESIGN REQUIREMENTS - YOU MUST APPLY ALL OF THESE:
+- MUST use generous whitespace with spacer blocks (minimum 48px between sections)
+- MUST implement card-based layouts with group blocks and box shadows
+- MUST add gradient backgrounds to cover blocks (use gradients like linear-gradient(135deg,#667eea 0%,#764ba2 100%))
+- MUST use large, bold typography for headings (fontSize: x-large or larger)
+- MUST include rounded corners via additional CSS classes (is-style-rounded)
+- MUST implement asymmetric column layouts (avoid equal-width columns)
+- MUST apply contemporary vibrant gradient color palettes
+- MUST use bold color contrasts between sections",
 			
-			'classic' => "Apply classic/timeless design principles:
-- Use structured, grid-based layouts
-- Implement professional color schemes (blues, grays, earth tones)
-- Add balanced, symmetrical layouts
-- Include traditional typography pairings
-- Use formal, professional placeholder text
-- Implement clear visual hierarchy
-- Apply subtle shadows and borders
-- Use traditional spacing ratios",
+			'classic' => "MANDATORY CLASSIC DESIGN REQUIREMENTS - YOU MUST APPLY ALL OF THESE:
+- MUST use structured, symmetrical grid-based layouts
+- MUST implement professional color schemes (navy blue #001F3F, gray #666666, white)
+- MUST create balanced, symmetrical layouts (equal column widths)
+- MUST use traditional typography (serif fonts for headings via className)
+- MUST use formal, professional placeholder text
+- MUST implement clear visual hierarchy with consistent spacing
+- MUST apply subtle shadows and 1px borders
+- MUST use traditional spacing (32px between elements)",
 			
-			'minimal' => "Apply minimalist design principles:
-- Use maximum whitespace between sections
-- Stick to monochromatic color schemes
-- Implement simple, clean typography
-- Avoid decorative elements
-- Use thin separators or none at all
-- Focus on content hierarchy
-- Apply subtle animations if any
-- Use plenty of negative space",
+			'minimal' => "MANDATORY MINIMALIST DESIGN REQUIREMENTS - YOU MUST APPLY ALL OF THESE:
+- MUST use maximum whitespace between sections (80px+ spacers)
+- MUST stick to monochromatic color schemes (only black, white, and grays)
+- MUST implement simple, clean typography (no decorative fonts)
+- MUST avoid ALL decorative elements
+- MUST use NO separators or only thin 1px lines
+- MUST focus on content with minimal visual elements
+- MUST use solid colors only (NO gradients)
+- MUST use plenty of negative space (double normal spacing)",
 			
-			'bold' => "Apply bold/dynamic design principles:
-- Use asymmetric and overlapping layouts
-- Implement bold, vibrant color combinations
-- Add dramatic contrast between elements
-- Include large, impactful typography
-- Use strong visual elements and patterns
-- Implement eye-catching gradient backgrounds
-- Apply dynamic spacing and unconventional layouts
-- Use high-contrast color combinations",
+			'bold' => "MANDATORY BOLD DESIGN REQUIREMENTS - YOU MUST APPLY ALL OF THESE:
+- MUST use asymmetric and dynamic layouts (varied column widths)
+- MUST implement bold, vibrant color combinations (bright reds #FF006E, oranges #FB5607)
+- MUST add dramatic contrast between elements
+- MUST include extra-large, impactful typography (xxl font sizes)
+- MUST use strong visual elements and patterns
+- MUST implement eye-catching gradient backgrounds (vibrant multi-color gradients)
+- MUST apply dynamic spacing (mix of tight and loose spacing)
+- MUST use high-contrast color combinations",
 			
 			'elegant' => "Apply elegant/sophisticated design principles:
 - Use refined typography with serif fonts for headings
@@ -335,20 +357,23 @@ COMMON MISTAKES TO AVOID:
 	 */
 	private function get_color_scheme_instructions( $color_scheme ) {
 		$color_guides = array(
-			'monochrome' => "Apply monochrome color scheme:
-- Use variations of a single color (different shades and tints)
-- Create depth with light and dark variations
-- Use pure black (#000000) and white (#FFFFFF) for contrast
-- Apply grayscale gradients: linear-gradient(135deg,#e0e0e0 0%,#666666 100%)
-- Focus on texture and typography for visual interest
-- Example palette: #000000, #333333, #666666, #999999, #CCCCCC, #FFFFFF",
+			'monochrome' => "CRITICAL COLOR REQUIREMENT - MONOCHROME SCHEME:
+YOU MUST USE ONLY BLACK, WHITE, AND GRAY COLORS:
+- Background colors: ONLY use #000000, #FFFFFF, or gray shades
+- Text colors: ONLY use black (#000000) on white or white (#FFFFFF) on black
+- For cover blocks: {\"customBackgroundColor\":\"#000000\"} or {\"customBackgroundColor\":\"#333333\"}
+- For gradients: {\"gradient\":\"linear-gradient(135deg,#e0e0e0 0%,#666666 100%)\"}
+- NO OTHER COLORS ALLOWED - ONLY GRAYSCALE
+- Image placeholders: https://placehold.co/600x400/cccccc/333333",
 			
-			'blue' => "Apply blue-dominated color scheme:
-- Use various shades of blue as primary colors
-- Implement professional blue gradients: linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)
-- Add complementary colors sparingly (orange accents)
-- Create trust and stability through color
-- Example palette: #001F3F, #0074D9, #7FDBFF, #39CCCC, #ffffff",
+			'blue' => "CRITICAL COLOR REQUIREMENT - BLUE SCHEME:
+YOU MUST USE BLUE AS THE DOMINANT COLOR:
+- Background colors: {\"customBackgroundColor\":\"#001F3F\"} or {\"customBackgroundColor\":\"#0074D9\"}
+- Gradients: {\"gradient\":\"linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)\"}
+- Text on blue backgrounds MUST be white
+- Accent colors: ONLY light blue #7FDBFF or white
+- Image placeholders: https://placehold.co/600x400/0074D9/FFFFFF
+- ALL sections must incorporate blue - no neutral sections",
 			
 			'green' => "Apply green-dominated color scheme:
 - Use natural, calming green tones
@@ -405,29 +430,29 @@ COMMON MISTAKES TO AVOID:
 	 */
 	private function get_density_instructions( $density ) {
 		$density_guides = array(
-			'compact' => "Apply compact layout density:
-- Use minimal spacing between elements (16-24px spacers)
-- Implement tight paragraph spacing
-- Create information-dense layouts
-- Use smaller font sizes where appropriate
-- Minimize whitespace while maintaining readability
-- Focus on fitting more content above the fold",
+			'compact' => "MANDATORY COMPACT DENSITY - YOU MUST APPLY:
+- MUST use ONLY 20px spacer blocks between ALL elements
+- {\"height\":\"20px\"} for ALL spacer blocks - NO EXCEPTIONS
+- MUST use small font sizes (fontSize: small or normal)
+- MUST pack content tightly together
+- MUST minimize all margins and padding
+- NO spacers larger than 20px allowed",
 			
-			'normal' => "Apply normal layout density:
-- Use standard spacing between elements (32-48px spacers)
-- Implement comfortable paragraph spacing
-- Create balanced content distribution
-- Use standard font sizes
-- Apply regular whitespace for breathing room
-- Balance content density with readability",
+			'normal' => "MANDATORY NORMAL DENSITY - YOU MUST APPLY:
+- MUST use EXACTLY 40px spacer blocks between sections
+- {\"height\":\"40px\"} for ALL spacer blocks
+- MUST use standard font sizes (fontSize: medium)
+- MUST maintain consistent spacing throughout
+- MUST balance content with breathing room
+- ALL spacers must be exactly 40px",
 			
-			'spacious' => "Apply spacious layout density:
-- Use generous spacing between elements (64-100px spacers)
-- Implement extra paragraph spacing
-- Create airy, luxurious layouts
-- Use larger font sizes for better readability
-- Maximize whitespace for visual impact
-- Focus on premium, high-end feeling",
+			'spacious' => "MANDATORY SPACIOUS DENSITY - YOU MUST APPLY:
+- MUST use MINIMUM 80px spacer blocks between ALL sections
+- {\"height\":\"80px\"} or {\"height\":\"100px\"} for spacer blocks
+- MUST use large font sizes (fontSize: large or x-large)
+- MUST create airy, luxury feeling with excessive whitespace
+- MUST add extra spacing around all elements
+- NO spacers smaller than 80px allowed",
 		);
 		
 		return isset( $density_guides[ $density ] ) ? $density_guides[ $density ] : $density_guides['normal'];
@@ -988,20 +1013,20 @@ PROPER CALL-TO-ACTION SECTION:
 			$requirements[] = "Use a " . $options['columns'] . "-column layout where appropriate";
 		}
 		
-		if ( isset( $options['color_scheme'] ) ) {
-			$requirements[] = "Apply a " . $options['color_scheme'] . " color scheme throughout the design";
+		if ( isset( $options['color_scheme'] ) && $options['color_scheme'] !== 'default' ) {
+			$requirements[] = "YOU MUST use ONLY the " . $options['color_scheme'] . " color scheme - this is MANDATORY";
 		}
 		
-		if ( isset( $options['density'] ) ) {
-			$requirements[] = "Use " . $options['density'] . " layout density for spacing and content distribution";
+		if ( isset( $options['density'] ) && $options['density'] !== 'normal' ) {
+			$requirements[] = "YOU MUST apply " . $options['density'] . " layout density with EXACT spacer sizes specified";
 		}
 		
-		if ( isset( $options['audience'] ) ) {
-			$requirements[] = "Optimize content and design for a " . $options['audience'] . " audience";
+		if ( isset( $options['audience'] ) && $options['audience'] !== 'general' ) {
+			$requirements[] = "YOU MUST optimize ALL content specifically for a " . $options['audience'] . " audience";
 		}
 		
-		if ( isset( $options['industry'] ) ) {
-			$requirements[] = "Follow " . $options['industry'] . " industry best practices and conventions";
+		if ( isset( $options['industry'] ) && $options['industry'] !== 'general' ) {
+			$requirements[] = "YOU MUST follow " . $options['industry'] . " industry requirements throughout";
 		}
 		
 		if ( isset( $options['include_cta'] ) && $options['include_cta'] ) {
