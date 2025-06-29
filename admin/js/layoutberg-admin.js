@@ -646,10 +646,20 @@
          */
         quickTemplate: function(e) {
             e.preventDefault();
-            var template = $(e.currentTarget).data('template');
+            var $button = $(e.currentTarget);
+            var template = $button.data('template');
+            var prompt = $button.data('prompt');
             
-            // Redirect to new page with template
-            window.location.href = $(e.currentTarget).data('url') || (layoutbergAdmin.newPageUrl + '&layoutberg_template=' + template);
+            // If we have a prompt, this is a Popular Template from dashboard
+            if (prompt) {
+                // Build proper URL for new page with modal
+                var adminUrl = window.location.origin + '/wp-admin/';
+                var url = adminUrl + 'post-new.php?post_type=page&layoutberg_open_modal=1&hide_pattern_modal=1&layoutberg_prompt=' + encodeURIComponent(prompt);
+                window.location.href = url;
+            } else {
+                // Fallback for other templates
+                window.location.href = $button.data('url') || '#';
+            }
         },
 
         /**

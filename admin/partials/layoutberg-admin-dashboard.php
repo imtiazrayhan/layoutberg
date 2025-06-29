@@ -505,24 +505,7 @@ jQuery(document).ready(function($) {
 		});
 	});
 
-	// Template quick actions
-	$(document).on('click', '[data-template]', function(e) {
-		e.preventDefault();
-		var $button = $(this);
-		var template = $button.data('template');
-		var prompt = $button.data('prompt');
-		
-		// Get the admin URL from the existing new page button
-		var newPageUrl = jQuery('.layoutberg-btn-primary[href*="post-new.php?post_type=page"]').first().attr('href');
-		if (newPageUrl) {
-			// Extract base URL
-			var baseUrl = newPageUrl.split('?')[0];
-			var url = baseUrl + '?post_type=page&layoutberg_open_modal=1&hide_pattern_modal=1&layoutberg_prompt=' + encodeURIComponent(prompt);
-			window.location.href = url;
-		} else {
-			// Fallback
-			alert('Error: Could not determine admin URL');
-		}
-	});
+	// Template quick actions are handled by layoutberg-admin.js
+	// which includes proper URL generation for Popular Templates
 });
 </script>
