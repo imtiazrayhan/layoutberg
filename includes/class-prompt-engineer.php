@@ -167,7 +167,13 @@ IMAGE RULES - CRITICAL FOR VALIDATION:
 - ALWAYS use complete URLs: https://via.placeholder.com/400x300/0073aa/ffffff?text=Icon
 - For small icons: https://via.placeholder.com/64x64/0073aa/ffffff?text=Icon+1
 - For hero images: https://images.unsplash.com/photo-1517180102446-f3ece451e9d8
-- Always include meaningful alt text for accessibility";
+- Always include meaningful alt text for accessibility
+
+COVER BLOCK RULES - PREFER GRADIENTS OVER IMAGES:
+- Use gradients instead of images for better performance and validation
+- Structure: <div class=\"wp-block-cover\"><span class=\"wp-block-cover__background\"></span><div class=\"wp-block-cover__inner-container\">content</div></div>
+- Common gradients: cool-to-warm-spectrum, vivid-cyan-blue-to-vivid-purple, light-green-cyan-to-vivid-green-cyan
+- Always include background span with proper gradient classes";
 	}
 
 	/**
@@ -788,7 +794,24 @@ Follow user instructions for sections and layout.";
 <!-- /wp:paragraph --></div></div>
 <!-- /wp:media-text -->
 
-10. DETAILS/ACCORDION:
+10. COVER BLOCK WITH GRADIENT:
+<!-- wp:cover {\"dimRatio\":50,\"gradient\":\"cool-to-warm-spectrum\",\"align\":\"full\"} -->
+<div class=\"wp-block-cover alignfull has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background\"><span aria-hidden=\"true\" class=\"wp-block-cover__background has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background\"></span><div class=\"wp-block-cover__inner-container\"><!-- wp:heading {\"textAlign\":\"center\",\"level\":1,\"textColor\":\"white\"} -->
+<h1 class=\"wp-block-heading has-text-align-center has-white-color has-text-color\">Hero Title</h1>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {\"align\":\"center\",\"textColor\":\"white\"} -->
+<p class=\"has-text-align-center has-white-color has-text-color\">Hero description text goes here.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"center\"}} -->
+<div class=\"wp-block-buttons\"><!-- wp:button {\"backgroundColor\":\"primary\",\"textColor\":\"white\"} -->
+<div class=\"wp-block-button\"><a class=\"wp-block-button__link has-white-color has-primary-background-color has-text-color has-background wp-element-button\">Get Started</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons --></div></div>
+<!-- /wp:cover -->
+
+11. DETAILS/ACCORDION:
 <!-- wp:details -->
 <details class=\"wp-block-details\"><summary>Click to expand</summary><!-- wp:paragraph -->
 <p>Hidden content that appears when expanded.</p>
@@ -852,6 +875,22 @@ Follow user instructions for sections and layout.";
 <p>Answer or content that appears when expanded.</p>
 <!-- /wp:paragraph --></details>
 <!-- /wp:details -->',
+			
+			'cover' => '<!-- wp:cover {"dimRatio":50,"gradient":"cool-to-warm-spectrum","align":"full"} -->
+<div class="wp-block-cover alignfull has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background"><span aria-hidden="true" class="wp-block-cover__background has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background"></span><div class="wp-block-cover__inner-container"><!-- wp:heading {"textAlign":"center","level":1,"textColor":"white"} -->
+<h1 class="wp-block-heading has-text-align-center has-white-color has-text-color">Hero Title</h1>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"align":"center","textColor":"white"} -->
+<p class="has-text-align-center has-white-color has-text-color">Hero description text goes here.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+<div class="wp-block-buttons"><!-- wp:button {"backgroundColor":"primary","textColor":"white"} -->
+<div class="wp-block-button"><a class="wp-block-button__link has-white-color has-primary-background-color has-text-color has-background wp-element-button">Get Started</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons --></div></div>
+<!-- /wp:cover -->',
 			
 			'media_text' => '<!-- wp:media-text {\"mediaType\":\"image\"} -->
 <div class="wp-block-media-text is-stacked-on-mobile"><figure class="wp-block-media-text__media"><img src="https://images.unsplash.com/photo-1551434678-e076c223a692" alt=""/></figure><div class="wp-block-media-text__content"><!-- wp:heading -->

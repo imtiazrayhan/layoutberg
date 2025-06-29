@@ -870,17 +870,31 @@ class Block_Generator {
 			}
 		}
 
-		// For cover blocks, we prefer background colors/gradients over images
-		// If URL is present but invalid, remove it and suggest using colors instead
-		if ( isset( $block['attrs']['url'] ) ) {
-			unset( $block['attrs']['url'] );
-			// Ensure the block has a background color or gradient
-			if ( ! isset( $block['attrs']['gradient'] ) && ! isset( $block['attrs']['backgroundColor'] ) && ! isset( $block['attrs']['customBackgroundColor'] ) ) {
-				// Add a default gradient
-				$block['attrs']['gradient'] = 'cool-to-warm-spectrum';
-			}
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'LayoutBerg: Removed image URL from cover block, using background color/gradient instead' );
+		// Ensure the block has proper background
+		if ( ! isset( $block['attrs']['gradient'] ) && ! isset( $block['attrs']['backgroundColor'] ) && ! isset( $block['attrs']['customBackgroundColor'] ) && ! isset( $block['attrs']['url'] ) ) {
+			// Add a default gradient if no background is set
+			$block['attrs']['gradient'] = 'cool-to-warm-spectrum';
+			$block['attrs']['dimRatio'] = 50;
+		}
+
+		// Ensure cover block has proper inner structure with background span
+		if ( isset( $block['innerHTML'] ) && ! empty( $block['innerHTML'] ) ) {
+			// Check if innerHTML has the background span structure
+			if ( strpos( $block['innerHTML'], 'wp-block-cover__background' ) === false ) {
+				// Add the background span if missing
+				if ( isset( $block['attrs']['gradient'] ) ) {
+					$gradient_class = 'has-' . $block['attrs']['gradient'] . '-gradient-background';
+					$background_span = '<span aria-hidden="true" class="wp-block-cover__background has-background-dim has-background-gradient ' . $gradient_class . '"></span>';
+				} else {
+					$background_span = '<span aria-hidden="true" class="wp-block-cover__background has-background-dim"></span>';
+				}
+				
+				// Insert the background span after the opening div
+				$block['innerHTML'] = preg_replace(
+					'/(<div[^>]*class="[^"]*wp-block-cover[^"]*"[^>]*>)/',
+					'$1' . $background_span,
+					$block['innerHTML']
+				);
 			}
 		}
 
