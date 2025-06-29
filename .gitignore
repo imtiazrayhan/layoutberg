@@ -3,3 +3,4 @@ vendor
 composer.lock
 package-lock.json
 build
+.phpunit.result.cache
