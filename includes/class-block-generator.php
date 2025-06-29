@@ -870,8 +870,37 @@ class Block_Generator {
 			}
 		}
 
+		// Remove URL attribute if present - causes validation failures
+		if ( isset( $block['attrs']['url'] ) ) {
+			unset( $block['attrs']['url'] );
+			
+			// Also remove any image-related styling from innerHTML
+			if ( isset( $block['innerHTML'] ) ) {
+				// Remove background-image styles
+				$block['innerHTML'] = preg_replace(
+					'/style="[^"]*background-image:[^;"]*;?[^"]*"/i',
+					'',
+					$block['innerHTML']
+				);
+				
+				// Remove other background styles that relate to images
+				$block['innerHTML'] = preg_replace(
+					'/style="[^"]*background-(?:size|position|repeat):[^;"]*;?[^"]*"/i',
+					'',
+					$block['innerHTML']
+				);
+				
+				// Clean up empty style attributes
+				$block['innerHTML'] = preg_replace('/style=""/', '', $block['innerHTML']);
+			}
+			
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'LayoutBerg: Removed URL attribute and image styles from cover block to prevent validation failure' );
+			}
+		}
+
 		// Ensure the block has proper background
-		if ( ! isset( $block['attrs']['gradient'] ) && ! isset( $block['attrs']['backgroundColor'] ) && ! isset( $block['attrs']['customBackgroundColor'] ) && ! isset( $block['attrs']['url'] ) ) {
+		if ( ! isset( $block['attrs']['gradient'] ) && ! isset( $block['attrs']['backgroundColor'] ) && ! isset( $block['attrs']['customBackgroundColor'] ) ) {
 			// Add a default gradient if no background is set
 			$block['attrs']['gradient'] = 'cool-to-warm-spectrum';
 			$block['attrs']['dimRatio'] = 50;

@@ -166,14 +166,15 @@ IMAGE RULES - CRITICAL FOR VALIDATION:
 - NEVER use relative paths like \"image.jpg\", \"icon-1.jpg\", or \"photo.png\"
 - ALWAYS use complete URLs: https://via.placeholder.com/400x300/0073aa/ffffff?text=Icon
 - For small icons: https://via.placeholder.com/64x64/0073aa/ffffff?text=Icon+1
-- For hero images: https://images.unsplash.com/photo-1517180102446-f3ece451e9d8
+- For regular images: https://images.unsplash.com/photo-1517180102446-f3ece451e9d8
 - Always include meaningful alt text for accessibility
 
-COVER BLOCK RULES - PREFER GRADIENTS OVER IMAGES:
-- Use gradients instead of images for better performance and validation
-- Structure: <div class=\"wp-block-cover\"><span class=\"wp-block-cover__background\"></span><div class=\"wp-block-cover__inner-container\">content</div></div>
+COVER BLOCK RULES - NEVER USE IMAGES, ALWAYS USE GRADIENTS:
+- NEVER use \"url\" attribute in cover blocks - this causes validation failures
+- ALWAYS use gradients: {\"gradient\":\"cool-to-warm-spectrum\",\"dimRatio\":50}
+- Required structure: <div class=\"wp-block-cover\"><span class=\"wp-block-cover__background has-background-gradient\"></span><div class=\"wp-block-cover__inner-container\">content</div></div>
 - Common gradients: cool-to-warm-spectrum, vivid-cyan-blue-to-vivid-purple, light-green-cyan-to-vivid-green-cyan
-- Always include background span with proper gradient classes";
+- Background span MUST include gradient classes: has-background-gradient has-[gradient-name]-gradient-background";
 	}
 
 	/**
@@ -209,7 +210,12 @@ COVER BLOCK RULES - PREFER GRADIENTS OVER IMAGES:
    - Add modifier classes: has-text-align-center
    - Color classes: has-white-color has-text-color
 
-5. COMMON ATTRIBUTES:
+5. COVER BLOCKS - CRITICAL VALIDATION RULE:
+   - NEVER use \"url\" attribute: {\"url\":\"...\"} causes validation failures
+   - ALWAYS use gradient: {\"gradient\":\"cool-to-warm-spectrum\",\"dimRatio\":50}
+   - Background span MUST have gradient classes
+
+6. COMMON ATTRIBUTES:
    - align: \"left\", \"center\", \"right\", \"wide\", \"full\"
    - textAlign: \"left\", \"center\", \"right\"
    - fontSize: \"small\", \"medium\", \"large\", \"x-large\"
