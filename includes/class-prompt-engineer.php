@@ -74,6 +74,31 @@ class Prompt_Engineer {
 			$prompt .= "\n\n" . $this->get_layout_instructions( $options['layout'] );
 		}
 		
+		// Add color scheme instructions.
+		if ( isset( $options['color_scheme'] ) ) {
+			$prompt .= "\n\n" . $this->get_color_scheme_instructions( $options['color_scheme'] );
+		}
+		
+		// Add layout density instructions.
+		if ( isset( $options['density'] ) ) {
+			$prompt .= "\n\n" . $this->get_density_instructions( $options['density'] );
+		}
+		
+		// Add audience targeting instructions.
+		if ( isset( $options['audience'] ) ) {
+			$prompt .= "\n\n" . $this->get_audience_instructions( $options['audience'] );
+		}
+		
+		// Add industry-specific instructions.
+		if ( isset( $options['industry'] ) ) {
+			$prompt .= "\n\n" . $this->get_industry_instructions( $options['industry'] );
+		}
+		
+		// Add language-specific instructions.
+		if ( isset( $options['language'] ) && $options['language'] !== 'en' ) {
+			$prompt .= "\n\n" . $this->get_language_instructions( $options['language'] );
+		}
+		
 		// Add responsive design instructions.
 		$prompt .= "\n\n" . $this->get_responsive_instructions();
 		
@@ -178,7 +203,9 @@ COMMON MISTAKES TO AVOID:
 - Add gradient backgrounds to cover blocks
 - Use large, bold typography for headings
 - Include rounded corners via additional CSS classes
-- Implement asymmetric column layouts",
+- Implement asymmetric column layouts
+- Apply contemporary color palettes (vibrant gradients, bold contrasts)
+- Use micro-interactions and hover states where applicable",
 			
 			'classic' => "Apply classic/timeless design principles:
 - Use structured, grid-based layouts
@@ -186,7 +213,9 @@ COMMON MISTAKES TO AVOID:
 - Add balanced, symmetrical layouts
 - Include traditional typography pairings
 - Use formal, professional placeholder text
-- Implement clear visual hierarchy",
+- Implement clear visual hierarchy
+- Apply subtle shadows and borders
+- Use traditional spacing ratios",
 			
 			'minimal' => "Apply minimalist design principles:
 - Use maximum whitespace between sections
@@ -194,7 +223,9 @@ COMMON MISTAKES TO AVOID:
 - Implement simple, clean typography
 - Avoid decorative elements
 - Use thin separators or none at all
-- Focus on content hierarchy",
+- Focus on content hierarchy
+- Apply subtle animations if any
+- Use plenty of negative space",
 			
 			'bold' => "Apply bold/dynamic design principles:
 - Use asymmetric and overlapping layouts
@@ -202,7 +233,49 @@ COMMON MISTAKES TO AVOID:
 - Add dramatic contrast between elements
 - Include large, impactful typography
 - Use strong visual elements and patterns
-- Implement eye-catching gradient backgrounds",
+- Implement eye-catching gradient backgrounds
+- Apply dynamic spacing and unconventional layouts
+- Use high-contrast color combinations",
+			
+			'elegant' => "Apply elegant/sophisticated design principles:
+- Use refined typography with serif fonts for headings
+- Implement muted, sophisticated color palettes
+- Add subtle decorative elements
+- Include generous but balanced spacing
+- Use elegant transitions and animations
+- Apply golden ratio proportions
+- Implement sophisticated gradient overlays
+- Focus on luxurious feel",
+			
+			'playful' => "Apply playful/fun design principles:
+- Use bright, cheerful color combinations
+- Implement rounded corners and organic shapes
+- Add playful typography with varied sizes
+- Include fun icons and illustrations
+- Use casual, friendly placeholder text
+- Apply bouncy animations and transitions
+- Implement colorful gradient backgrounds
+- Focus on approachable, friendly feel",
+			
+			'corporate' => "Apply corporate/professional design principles:
+- Use conservative color schemes (blues, grays, whites)
+- Implement structured, predictable layouts
+- Add professional imagery placeholders
+- Include formal typography choices
+- Use business-oriented placeholder text
+- Apply consistent spacing and alignment
+- Implement trust-building elements
+- Focus on credibility and professionalism",
+			
+			'tech' => "Apply tech/startup design principles:
+- Use modern, futuristic color schemes
+- Implement cutting-edge layout patterns
+- Add tech-oriented visual elements
+- Include modern sans-serif typography
+- Use innovation-focused placeholder text
+- Apply subtle animations and interactions
+- Implement data visualization elements
+- Focus on innovation and progress",
 		);
 		
 		return isset( $style_guides[ $style ] ) ? $style_guides[ $style ] : $style_guides['modern'];
@@ -251,6 +324,355 @@ COMMON MISTAKES TO AVOID:
 		);
 		
 		return isset( $layout_guides[ $layout ] ) ? $layout_guides[ $layout ] : $layout_guides['single-column'];
+	}
+
+	/**
+	 * Get color scheme-specific instructions.
+	 *
+	 * @since 1.0.0
+	 * @param string $color_scheme Color scheme preference.
+	 * @return string Color scheme instructions.
+	 */
+	private function get_color_scheme_instructions( $color_scheme ) {
+		$color_guides = array(
+			'monochrome' => "Apply monochrome color scheme:
+- Use variations of a single color (different shades and tints)
+- Create depth with light and dark variations
+- Use pure black (#000000) and white (#FFFFFF) for contrast
+- Apply grayscale gradients: linear-gradient(135deg,#e0e0e0 0%,#666666 100%)
+- Focus on texture and typography for visual interest
+- Example palette: #000000, #333333, #666666, #999999, #CCCCCC, #FFFFFF",
+			
+			'blue' => "Apply blue-dominated color scheme:
+- Use various shades of blue as primary colors
+- Implement professional blue gradients: linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)
+- Add complementary colors sparingly (orange accents)
+- Create trust and stability through color
+- Example palette: #001F3F, #0074D9, #7FDBFF, #39CCCC, #ffffff",
+			
+			'green' => "Apply green-dominated color scheme:
+- Use natural, calming green tones
+- Implement eco-friendly gradients: linear-gradient(135deg,#134e5e 0%,#71b280 100%)
+- Add earth tones as complementary colors
+- Create organic, natural feeling
+- Example palette: #0E4429, #006400, #2ECC40, #01FF70, #ffffff",
+			
+			'warm' => "Apply warm color scheme:
+- Use reds, oranges, and yellows as primary colors
+- Implement sunset gradients: linear-gradient(135deg,#ff6b6b 0%,#feca57 100%)
+- Add brown and beige for balance
+- Create energetic, inviting atmosphere
+- Example palette: #FF4136, #FF851B, #FFDC00, #FF6347, #8B4513",
+			
+			'cool' => "Apply cool color scheme:
+- Use blues, greens, and purples as primary colors
+- Implement ocean gradients: linear-gradient(135deg,#667eea 0%,#764ba2 100%)
+- Add silver and light grays for balance
+- Create calm, professional atmosphere
+- Example palette: #001f3f, #0074D9, #B10DC9, #85144b, #F8F8FF",
+			
+			'pastel' => "Apply pastel color scheme:
+- Use soft, muted versions of colors
+- Implement gentle gradients: linear-gradient(135deg,#ffeaa7 0%,#fab1a0 100%)
+- Create dreamy, soft atmosphere
+- Focus on light, airy feeling
+- Example palette: #FFE5E5, #E5F3FF, #E5FFE5, #FFF5E5, #F5E5FF",
+			
+			'vibrant' => "Apply vibrant color scheme:
+- Use bold, saturated colors
+- Implement electric gradients: linear-gradient(135deg,#f093fb 0%,#f5576c 100%)
+- Create high energy and excitement
+- Use strong contrasts
+- Example palette: #FF006E, #FB5607, #FFBE0B, #8338EC, #3A86FF",
+			
+			'dark' => "Apply dark color scheme:
+- Use dark backgrounds with light text
+- Implement subtle dark gradients: linear-gradient(135deg,#232526 0%,#414345 100%)
+- Add bright accent colors for contrast
+- Create modern, sophisticated atmosphere
+- Example palette: #000000, #1a1a1a, #2d2d2d, #404040, #00ff00",
+		);
+		
+		return isset( $color_guides[ $color_scheme ] ) ? $color_guides[ $color_scheme ] : '';
+	}
+
+	/**
+	 * Get layout density instructions.
+	 *
+	 * @since 1.0.0
+	 * @param string $density Density preference.
+	 * @return string Density instructions.
+	 */
+	private function get_density_instructions( $density ) {
+		$density_guides = array(
+			'compact' => "Apply compact layout density:
+- Use minimal spacing between elements (16-24px spacers)
+- Implement tight paragraph spacing
+- Create information-dense layouts
+- Use smaller font sizes where appropriate
+- Minimize whitespace while maintaining readability
+- Focus on fitting more content above the fold",
+			
+			'normal' => "Apply normal layout density:
+- Use standard spacing between elements (32-48px spacers)
+- Implement comfortable paragraph spacing
+- Create balanced content distribution
+- Use standard font sizes
+- Apply regular whitespace for breathing room
+- Balance content density with readability",
+			
+			'spacious' => "Apply spacious layout density:
+- Use generous spacing between elements (64-100px spacers)
+- Implement extra paragraph spacing
+- Create airy, luxurious layouts
+- Use larger font sizes for better readability
+- Maximize whitespace for visual impact
+- Focus on premium, high-end feeling",
+		);
+		
+		return isset( $density_guides[ $density ] ) ? $density_guides[ $density ] : $density_guides['normal'];
+	}
+
+	/**
+	 * Get audience-specific instructions.
+	 *
+	 * @since 1.0.0
+	 * @param string $audience Target audience.
+	 * @return string Audience instructions.
+	 */
+	private function get_audience_instructions( $audience ) {
+		$audience_guides = array(
+			'professional' => "Target professional audience:
+- Use formal, business-appropriate language
+- Implement conservative design choices
+- Include data-driven content placeholders
+- Focus on credibility and expertise
+- Use professional stock imagery descriptions
+- Apply structured, logical layout flow",
+			
+			'casual' => "Target casual audience:
+- Use friendly, conversational language
+- Implement relaxed, approachable design
+- Include lifestyle-oriented content
+- Focus on relatability and warmth
+- Use everyday imagery descriptions
+- Apply organic, natural layout flow",
+			
+			'young' => "Target young audience (18-30):
+- Use modern, trendy language
+- Implement bold, dynamic design choices
+- Include social media integration hints
+- Focus on innovation and trends
+- Use contemporary imagery descriptions
+- Apply unconventional, creative layouts",
+			
+			'mature' => "Target mature audience (50+):
+- Use clear, straightforward language
+- Implement larger, readable typography
+- Include traditional design elements
+- Focus on clarity and ease of use
+- Use classic imagery descriptions
+- Apply simple, intuitive navigation",
+			
+			'tech-savvy' => "Target tech-savvy audience:
+- Use technical terminology where appropriate
+- Implement cutting-edge design patterns
+- Include interactive element suggestions
+- Focus on functionality and efficiency
+- Use futuristic imagery descriptions
+- Apply innovative layout structures",
+			
+			'creative' => "Target creative audience:
+- Use artistic, expressive language
+- Implement experimental design choices
+- Include portfolio-style elements
+- Focus on visual storytelling
+- Use artistic imagery descriptions
+- Apply asymmetric, artistic layouts",
+		);
+		
+		return isset( $audience_guides[ $audience ] ) ? $audience_guides[ $audience ] : '';
+	}
+
+	/**
+	 * Get industry-specific instructions.
+	 *
+	 * @since 1.0.0
+	 * @param string $industry Target industry.
+	 * @return string Industry instructions.
+	 */
+	private function get_industry_instructions( $industry ) {
+		$industry_guides = array(
+			'healthcare' => "Apply healthcare industry standards:
+- Use calming blues and greens
+- Implement trust-building elements
+- Include medical credibility indicators
+- Focus on cleanliness and professionalism
+- Use healthcare-related placeholder text
+- Apply HIPAA-conscious design patterns
+- Include appointment/contact CTAs",
+			
+			'finance' => "Apply finance industry standards:
+- Use conservative colors (blues, grays)
+- Implement security-focused design
+- Include financial data visualizations
+- Focus on trust and stability
+- Use finance-related placeholder text
+- Apply data-driven layout patterns
+- Include calculator/tool CTAs",
+			
+			'education' => "Apply education industry standards:
+- Use inspiring, vibrant colors
+- Implement learning-focused design
+- Include course/program showcases
+- Focus on growth and achievement
+- Use education-related placeholder text
+- Apply structured, organized layouts
+- Include enrollment/inquiry CTAs",
+			
+			'retail' => "Apply retail/e-commerce standards:
+- Use product-focused layouts
+- Implement shopping-friendly design
+- Include product grid patterns
+- Focus on visual merchandising
+- Use retail-related placeholder text
+- Apply conversion-optimized layouts
+- Include shop/buy now CTAs",
+			
+			'technology' => "Apply technology industry standards:
+- Use modern, futuristic design
+- Implement innovation-focused layouts
+- Include feature comparison tables
+- Focus on cutting-edge solutions
+- Use tech-related placeholder text
+- Apply data visualization patterns
+- Include demo/trial CTAs",
+			
+			'hospitality' => "Apply hospitality industry standards:
+- Use warm, inviting colors
+- Implement experience-focused design
+- Include gallery/showcase sections
+- Focus on comfort and luxury
+- Use hospitality-related placeholder text
+- Apply visual storytelling layouts
+- Include booking/reservation CTAs",
+			
+			'nonprofit' => "Apply nonprofit standards:
+- Use mission-driven design
+- Implement impact-focused layouts
+- Include story/testimonial sections
+- Focus on community and cause
+- Use nonprofit-related placeholder text
+- Apply emotional connection patterns
+- Include donate/volunteer CTAs",
+			
+			'legal' => "Apply legal industry standards:
+- Use traditional, conservative design
+- Implement authority-focused layouts
+- Include practice area sections
+- Focus on expertise and trust
+- Use legal-related placeholder text
+- Apply structured, formal patterns
+- Include consultation CTAs",
+		);
+		
+		return isset( $industry_guides[ $industry ] ) ? $industry_guides[ $industry ] : '';
+	}
+
+	/**
+	 * Get language-specific instructions.
+	 *
+	 * @since 1.0.0
+	 * @param string $language Language code.
+	 * @return string Language instructions.
+	 */
+	private function get_language_instructions( $language ) {
+		$language_guides = array(
+			'es' => "Apply Spanish language considerations:
+- Use Spanish placeholder text and headings
+- Apply cultural design preferences (warmer colors, family-oriented imagery)
+- Use formal/informal tone as appropriate
+- Consider longer text lengths (Spanish text is ~20% longer than English)
+- Example headings: 'Bienvenidos', 'Nuestros Servicios', 'Contáctenos'",
+			
+			'fr' => "Apply French language considerations:
+- Use French placeholder text and headings
+- Apply elegant, sophisticated design aesthetics
+- Use formal tone and proper French typography
+- Consider text expansion (French text is ~15% longer than English)
+- Example headings: 'Bienvenue', 'Nos Services', 'Contactez-nous'",
+			
+			'de' => "Apply German language considerations:
+- Use German placeholder text and headings
+- Apply precise, structured design layouts
+- Use formal business tone
+- Consider compound words and longer text strings
+- Example headings: 'Willkommen', 'Unsere Leistungen', 'Kontakt'",
+			
+			'it' => "Apply Italian language considerations:
+- Use Italian placeholder text and headings
+- Apply stylish, artistic design elements
+- Use warm, expressive tone
+- Consider text expansion similar to Spanish
+- Example headings: 'Benvenuti', 'I Nostri Servizi', 'Contattaci'",
+			
+			'pt' => "Apply Portuguese language considerations:
+- Use Portuguese placeholder text and headings
+- Apply vibrant, colorful design elements
+- Use friendly, approachable tone
+- Consider Brazilian vs European Portuguese differences
+- Example headings: 'Bem-vindo', 'Nossos Serviços', 'Contato'",
+			
+			'ja' => "Apply Japanese language considerations:
+- Use Japanese placeholder text (mix of Kanji/Hiragana/Katakana)
+- Apply minimalist, clean design principles
+- Use respectful, formal tone
+- Consider vertical text layout options
+- Example headings: 'ようこそ', 'サービス', 'お問い合わせ'",
+			
+			'zh' => "Apply Chinese language considerations:
+- Use Simplified Chinese placeholder text
+- Apply balanced, harmonious design principles
+- Use formal, respectful tone
+- Consider character density and spacing
+- Example headings: '欢迎', '我们的服务', '联系我们'",
+			
+			'ar' => "Apply Arabic language considerations:
+- Use Arabic placeholder text
+- Apply RIGHT-TO-LEFT layout direction
+- Use traditional Middle Eastern design patterns
+- Consider Arabic typography requirements
+- Example headings: 'مرحبا', 'خدماتنا', 'اتصل بنا'
+- IMPORTANT: Ensure all text alignment is reversed",
+			
+			'ru' => "Apply Russian language considerations:
+- Use Cyrillic placeholder text
+- Apply bold, strong design elements
+- Use formal or informal tone as appropriate
+- Consider Cyrillic character widths
+- Example headings: 'Добро пожаловать', 'Наши услуги', 'Контакты'",
+			
+			'hi' => "Apply Hindi language considerations:
+- Use Devanagari script placeholder text
+- Apply colorful, vibrant design elements
+- Use respectful, formal tone
+- Consider complex character rendering
+- Example headings: 'स्वागत है', 'हमारी सेवाएं', 'संपर्क करें'",
+		);
+		
+		$general_language_instruction = "MULTILINGUAL CONTENT REQUIREMENTS:
+- Generate all text content in {$language} language
+- Maintain proper grammar and syntax for the target language
+- Use culturally appropriate imagery descriptions
+- Apply language-specific typography best practices
+- Consider text direction and alignment requirements
+- Ensure proper character encoding for special characters";
+		
+		if ( isset( $language_guides[ $language ] ) ) {
+			return $language_guides[ $language ] . "\n\n" . $general_language_instruction;
+		}
+		
+		return $general_language_instruction;
 	}
 
 	/**
@@ -473,6 +895,38 @@ PROPER CALL-TO-ACTION SECTION:
 				'name' => __( 'Product Showcase', 'layoutberg' ),
 				'instructions' => 'Create a product showcase with: product hero image, features list, benefits section, technical specifications, customer reviews, and purchase call-to-action.',
 			),
+			'healthcare_landing' => array(
+				'name' => __( 'Healthcare Landing Page', 'layoutberg' ),
+				'instructions' => 'Create a healthcare landing page with: calming hero section with appointment CTA, services grid with medical icons, doctor profiles section, patient testimonials, insurance information, and contact form section. Use trust-building elements and professional medical imagery.',
+			),
+			'saas_landing' => array(
+				'name' => __( 'SaaS Landing Page', 'layoutberg' ),
+				'instructions' => 'Create a SaaS landing page with: feature-focused hero with demo CTA, key features grid with icons, pricing comparison table, integration partners logos, customer success stories, and free trial signup section. Emphasize ease of use and ROI.',
+			),
+			'restaurant_page' => array(
+				'name' => __( 'Restaurant Page', 'layoutberg' ),
+				'instructions' => 'Create a restaurant page with: appetizing hero image with reservation CTA, menu highlights section, chef introduction, customer reviews, location and hours information, and online ordering section. Focus on ambiance and cuisine quality.',
+			),
+			'real_estate_listing' => array(
+				'name' => __( 'Real Estate Listing', 'layoutberg' ),
+				'instructions' => 'Create a real estate listing page with: property hero gallery, key features and amenities grid, detailed property description, neighborhood information, virtual tour CTA, agent contact section, and mortgage calculator placeholder.',
+			),
+			'event_landing' => array(
+				'name' => __( 'Event Landing Page', 'layoutberg' ),
+				'instructions' => 'Create an event landing page with: exciting hero with countdown timer placeholder, event schedule/agenda, speaker profiles grid, venue information with map, ticket pricing options, and registration form section. Build anticipation and urgency.',
+			),
+			'nonprofit_campaign' => array(
+				'name' => __( 'Nonprofit Campaign', 'layoutberg' ),
+				'instructions' => 'Create a nonprofit campaign page with: emotional hero with donation CTA, mission statement, impact statistics, success stories/testimonials, volunteer opportunities section, and multiple donation options. Focus on emotional connection and trust.',
+			),
+			'fitness_landing' => array(
+				'name' => __( 'Fitness Landing Page', 'layoutberg' ),
+				'instructions' => 'Create a fitness landing page with: motivational hero with class signup CTA, trainer profiles, class schedule grid, transformation testimonials, membership pricing table, and facility features showcase. Emphasize energy and results.',
+			),
+			'education_course' => array(
+				'name' => __( 'Education Course Page', 'layoutberg' ),
+				'instructions' => 'Create an education course page with: engaging hero with enrollment CTA, course curriculum outline, instructor profile, student testimonials, learning outcomes section, pricing and enrollment options, and FAQ section. Focus on value and credibility.',
+			),
 		);
 	}
 
@@ -535,7 +989,19 @@ PROPER CALL-TO-ACTION SECTION:
 		}
 		
 		if ( isset( $options['color_scheme'] ) ) {
-			$requirements[] = "Apply a " . $options['color_scheme'] . " color scheme";
+			$requirements[] = "Apply a " . $options['color_scheme'] . " color scheme throughout the design";
+		}
+		
+		if ( isset( $options['density'] ) ) {
+			$requirements[] = "Use " . $options['density'] . " layout density for spacing and content distribution";
+		}
+		
+		if ( isset( $options['audience'] ) ) {
+			$requirements[] = "Optimize content and design for a " . $options['audience'] . " audience";
+		}
+		
+		if ( isset( $options['industry'] ) ) {
+			$requirements[] = "Follow " . $options['industry'] . " industry best practices and conventions";
 		}
 		
 		if ( isset( $options['include_cta'] ) && $options['include_cta'] ) {
@@ -544,6 +1010,22 @@ PROPER CALL-TO-ACTION SECTION:
 		
 		if ( isset( $options['include_testimonials'] ) && $options['include_testimonials'] ) {
 			$requirements[] = "Add a testimonials section";
+		}
+		
+		if ( isset( $options['include_features'] ) && $options['include_features'] ) {
+			$requirements[] = "Include a features or benefits section";
+		}
+		
+		if ( isset( $options['include_pricing'] ) && $options['include_pricing'] ) {
+			$requirements[] = "Add a pricing table or pricing information section";
+		}
+		
+		if ( isset( $options['include_team'] ) && $options['include_team'] ) {
+			$requirements[] = "Include a team members section";
+		}
+		
+		if ( isset( $options['include_faq'] ) && $options['include_faq'] ) {
+			$requirements[] = "Add a frequently asked questions section";
 		}
 		
 		if ( ! empty( $requirements ) ) {
@@ -594,6 +1076,38 @@ PROPER CALL-TO-ACTION SECTION:
 			'stats_section' => array(
 				'name' => __( 'Statistics', 'layoutberg' ),
 				'prompt' => 'Create a statistics section showing 4 key metrics with large numbers, labels, and descriptions in a column layout.',
+			),
+			'timeline_section' => array(
+				'name' => __( 'Timeline', 'layoutberg' ),
+				'prompt' => 'Create a timeline section showing company history or process steps with dates, titles, and descriptions in a vertical layout.',
+			),
+			'comparison_table' => array(
+				'name' => __( 'Comparison Table', 'layoutberg' ),
+				'prompt' => 'Create a feature comparison table with 3 columns comparing different plans or products with checkmarks and features list.',
+			),
+			'gallery_section' => array(
+				'name' => __( 'Gallery', 'layoutberg' ),
+				'prompt' => 'Create an image gallery section with 6-8 placeholder images in a grid layout with captions.',
+			),
+			'logo_grid' => array(
+				'name' => __( 'Logo Grid', 'layoutberg' ),
+				'prompt' => 'Create a client/partner logo grid section with 6-8 company logo placeholders and a heading like "Trusted by Industry Leaders".',
+			),
+			'process_steps' => array(
+				'name' => __( 'Process Steps', 'layoutberg' ),
+				'prompt' => 'Create a process/workflow section with 3-4 numbered steps, each with an icon, title, and description.',
+			),
+			'contact_info' => array(
+				'name' => __( 'Contact Information', 'layoutberg' ),
+				'prompt' => 'Create a contact information section with address, phone, email, and business hours in an organized layout.',
+			),
+			'newsletter_signup' => array(
+				'name' => __( 'Newsletter Signup', 'layoutberg' ),
+				'prompt' => 'Create a newsletter signup section with heading, benefit points, email input placeholder, and subscribe button.',
+			),
+			'social_proof' => array(
+				'name' => __( 'Social Proof', 'layoutberg' ),
+				'prompt' => 'Create a social proof section with customer logos, testimonial quotes, and trust badges or certifications.',
 			),
 		);
 	}

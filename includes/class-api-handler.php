@@ -165,11 +165,15 @@ class API_Handler {
 			$options = array();
 			if ( ! empty( $settings ) ) {
 				$options = array(
-					'style'       => $settings['style'] ?? 'modern',
-					'layout'      => $settings['layout'] ?? 'single-column',
-					'model'       => $settings['model'] ?? 'gpt-3.5-turbo',
-					'temperature' => $settings['temperature'] ?? 0.7,
-					'max_tokens'  => $settings['maxTokens'] ?? 2000,
+					'style'        => $settings['style'] ?? 'modern',
+					'layout'       => $settings['layout'] ?? 'single-column',
+					'model'        => $settings['model'] ?? 'gpt-3.5-turbo',
+					'temperature'  => $settings['temperature'] ?? 0.7,
+					'max_tokens'   => $settings['maxTokens'] ?? 2000,
+					'color_scheme' => $settings['color_scheme'] ?? null,
+					'density'      => $settings['density'] ?? null,
+					'audience'     => $settings['audience'] ?? null,
+					'industry'     => $settings['industry'] ?? null,
 				);
 			}
 
@@ -476,11 +480,15 @@ class API_Handler {
 				'type'     => 'object',
 				'default'  => array(),
 				'properties' => array(
-					'model'       => array( 'type' => 'string' ),
-					'temperature' => array( 'type' => 'number' ),
-					'maxTokens'   => array( 'type' => 'integer' ),
-					'style'       => array( 'type' => 'string' ),
-					'layout'      => array( 'type' => 'string' ),
+					'model'        => array( 'type' => 'string' ),
+					'temperature'  => array( 'type' => 'number' ),
+					'maxTokens'    => array( 'type' => 'integer' ),
+					'style'        => array( 'type' => 'string' ),
+					'layout'       => array( 'type' => 'string' ),
+					'color_scheme' => array( 'type' => 'string' ),
+					'density'      => array( 'type' => 'string' ),
+					'audience'     => array( 'type' => 'string' ),
+					'industry'     => array( 'type' => 'string' ),
 				),
 			),
 			'replace_selected' => array(

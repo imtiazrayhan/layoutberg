@@ -58,7 +58,11 @@ const LayoutBergEditor = () => {
         temperature: 0.7,
         maxTokens: 2000,
         style: 'modern',
-        layout: 'single-column'
+        layout: 'single-column',
+        color_scheme: 'default',
+        density: 'normal',
+        audience: 'general',
+        industry: 'general'
     });
 
     const { insertBlocks, replaceBlocks } = useDispatch(blockEditorStore);
