@@ -506,21 +506,23 @@ jQuery(document).ready(function($) {
 	});
 
 	// Template quick actions
-	$('[data-template]').on('click', function() {
-		var template = $(this).data('template');
-		var prompt = $(this).data('prompt');
-		// Build the URL properly
-		var baseUrl = '<?php echo admin_url( 'post-new.php' ); ?>';
-		var params = {
-			post_type: 'page',
-			layoutberg_open_modal: '1',
-			hide_pattern_modal: '1',
-			layoutberg_prompt: prompt
-		};
+	$(document).on('click', '[data-template]', function(e) {
+		e.preventDefault();
+		var $button = $(this);
+		var template = $button.data('template');
+		var prompt = $button.data('prompt');
 		
-		// Create URL with parameters
-		var url = baseUrl + '?' + $.param(params);
-		window.location.href = url;
+		// Get the admin URL from the existing new page button
+		var newPageUrl = jQuery('.layoutberg-btn-primary[href*="post-new.php?post_type=page"]').first().attr('href');
+		if (newPageUrl) {
+			// Extract base URL
+			var baseUrl = newPageUrl.split('?')[0];
+			var url = baseUrl + '?post_type=page&layoutberg_open_modal=1&hide_pattern_modal=1&layoutberg_prompt=' + encodeURIComponent(prompt);
+			window.location.href = url;
+		} else {
+			// Fallback
+			alert('Error: Could not determine admin URL');
+		}
 	});
 });
 </script>
