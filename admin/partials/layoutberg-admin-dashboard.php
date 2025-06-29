@@ -510,7 +510,8 @@ jQuery(document).ready(function($) {
 		var template = $(this).data('template');
 		var prompt = $(this).data('prompt');
 		// Redirect to new page with modal open and prompt pre-filled
-		var url = '<?php echo esc_url( admin_url( 'post-new.php?post_type=page&layoutberg_open_modal=1&hide_pattern_modal=1' ) ); ?>';
+		var url = '<?php echo esc_url( admin_url( 'post-new.php' ) ); ?>';
+		url += '?post_type=page&layoutberg_open_modal=1&hide_pattern_modal=1';
 		url += '&layoutberg_prompt=' + encodeURIComponent(prompt);
 		window.location.href = url;
 	});
