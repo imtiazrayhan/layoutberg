@@ -121,7 +121,8 @@ class Prompt_Engineer {
 		
 		// Add style-specific instructions.
 		if ( isset( $options['style'] ) && $options['style'] !== 'default' ) {
-			$prompt .= "\n\n" . $this->get_style_instructions( $options['style'] );
+			$prompt .= "\n\nDEFAULT STYLE GUIDELINES (use only if user doesn't specify):\n";
+			$prompt .= $this->get_style_instructions( $options['style'] );
 		}
 		
 		// Add layout-specific instructions.
@@ -131,12 +132,14 @@ class Prompt_Engineer {
 		
 		// Add color scheme instructions.
 		if ( isset( $options['color_scheme'] ) && $options['color_scheme'] !== 'default' && $options['color_scheme'] !== null ) {
-			$prompt .= "\n\n" . $this->get_color_scheme_instructions( $options['color_scheme'] );
+			$prompt .= "\n\nDEFAULT COLOR SCHEME (use only if user doesn't specify colors):\n";
+			$prompt .= $this->get_color_scheme_instructions( $options['color_scheme'] );
 		}
 		
 		// Add layout density instructions.
 		if ( isset( $options['density'] ) && $options['density'] !== 'normal' && $options['density'] !== null ) {
-			$prompt .= "\n\n" . $this->get_density_instructions( $options['density'] );
+			$prompt .= "\n\nDEFAULT SPACING (use only if user doesn't specify spacing):\n";
+			$prompt .= $this->get_density_instructions( $options['density'] );
 		}
 		
 		// Add audience targeting instructions.
@@ -163,20 +166,14 @@ class Prompt_Engineer {
 		// Add example blocks.
 		$prompt .= "\n\n" . $this->get_example_blocks();
 		
-		// Add final reinforcement
-		$prompt .= "\n\nFINAL CRITICAL REMINDER:\n";
-		$prompt .= "You MUST follow ALL the specific instructions provided above.\n";
-		$prompt .= "Pay special attention to:\n";
+		// Add final reminder
+		$prompt .= "\n\nIMPORTANT REMINDER:\n";
+		$prompt .= "1. User instructions take priority over all defaults.\n";
+		$prompt .= "2. If the user specifies colors, gradients, spacing, or styles, use exactly what they request.\n";
+		$prompt .= "3. The style guidelines above are only defaults to use when the user hasn't specified preferences.\n";
 		if ( isset( $options['style'] ) && $options['style'] !== 'default' ) {
-			$prompt .= "- " . strtoupper( $options['style'] ) . " style requirements\n";
+			$prompt .= "4. Default style: " . $options['style'] . " (only use if user doesn't specify)\n";
 		}
-		if ( isset( $options['color_scheme'] ) && $options['color_scheme'] !== 'default' ) {
-			$prompt .= "- " . strtoupper( $options['color_scheme'] ) . " color scheme (USE ONLY THESE COLORS)\n";
-		}
-		if ( isset( $options['density'] ) && $options['density'] !== 'normal' ) {
-			$prompt .= "- " . strtoupper( $options['density'] ) . " density (EXACT spacer sizes)\n";
-		}
-		$prompt .= "These are NOT optional - they are MANDATORY requirements.";
 		
 		return $prompt;
 	}
@@ -195,8 +192,8 @@ CRITICAL OUTPUT RULES:
 2. Start immediately with <!-- wp: and end with --> 
 3. Do NOT include any introductory text like 'Here is the layout:' or code block markers
 4. Do NOT include any concluding text or explanations after the blocks
-5. YOU MUST STRICTLY FOLLOW ALL STYLE, COLOR, DENSITY, AND OTHER SPECIFIC INSTRUCTIONS PROVIDED BELOW
-6. Any instructions marked as MANDATORY or MUST are ABSOLUTE REQUIREMENTS - not suggestions
+
+IMPORTANT: The user's description takes priority. Follow their specific requests for colors, styles, layouts, and design elements exactly as they describe them.
 
 BLOCK SYNTAX REQUIREMENTS:
 1. Use ONLY core WordPress blocks unless specifically requested otherwise
@@ -235,20 +232,16 @@ CONTENT REQUIREMENTS:
 5. Include specific, actionable button text
 6. Use proper image alt text that describes the visual content
 
-VISUAL DESIGN REQUIREMENTS:
-1. For hero sections and cover blocks, use background colors instead of images:
-   - Use gradient backgrounds: {\"gradient\":\"linear-gradient(135deg,#667eea 0%,#764ba2 100%)\"}
-   - Or solid colors: {\"backgroundColor\":\"primary\"} or {\"customBackgroundColor\":\"#123456\"}
-2. For image blocks, use placehold.co URLs for placeholder images:
+VISUAL DESIGN GUIDELINES:
+1. For placeholder images, use placehold.co URLs:
    - Example: {\"url\":\"https://placehold.co/600x400/007cba/ffffff?text=Hero+Image\"}
    - Format: https://placehold.co/WIDTHxHEIGHT/BGCOLOR/TEXTCOLOR?text=DESCRIPTION
-3. Focus on color combinations and gradients for visual interest
-4. Only use placehold.co for placeholder images, no other external URLs
-5. Use these color palettes:
-   - Modern: gradients with purple, blue, teal combinations
-   - Corporate: solid blues, grays, whites
-   - Creative: bold gradients with orange, pink, yellow
-   - Minimal: grayscale with single accent color
+2. For backgrounds, you can use:
+   - Gradients: {\"gradient\":\"linear-gradient(135deg,#667eea 0%,#764ba2 100%)\"}
+   - Solid colors: {\"backgroundColor\":\"primary\"} or {\"customBackgroundColor\":\"#123456\"}
+3. Only use placehold.co for placeholder images, no other external URLs
+
+IMPORTANT: If the user specifies any colors, gradients, or visual preferences in their description, use exactly what they request instead of any defaults.
 
 COMMON MISTAKES TO AVOID:
 1. Don't wrap everything in a single group block
@@ -267,20 +260,15 @@ COMMON MISTAKES TO AVOID:
 	 * @return string Base system prompt.
 	 */
 	private function get_base_system_prompt_compact() {
-		return "Generate valid Gutenberg block markup. CRITICAL RULES:
+		return "Generate valid Gutenberg block markup based on the user's description.
 
-1. OUTPUT: Start with <!-- wp: and end with -->. NO explanations or wrapper text.
-2. SYNTAX: Use {\"attribute\":\"value\"} format. Close all blocks with <!-- /wp:block-name -->
-3. IMAGES: Use placehold.co URLs (e.g., https://placehold.co/600x400/007cba/ffffff?text=Hero)
-4. COLORS: Use gradients {\"gradient\":\"linear-gradient(...)\"} or {\"customBackgroundColor\":\"#hex\"}
-5. MANDATORY: Follow ALL style/color/density instructions below - they override defaults.
+ESSENTIAL RULES:
+1. Output ONLY block markup starting with <!-- wp: and ending with -->
+2. Use proper JSON syntax: {\"attribute\":\"value\"}
+3. Close all blocks: <!-- /wp:block-name -->
+4. For placeholder images: https://placehold.co/600x400/007cba/ffffff?text=Description
 
-KEY REQUIREMENTS:
-- Proper heading hierarchy (h1→h2→h3)
-- Alt text for images
-- Mobile-responsive columns
-- Semantic block structure
-- Spacer blocks for spacing";
+IMPORTANT: Follow the user's instructions precisely. If they specify colors, gradients, layouts, or styles, use exactly what they request.";
 	}
 
 	/**
@@ -292,28 +280,28 @@ KEY REQUIREMENTS:
 	 */
 	private function get_style_instructions( $style ) {
 		$style_guides = array(
-			'modern' => "MODERN STYLE (MANDATORY):
+			'modern' => "MODERN STYLE (use only if user hasn't specified):
 • Spacers: 48px+ between sections
 • Gradients: linear-gradient(135deg,#667eea 0%,#764ba2 100%)
 • Typography: Large/bold headings (fontSize:\"x-large\")
 • Layout: Asymmetric columns, card-based sections
 • Colors: Vibrant gradients, bold contrasts",
 			
-			'classic' => "CLASSIC STYLE (MANDATORY):
+			'classic' => "CLASSIC STYLE (defaults if not specified):
 • Layout: Symmetrical grids, equal columns
 • Colors: Navy #001F3F, gray #666666, white
 • Typography: Traditional serif headings
 • Spacing: Consistent 32px
 • Design: Subtle shadows, 1px borders",
 			
-			'minimal' => "MINIMAL STYLE (MANDATORY):
+			'minimal' => "MINIMAL STYLE (defaults if not specified):
 • Spacers: 80px+ (maximum whitespace)
-• Colors: ONLY black/white/grays (NO gradients)
+• Colors: Black/white/grays (no gradients)
 • Typography: Simple, clean fonts
-• Design: NO decorative elements
+• Design: No decorative elements
 • Layout: Focus on content, negative space",
 			
-			'bold' => "BOLD STYLE (MANDATORY):
+			'bold' => "BOLD STYLE (defaults if not specified):
 • Layout: Asymmetric, varied columns
 • Colors: Bright #FF006E, #FB5607, vibrant gradients
 • Typography: Extra-large (fontSize:\"xx-large\")
@@ -418,12 +406,12 @@ KEY REQUIREMENTS:
 	 */
 	private function get_color_scheme_instructions( $color_scheme ) {
 		$color_guides = array(
-			'monochrome' => "MONOCHROME (USE ONLY):
-• Colors: #000000, #FFFFFF, grays ONLY
+			'monochrome' => "MONOCHROME DEFAULTS:
+• Colors: #000000, #FFFFFF, grays
 • Gradients: linear-gradient(135deg,#e0e0e0 0%,#666666 100%)
 • Images: https://placehold.co/600x400/cccccc/333333",
 			
-			'blue' => "BLUE SCHEME (USE ONLY):
+			'blue' => "BLUE SCHEME DEFAULTS:
 • Colors: #001F3F, #0074D9, #7FDBFF
 • Gradients: linear-gradient(135deg,#1e3c72 0%,#2a5298 100%)
 • Images: https://placehold.co/600x400/0074D9/FFFFFF",
@@ -483,11 +471,11 @@ KEY REQUIREMENTS:
 	 */
 	private function get_density_instructions( $density ) {
 		$density_guides = array(
-			'compact' => "COMPACT: Use {\"height\":\"20px\"} spacers ONLY. Small fonts.",
+			'compact' => "COMPACT DEFAULTS: {\"height\":\"20px\"} spacers, small fonts",
 			
-			'normal' => "NORMAL: Use {\"height\":\"40px\"} spacers EXACTLY. Medium fonts.",
+			'normal' => "NORMAL DEFAULTS: {\"height\":\"40px\"} spacers, medium fonts",
 			
-			'spacious' => "SPACIOUS: Use {\"height\":\"80px\"} spacers MINIMUM. Large fonts.",
+			'spacious' => "SPACIOUS DEFAULTS: {\"height\":\"80px\"} spacers, large fonts",
 		);
 		
 		return isset( $density_guides[ $density ] ) ? $density_guides[ $density ] : $density_guides['normal'];
@@ -917,19 +905,19 @@ KEY REQUIREMENTS:
 		}
 		
 		if ( isset( $options['color_scheme'] ) && $options['color_scheme'] !== 'default' ) {
-			$requirements[] = "YOU MUST use ONLY the " . $options['color_scheme'] . " color scheme - this is MANDATORY";
+			$requirements[] = "Use " . $options['color_scheme'] . " color scheme as default (unless user specifies otherwise)";
 		}
 		
 		if ( isset( $options['density'] ) && $options['density'] !== 'normal' ) {
-			$requirements[] = "YOU MUST apply " . $options['density'] . " layout density with EXACT spacer sizes specified";
+			$requirements[] = "Apply " . $options['density'] . " layout density (unless user specifies otherwise)";
 		}
 		
 		if ( isset( $options['audience'] ) && $options['audience'] !== 'general' ) {
-			$requirements[] = "YOU MUST optimize ALL content specifically for a " . $options['audience'] . " audience";
+			$requirements[] = "Optimize content for a " . $options['audience'] . " audience";
 		}
 		
 		if ( isset( $options['industry'] ) && $options['industry'] !== 'general' ) {
-			$requirements[] = "YOU MUST follow " . $options['industry'] . " industry requirements throughout";
+			$requirements[] = "Consider " . $options['industry'] . " industry conventions";
 		}
 		
 		if ( isset( $options['include_cta'] ) && $options['include_cta'] ) {
