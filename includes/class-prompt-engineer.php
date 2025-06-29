@@ -160,7 +160,14 @@ ATTRIBUTE RULES:
 SPACING WITH CSS VARIABLES:
 - Use: \"var:preset|spacing|40\" (NOT var(--wp--preset--spacing--40))
 - Common values: 20, 30, 40, 50, 60, 80
-- Apply in style object: {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|40\"}}}}";
+- Apply in style object: {\"style\":{\"spacing\":{\"padding\":{\"top\":\"var:preset|spacing|40\"}}}}
+
+IMAGE RULES - CRITICAL FOR VALIDATION:
+- NEVER use relative paths like \"image.jpg\", \"icon-1.jpg\", or \"photo.png\"
+- ALWAYS use complete URLs: https://via.placeholder.com/400x300/0073aa/ffffff?text=Icon
+- For small icons: https://via.placeholder.com/64x64/0073aa/ffffff?text=Icon+1
+- For hero images: https://images.unsplash.com/photo-1517180102446-f3ece451e9d8
+- Always include meaningful alt text for accessibility";
 	}
 
 	/**
@@ -299,9 +306,11 @@ SPACING WITH CSS VARIABLES:
    - Cover blocks need wp-block-cover__inner-container
    - Media & Text blocks have specific structure
 
-7. IMAGE URLS:
-   - Use full URLs: https://example.com/image.jpg
-   - Not relative paths: /images/photo.jpg
+7. IMAGE URLS - CAUSES VALIDATION FAILURES:
+   BAD: \"icon-1.jpg\", \"image.png\", \"photo.jpeg\"
+   BAD: \"/images/photo.jpg\", \"./icon.png\"
+   GOOD: \"https://via.placeholder.com/400x300/0073aa/ffffff?text=Icon\"
+   GOOD: \"https://images.unsplash.com/photo-1517180102446-f3ece451e9d8\"
 
 8. PROPER CLOSING:
    - Every <!-- wp:block --> needs <!-- /wp:block -->

@@ -287,6 +287,36 @@ class Block_Generator {
 			$content 
 		);
 		
+		// Fix image src attributes - replace relative paths with placeholder URLs
+		$content = preg_replace_callback(
+			'/<img\s+([^>]*src=")[^"]*\.(?:jpg|jpeg|png|gif|webp)("[^>]*>)/i',
+			function( $matches ) {
+				$before_src = $matches[1];
+				$after_src = $matches[2];
+				
+				// Generate a placeholder URL
+				$placeholder_url = 'https://via.placeholder.com/400x300/0073aa/ffffff?text=Placeholder';
+				
+				return '<img ' . $before_src . $placeholder_url . $after_src;
+			},
+			$content
+		);
+		
+		// Fix image URLs in block attributes - replace relative paths
+		$content = preg_replace_callback(
+			'/("url"\s*:\s*")[^"]*\.(?:jpg|jpeg|png|gif|webp)(")/i',
+			function( $matches ) {
+				$before_url = $matches[1];
+				$after_url = $matches[2];
+				
+				// Generate a placeholder URL
+				$placeholder_url = 'https://via.placeholder.com/400x300/0073aa/ffffff?text=Placeholder';
+				
+				return $before_url . $placeholder_url . $after_url;
+			},
+			$content
+		);
+		
 		return trim( $content );
 	}
 
