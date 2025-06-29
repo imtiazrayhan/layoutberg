@@ -316,7 +316,7 @@ KEY REQUIREMENTS:
 			'bold' => "BOLD STYLE (MANDATORY):
 • Layout: Asymmetric, varied columns
 • Colors: Bright #FF006E, #FB5607, vibrant gradients
-• Typography: Extra-large (fontSize:"xx-large")
+• Typography: Extra-large (fontSize:\"xx-large\")
 • Spacing: Dynamic (mix tight/loose)
 • Design: High contrast, strong patterns",
 			
