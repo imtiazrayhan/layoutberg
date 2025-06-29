@@ -55,9 +55,9 @@ const LayoutBergEditor = () => {
     const [lastGeneratedBlocks, setLastGeneratedBlocks] = useState('');
     const [lastResponse, setLastResponse] = useState(null);
     const [settings, setSettings] = useState({
-        model: 'gpt-3.5-turbo',
-        temperature: 0.7,
-        maxTokens: 2000
+        model: window.layoutbergEditor?.settings?.model || 'gpt-3.5-turbo',
+        temperature: window.layoutbergEditor?.settings?.temperature || 0.7,
+        maxTokens: window.layoutbergEditor?.settings?.maxTokens || 2000
     });
 
     const { insertBlocks, replaceBlocks } = useDispatch(blockEditorStore);

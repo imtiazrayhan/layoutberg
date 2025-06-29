@@ -350,9 +350,15 @@ class API_Client {
 		// Debug token usage
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && isset( $response['usage'] ) ) {
 			error_log( 'LayoutBerg Token Usage:' );
-			error_log( '- Prompt tokens: ' . ( $response['usage']['prompt_tokens'] ?? 'not set' ) );
-			error_log( '- Completion tokens: ' . ( $response['usage']['completion_tokens'] ?? 'not set' ) );
-			error_log( '- Total tokens: ' . ( $response['usage']['total_tokens'] ?? 'not set' ) );
+			if ( $this->provider === 'claude' ) {
+				error_log( '- Input tokens: ' . ( $response['usage']['input_tokens'] ?? 'not set' ) );
+				error_log( '- Output tokens: ' . ( $response['usage']['output_tokens'] ?? 'not set' ) );
+				error_log( '- Total tokens: ' . ( ( $response['usage']['input_tokens'] ?? 0 ) + ( $response['usage']['output_tokens'] ?? 0 ) ) );
+			} else {
+				error_log( '- Prompt tokens: ' . ( $response['usage']['prompt_tokens'] ?? 'not set' ) );
+				error_log( '- Completion tokens: ' . ( $response['usage']['completion_tokens'] ?? 'not set' ) );
+				error_log( '- Total tokens: ' . ( $response['usage']['total_tokens'] ?? 'not set' ) );
+			}
 		}
 
 		// Track usage.
@@ -493,26 +499,34 @@ class API_Client {
 				return new \WP_Error( 'api_error', $error_message );
 			}
 
-			// Extract generated content.
-			if ( ! isset( $data['choices'][0]['message']['content'] ) ) {
-				return new \WP_Error( 'invalid_response', __( 'Invalid API response format.', 'layoutberg' ) );
-			}
-
-			// Debug full usage data
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && isset( $data['usage'] ) ) {
-				error_log( 'LayoutBerg Raw API Usage: ' . json_encode( $data['usage'] ) );
-			}
-
-			// Success! Parse response based on provider
+			// Extract generated content based on provider.
 			if ( $this->provider === 'claude' ) {
 				// Claude response format
+				if ( ! isset( $data['content'][0]['text'] ) ) {
+					return new \WP_Error( 'invalid_response', __( 'Invalid Claude API response format.', 'layoutberg' ) );
+				}
+				
+				// Debug full usage data
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG && isset( $data['usage'] ) ) {
+					error_log( 'LayoutBerg Raw API Usage: ' . json_encode( $data['usage'] ) );
+				}
+				
 				return array(
-					'content' => isset( $data['content'][0]['text'] ) ? $data['content'][0]['text'] : '',
+					'content' => $data['content'][0]['text'],
 					'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
 					'raw_response' => $data,
 				);
 			} else {
 				// OpenAI response format
+				if ( ! isset( $data['choices'][0]['message']['content'] ) ) {
+					return new \WP_Error( 'invalid_response', __( 'Invalid OpenAI API response format.', 'layoutberg' ) );
+				}
+				
+				// Debug full usage data
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG && isset( $data['usage'] ) ) {
+					error_log( 'LayoutBerg Raw API Usage: ' . json_encode( $data['usage'] ) );
+				}
+				
 				return array(
 					'content' => $data['choices'][0]['message']['content'],
 					'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
@@ -655,11 +669,26 @@ class API_Client {
 			return;
 		}
 
-		$user_id    = get_current_user_id();
-		$tokens_used = isset( $usage['total_tokens'] ) ? intval( $usage['total_tokens'] ) : 0;
+		$user_id = get_current_user_id();
+		
+		// Calculate total tokens based on provider
+		$tokens_used = 0;
+		if ( $this->provider === 'claude' ) {
+			// Claude uses input_tokens and output_tokens
+			$input_tokens = isset( $usage['input_tokens'] ) ? intval( $usage['input_tokens'] ) : 0;
+			$output_tokens = isset( $usage['output_tokens'] ) ? intval( $usage['output_tokens'] ) : 0;
+			$tokens_used = $input_tokens + $output_tokens;
+		} else {
+			// OpenAI uses total_tokens or we calculate from prompt + completion
+			if ( isset( $usage['total_tokens'] ) ) {
+				$tokens_used = intval( $usage['total_tokens'] );
+			} elseif ( isset( $usage['prompt_tokens'] ) && isset( $usage['completion_tokens'] ) ) {
+				$tokens_used = intval( $usage['prompt_tokens'] ) + intval( $usage['completion_tokens'] );
+			}
+		}
 
 		// Calculate cost.
-		$cost = $this->calculate_cost( $tokens_used );
+		$cost = $this->calculate_cost( $tokens_used, $usage );
 
 		// Save to generations table.
 		global $wpdb;
@@ -689,18 +718,45 @@ class API_Client {
 	 * @param int $tokens Number of tokens used.
 	 * @return float Cost in USD.
 	 */
-	private function calculate_cost( $tokens ) {
-		// Cost per 1000 tokens (approximate as of late 2024).
+	private function calculate_cost( $tokens, $usage = null ) {
+		// Claude models have separate input/output pricing
+		if ( $this->provider === 'claude' && $usage ) {
+			$input_tokens = isset( $usage['input_tokens'] ) ? intval( $usage['input_tokens'] ) : 0;
+			$output_tokens = isset( $usage['output_tokens'] ) ? intval( $usage['output_tokens'] ) : 0;
+			
+			// Claude pricing per 1K tokens (as of late 2024)
+			$claude_costs = array(
+				'claude-3-opus-20240229' => array(
+					'input'  => 0.015,  // $15 per 1M tokens
+					'output' => 0.075,  // $75 per 1M tokens
+				),
+				'claude-3-5-sonnet-20241022' => array(
+					'input'  => 0.003,  // $3 per 1M tokens
+					'output' => 0.015,  // $15 per 1M tokens
+				),
+				'claude-3-sonnet-20240229' => array(
+					'input'  => 0.003,  // $3 per 1M tokens
+					'output' => 0.015,  // $15 per 1M tokens
+				),
+				'claude-3-haiku-20240307' => array(
+					'input'  => 0.00025, // $0.25 per 1M tokens
+					'output' => 0.00125, // $1.25 per 1M tokens
+				),
+			);
+			
+			if ( isset( $claude_costs[ $this->model ] ) ) {
+				$costs = $claude_costs[ $this->model ];
+				$input_cost = ( $input_tokens / 1000 ) * $costs['input'];
+				$output_cost = ( $output_tokens / 1000 ) * $costs['output'];
+				return $input_cost + $output_cost;
+			}
+		}
+		
+		// OpenAI models have combined pricing
 		$costs = array(
-			// OpenAI models
 			'gpt-3.5-turbo' => 0.002,
 			'gpt-4'         => 0.03,
 			'gpt-4-turbo'   => 0.01,
-			// Claude models (input/output averaged)
-			'claude-3-opus-20240229'     => 0.015,  // $15/1M input, $75/1M output
-			'claude-3-5-sonnet-20241022' => 0.003,  // $3/1M input, $15/1M output
-			'claude-3-sonnet-20240229'   => 0.003,  // $3/1M input, $15/1M output
-			'claude-3-haiku-20240307'    => 0.00025, // $0.25/1M input, $1.25/1M output
 		);
 
 		$cost_per_1k = isset( $costs[ $this->model ] ) ? $costs[ $this->model ] : 0.002;

@@ -203,6 +203,13 @@ const LayoutBergModal = ({
                                         const options = [];
                                         const models = window.layoutbergEditor?.models || {};
                                         
+                                        // Debug log
+                                        console.log('window.layoutbergEditor:', window.layoutbergEditor);
+                                        console.log('LayoutBerg Models:', models);
+                                        console.log('Available model keys:', Object.keys(models));
+                                        console.log('Has OpenAI models:', models.openai ? 'yes' : 'no');
+                                        console.log('Has Claude models:', models.claude ? 'yes' : 'no');
+                                        
                                         // Build options from available models
                                         Object.keys(models).forEach(provider => {
                                             if (models[provider].models) {
@@ -222,6 +229,7 @@ const LayoutBergModal = ({
                                         
                                         // Fallback if no models are available
                                         if (options.length === 0) {
+                                            console.log('No models found, using fallback');
                                             options.push(
                                                 { label: __('GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg'), value: 'gpt-3.5-turbo' },
                                                 { label: __('GPT-4 (Most Capable)', 'layoutberg'), value: 'gpt-4' },

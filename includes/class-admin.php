@@ -148,6 +148,7 @@ class Admin {
 				'nonce'        => wp_create_nonce( 'layoutberg_nonce' ),
 				'templatesUrl' => admin_url( 'admin.php?page=layoutberg-templates' ),
 				'settings'     => $this->get_default_settings(),
+				'models'       => $this->get_available_models(),
 				'strings'      => array(
 					'generating'     => __( 'Generating layout...', 'layoutberg' ),
 					'generated'      => __( 'Layout generated successfully!', 'layoutberg' ),
@@ -174,11 +175,45 @@ class Admin {
 		
 		return array(
 			'model'       => $options['model'] ?? 'gpt-3.5-turbo',
-			'temperature' => $options['temperature'] ?? 0.7,
-			'maxTokens'   => $options['max_tokens'] ?? 2000,
+			'temperature' => floatval( $options['temperature'] ?? 0.7 ),
+			'maxTokens'   => intval( $options['max_tokens'] ?? 2000 ),
 			'style'       => $options['style_defaults']['style'] ?? 'modern',
 			'layout'      => $options['style_defaults']['layout'] ?? 'single-column',
 		);
+	}
+
+	/**
+	 * Get available AI models based on configured API keys.
+	 *
+	 * @since 1.0.0
+	 * @return array Available models grouped by provider.
+	 */
+	private function get_available_models() {
+		$models = array();
+		$options = get_option( 'layoutberg_options', array() );
+		
+		// For now, always show all models for testing
+		// TODO: Revert this after testing
+		$models['openai'] = array(
+			'label' => __( 'OpenAI Models', 'layoutberg' ),
+			'models' => array(
+				'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
+				'gpt-4' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
+				'gpt-4-turbo' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
+			),
+		);
+		
+		$models['claude'] = array(
+			'label' => __( 'Claude Models', 'layoutberg' ),
+			'models' => array(
+				'claude-3-opus-20240229' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
+				'claude-3-5-sonnet-20241022' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
+				'claude-3-sonnet-20240229' => __( 'Claude 3 Sonnet (Balanced)', 'layoutberg' ),
+				'claude-3-haiku-20240307' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
+			),
+		);
+
+		return $models;
 	}
 
 	/**

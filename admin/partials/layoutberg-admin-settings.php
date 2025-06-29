@@ -95,10 +95,6 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 						<span class="dashicons dashicons-admin-tools"></span>
 						<?php esc_html_e( 'Generation', 'layoutberg' ); ?>
 					</a>
-					<a href="#style-defaults" class="layoutberg-settings-nav-item" data-tab="style-defaults">
-						<span class="dashicons dashicons-admin-appearance"></span>
-						<?php esc_html_e( 'Style Defaults', 'layoutberg' ); ?>
-					</a>
 					<a href="#advanced" class="layoutberg-settings-nav-item" data-tab="advanced">
 						<span class="dashicons dashicons-admin-generic"></span>
 						<?php esc_html_e( 'Advanced', 'layoutberg' ); ?>
@@ -226,7 +222,10 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 								</div>
 							</div>
 						</div>
+					</div>
 
+					<!-- Generation Settings Tab -->
+					<div id="generation-settings" class="layoutberg-settings-tab">
 						<!-- Model Selection -->
 						<div class="layoutberg-card">
 							<div class="layoutberg-card-header">
@@ -273,10 +272,7 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 								</p>
 							</div>
 						</div>
-					</div>
 
-					<!-- Generation Settings Tab -->
-					<div id="generation-settings" class="layoutberg-settings-tab">
 						<div class="layoutberg-card">
 							<div class="layoutberg-card-header">
 								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Generation Parameters', 'layoutberg' ); ?></h3>
@@ -324,121 +320,6 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 									<p class="layoutberg-help-text">
 										<?php esc_html_e( 'Controls randomness in generation. Lower = more focused, Higher = more creative.', 'layoutberg' ); ?>
 									</p>
-								</div>
-							</div>
-						</div>
-
-						<div class="layoutberg-card">
-							<div class="layoutberg-card-header">
-								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Block Restrictions', 'layoutberg' ); ?></h3>
-							</div>
-
-							<div class="layoutberg-form-group">
-								<label class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
-									<div class="layoutberg-toggle">
-										<input 
-											type="checkbox" 
-											name="layoutberg_options[allow_custom_blocks]" 
-											value="1"
-											<?php checked( $options['allow_custom_blocks'] ?? false, true ); ?>
-										/>
-										<span class="layoutberg-toggle-slider"></span>
-									</div>
-									<div>
-										<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Allow Third-Party Blocks', 'layoutberg' ); ?></span>
-										<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
-											<?php esc_html_e( 'Enable to include registered third-party blocks in generated layouts. Only core WordPress blocks are used by default.', 'layoutberg' ); ?>
-										</p>
-									</div>
-								</label>
-							</div>
-						</div>
-					</div>
-
-					<!-- Style Defaults Tab -->
-					<div id="style-defaults" class="layoutberg-settings-tab">
-						<div class="layoutberg-card">
-							<div class="layoutberg-card-header">
-								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Default Style Preferences', 'layoutberg' ); ?></h3>
-								<p class="layoutberg-card-subtitle"><?php esc_html_e( 'Set your preferred defaults for new layout generations', 'layoutberg' ); ?></p>
-							</div>
-
-							<div class="layoutberg-grid layoutberg-grid-2">
-								<div class="layoutberg-form-group">
-									<label for="layoutberg_default_style" class="layoutberg-label">
-										<?php esc_html_e( 'Design Style', 'layoutberg' ); ?>
-									</label>
-									<select id="layoutberg_default_style" name="layoutberg_options[style_defaults][style]" class="layoutberg-select">
-										<option value="modern" <?php selected( $options['style_defaults']['style'] ?? 'modern', 'modern' ); ?>>
-											<?php esc_html_e( 'Modern - Clean & Contemporary', 'layoutberg' ); ?>
-										</option>
-										<option value="classic" <?php selected( $options['style_defaults']['style'] ?? '', 'classic' ); ?>>
-											<?php esc_html_e( 'Classic - Timeless & Professional', 'layoutberg' ); ?>
-										</option>
-										<option value="minimal" <?php selected( $options['style_defaults']['style'] ?? '', 'minimal' ); ?>>
-											<?php esc_html_e( 'Minimal - Simple & Focused', 'layoutberg' ); ?>
-										</option>
-										<option value="bold" <?php selected( $options['style_defaults']['style'] ?? '', 'bold' ); ?>>
-											<?php esc_html_e( 'Bold - Dynamic & Impactful', 'layoutberg' ); ?>
-										</option>
-									</select>
-								</div>
-
-								<div class="layoutberg-form-group">
-									<label for="layoutberg_default_colors" class="layoutberg-label">
-										<?php esc_html_e( 'Color Scheme', 'layoutberg' ); ?>
-									</label>
-									<select id="layoutberg_default_colors" name="layoutberg_options[style_defaults][colors]" class="layoutberg-select">
-										<option value="brand" <?php selected( $options['style_defaults']['colors'] ?? 'brand', 'brand' ); ?>>
-											<?php esc_html_e( 'Brand Colors - Your Theme Colors', 'layoutberg' ); ?>
-										</option>
-										<option value="monochrome" <?php selected( $options['style_defaults']['colors'] ?? '', 'monochrome' ); ?>>
-											<?php esc_html_e( 'Monochrome - Black & White', 'layoutberg' ); ?>
-										</option>
-										<option value="vibrant" <?php selected( $options['style_defaults']['colors'] ?? '', 'vibrant' ); ?>>
-											<?php esc_html_e( 'Vibrant - Bright & Energetic', 'layoutberg' ); ?>
-										</option>
-										<option value="pastel" <?php selected( $options['style_defaults']['colors'] ?? '', 'pastel' ); ?>>
-											<?php esc_html_e( 'Pastel - Soft & Gentle', 'layoutberg' ); ?>
-										</option>
-									</select>
-								</div>
-
-								<div class="layoutberg-form-group">
-									<label for="layoutberg_default_layout" class="layoutberg-label">
-										<?php esc_html_e( 'Layout Structure', 'layoutberg' ); ?>
-									</label>
-									<select id="layoutberg_default_layout" name="layoutberg_options[style_defaults][layout]" class="layoutberg-select">
-										<option value="single-column" <?php selected( $options['style_defaults']['layout'] ?? 'single-column', 'single-column' ); ?>>
-											<?php esc_html_e( 'Single Column - Full Width', 'layoutberg' ); ?>
-										</option>
-										<option value="sidebar" <?php selected( $options['style_defaults']['layout'] ?? '', 'sidebar' ); ?>>
-											<?php esc_html_e( 'With Sidebar - Traditional', 'layoutberg' ); ?>
-										</option>
-										<option value="grid" <?php selected( $options['style_defaults']['layout'] ?? '', 'grid' ); ?>>
-											<?php esc_html_e( 'Grid - Multi-Column', 'layoutberg' ); ?>
-										</option>
-										<option value="asymmetric" <?php selected( $options['style_defaults']['layout'] ?? '', 'asymmetric' ); ?>>
-											<?php esc_html_e( 'Asymmetric - Creative', 'layoutberg' ); ?>
-										</option>
-									</select>
-								</div>
-
-								<div class="layoutberg-form-group">
-									<label for="layoutberg_default_density" class="layoutberg-label">
-										<?php esc_html_e( 'Content Density', 'layoutberg' ); ?>
-									</label>
-									<select id="layoutberg_default_density" name="layoutberg_options[style_defaults][density]" class="layoutberg-select">
-										<option value="spacious" <?php selected( $options['style_defaults']['density'] ?? 'balanced', 'spacious' ); ?>>
-											<?php esc_html_e( 'Spacious - More Whitespace', 'layoutberg' ); ?>
-										</option>
-										<option value="balanced" <?php selected( $options['style_defaults']['density'] ?? 'balanced', 'balanced' ); ?>>
-											<?php esc_html_e( 'Balanced - Just Right', 'layoutberg' ); ?>
-										</option>
-										<option value="compact" <?php selected( $options['style_defaults']['density'] ?? '', 'compact' ); ?>>
-											<?php esc_html_e( 'Compact - More Content', 'layoutberg' ); ?>
-										</option>
-									</select>
 								</div>
 							</div>
 						</div>
@@ -496,55 +377,6 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 									</button>
 								</div>
 							</div>
-						</div>
-
-						<div class="layoutberg-card">
-							<div class="layoutberg-card-header">
-								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Monitoring & Debug', 'layoutberg' ); ?></h3>
-							</div>
-
-							<div class="layoutberg-grid layoutberg-grid-2">
-								<div class="layoutberg-form-group">
-									<label class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
-										<div class="layoutberg-toggle">
-											<input 
-												type="checkbox" 
-												name="layoutberg_options[analytics_enabled]" 
-												value="1"
-												<?php checked( $options['analytics_enabled'] ?? true, true ); ?>
-											/>
-											<span class="layoutberg-toggle-slider"></span>
-										</div>
-										<div>
-											<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Usage Analytics', 'layoutberg' ); ?></span>
-											<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
-												<?php esc_html_e( 'Track layout generation usage and performance statistics.', 'layoutberg' ); ?>
-											</p>
-										</div>
-									</label>
-								</div>
-
-								<div class="layoutberg-form-group">
-									<label class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
-										<div class="layoutberg-toggle">
-											<input 
-												type="checkbox" 
-												name="layoutberg_options[debug_mode]" 
-												value="1"
-												<?php checked( $options['debug_mode'] ?? false, true ); ?>
-											/>
-											<span class="layoutberg-toggle-slider"></span>
-										</div>
-										<div>
-											<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Debug Mode', 'layoutberg' ); ?></span>
-											<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
-												<?php esc_html_e( 'Log API requests and responses for debugging. Enable only when troubleshooting.', 'layoutberg' ); ?>
-											</p>
-										</div>
-									</label>
-								</div>
-							</div>
-						</div>
 					</div>
 
 					<!-- Save Button -->

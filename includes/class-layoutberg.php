@@ -310,31 +310,46 @@ class LayoutBerg {
 			$asset['version']
 		);
 
+		// Get available models
+		$available_models = $this->get_available_models();
+		
+		// Debug logging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'LayoutBerg models passed to JS: ' . wp_json_encode( $available_models ) );
+		}
+		
 		// Localize script.
+		$localized_data = array(
+			'apiUrl'     => rest_url( 'layoutberg/v1' ),
+			'nonce'      => wp_create_nonce( 'wp_rest' ),
+			'pluginUrl'  => LAYOUTBERG_PLUGIN_URL,
+			'isPro'      => $this->is_pro(),
+			'models'     => $available_models,
+			'strings'    => array(
+				'generateLayout'   => __( 'Generate Layout', 'layoutberg' ),
+				'generating'       => __( 'Generating...', 'layoutberg' ),
+				'error'            => __( 'Error', 'layoutberg' ),
+				'tryAgain'         => __( 'Try Again', 'layoutberg' ),
+				'selectTemplate'   => __( 'Select a Template', 'layoutberg' ),
+				'customPrompt'     => __( 'Custom Prompt', 'layoutberg' ),
+				'enterPrompt'      => __( 'Describe the layout you want to create...', 'layoutberg' ),
+				'advancedOptions'  => __( 'Advanced Options', 'layoutberg' ),
+				'aiModel'          => __( 'AI Model', 'layoutberg' ),
+				'style'            => __( 'Style', 'layoutberg' ),
+				'colorScheme'      => __( 'Color Scheme', 'layoutberg' ),
+				'layoutType'       => __( 'Layout Type', 'layoutberg' ),
+			),
+		);
+		
+		// Additional debug output
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'LayoutBerg localizing script with data: ' . wp_json_encode( $localized_data ) );
+		}
+		
 		wp_localize_script(
 			'layoutberg-editor',
 			'layoutbergEditor',
-			array(
-				'apiUrl'     => rest_url( 'layoutberg/v1' ),
-				'nonce'      => wp_create_nonce( 'wp_rest' ),
-				'pluginUrl'  => LAYOUTBERG_PLUGIN_URL,
-				'isPro'      => $this->is_pro(),
-				'models'     => $this->get_available_models(),
-				'strings'    => array(
-					'generateLayout'   => __( 'Generate Layout', 'layoutberg' ),
-					'generating'       => __( 'Generating...', 'layoutberg' ),
-					'error'            => __( 'Error', 'layoutberg' ),
-					'tryAgain'         => __( 'Try Again', 'layoutberg' ),
-					'selectTemplate'   => __( 'Select a Template', 'layoutberg' ),
-					'customPrompt'     => __( 'Custom Prompt', 'layoutberg' ),
-					'enterPrompt'      => __( 'Describe the layout you want to create...', 'layoutberg' ),
-					'advancedOptions'  => __( 'Advanced Options', 'layoutberg' ),
-					'aiModel'          => __( 'AI Model', 'layoutberg' ),
-					'style'            => __( 'Style', 'layoutberg' ),
-					'colorScheme'      => __( 'Color Scheme', 'layoutberg' ),
-					'layoutType'       => __( 'Layout Type', 'layoutberg' ),
-				),
-			)
+			$localized_data
 		);
 	}
 
@@ -370,7 +385,12 @@ class LayoutBerg {
 	private function get_available_models() {
 		$models = array();
 		$options = get_option( 'layoutberg_options', array() );
-		$security = new Security_Manager();
+		
+		// Debug logging - let's see what's in options
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'LayoutBerg get_available_models - Raw options:' );
+			error_log( print_r( $options, true ) );
+		}
 		
 		// Check for OpenAI API key
 		$has_openai_key = false;
@@ -381,30 +401,34 @@ class LayoutBerg {
 		// Check for Claude API key
 		$has_claude_key = ! empty( $options['claude_api_key'] );
 		
-		// Add OpenAI models if key is configured
-		if ( $has_openai_key ) {
-			$models['openai'] = array(
-				'label' => __( 'OpenAI Models', 'layoutberg' ),
-				'models' => array(
-					'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
-					'gpt-4' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
-					'gpt-4-turbo' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
-				),
-			);
+		// Debug logging
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'LayoutBerg get_available_models:' );
+			error_log( '- Options keys: ' . implode( ', ', array_keys( $options ) ) );
+			error_log( '- Has OpenAI key: ' . ( $has_openai_key ? 'yes' : 'no' ) );
+			error_log( '- Has Claude key: ' . ( $has_claude_key ? 'yes' : 'no' ) );
 		}
 		
-		// Add Claude models if key is configured
-		if ( $has_claude_key ) {
-			$models['claude'] = array(
-				'label' => __( 'Claude Models', 'layoutberg' ),
-				'models' => array(
-					'claude-3-opus-20240229' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
-					'claude-3-5-sonnet-20241022' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
-					'claude-3-sonnet-20240229' => __( 'Claude 3 Sonnet (Balanced)', 'layoutberg' ),
-					'claude-3-haiku-20240307' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
-				),
-			);
-		}
+		// For now, always show all models for testing
+		// TODO: Revert this after testing
+		$models['openai'] = array(
+			'label' => __( 'OpenAI Models', 'layoutberg' ),
+			'models' => array(
+				'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
+				'gpt-4' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
+				'gpt-4-turbo' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
+			),
+		);
+		
+		$models['claude'] = array(
+			'label' => __( 'Claude Models', 'layoutberg' ),
+			'models' => array(
+				'claude-3-opus-20240229' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
+				'claude-3-5-sonnet-20241022' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
+				'claude-3-sonnet-20240229' => __( 'Claude 3 Sonnet (Balanced)', 'layoutberg' ),
+				'claude-3-haiku-20240307' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
+			),
+		);
 
 		return $models;
 	}

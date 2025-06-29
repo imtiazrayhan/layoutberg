@@ -49,13 +49,66 @@ $recent_generations = $wpdb->get_results(
 );
 
 // Calculate costs
-$costs = array(
-	'gpt-3.5-turbo' => 0.002,
-	'gpt-4'         => 0.03,
-	'gpt-4-turbo'   => 0.01,
-);
-$cost_per_1k = isset( $costs[ $generation->model ] ) ? $costs[ $generation->model ] : 0.002;
-$total_cost = $generation ? ( $generation->tokens_used / 1000 ) * $cost_per_1k : 0;
+$total_cost = 0;
+$cost_per_1k = 0;
+$cost_breakdown = '';
+
+if ( $generation ) {
+	// Parse result_data to get token breakdown for Claude models
+	$result_data = json_decode( $generation->result_data, true );
+	$usage = isset( $result_data['usage'] ) ? $result_data['usage'] : null;
+	
+	// Check if it's a Claude model
+	if ( strpos( $generation->model, 'claude' ) === 0 && $usage ) {
+		$input_tokens = isset( $usage['input_tokens'] ) ? intval( $usage['input_tokens'] ) : 0;
+		$output_tokens = isset( $usage['output_tokens'] ) ? intval( $usage['output_tokens'] ) : 0;
+		
+		// Claude pricing per 1K tokens
+		$claude_costs = array(
+			'claude-3-opus-20240229' => array(
+				'input'  => 0.015,  // $15 per 1M tokens
+				'output' => 0.075,  // $75 per 1M tokens
+			),
+			'claude-3-5-sonnet-20241022' => array(
+				'input'  => 0.003,  // $3 per 1M tokens
+				'output' => 0.015,  // $15 per 1M tokens
+			),
+			'claude-3-sonnet-20240229' => array(
+				'input'  => 0.003,  // $3 per 1M tokens
+				'output' => 0.015,  // $15 per 1M tokens
+			),
+			'claude-3-haiku-20240307' => array(
+				'input'  => 0.00025, // $0.25 per 1M tokens
+				'output' => 0.00125, // $1.25 per 1M tokens
+			),
+		);
+		
+		if ( isset( $claude_costs[ $generation->model ] ) ) {
+			$costs = $claude_costs[ $generation->model ];
+			$input_cost = ( $input_tokens / 1000 ) * $costs['input'];
+			$output_cost = ( $output_tokens / 1000 ) * $costs['output'];
+			$total_cost = $input_cost + $output_cost;
+			$cost_breakdown = sprintf( 
+				'Input: $%s (%s tokens × $%s/1k) + Output: $%s (%s tokens × $%s/1k)', 
+				number_format( $input_cost, 4 ),
+				number_format( $input_tokens ),
+				number_format( $costs['input'], 3 ),
+				number_format( $output_cost, 4 ),
+				number_format( $output_tokens ),
+				number_format( $costs['output'], 3 )
+			);
+		}
+	} else {
+		// OpenAI models have combined pricing
+		$costs = array(
+			'gpt-3.5-turbo' => 0.002,
+			'gpt-4'         => 0.03,
+			'gpt-4-turbo'   => 0.01,
+		);
+		$cost_per_1k = isset( $costs[ $generation->model ] ) ? $costs[ $generation->model ] : 0.002;
+		$total_cost = ( $generation->tokens_used / 1000 ) * $cost_per_1k;
+	}
+}
 ?>
 
 <div class="layoutberg-admin-page">
@@ -144,7 +197,11 @@ $total_cost = $generation ? ( $generation->tokens_used / 1000 ) * $cost_per_1k :
 									<strong>$<?php echo esc_html( number_format( $total_cost, 4 ) ); ?></strong>
 									<br>
 									<small class="layoutberg-text-muted">
-										$<?php echo esc_html( number_format( $cost_per_1k, 3 ) ); ?>/1k tokens
+										<?php if ( $cost_breakdown ) : ?>
+											<?php echo esc_html( $cost_breakdown ); ?>
+										<?php elseif ( $cost_per_1k > 0 ) : ?>
+											$<?php echo esc_html( number_format( $cost_per_1k, 3 ) ); ?>/1k tokens
+										<?php endif; ?>
 									</small>
 								</p>
 							</div>
@@ -203,13 +260,40 @@ $total_cost = $generation ? ( $generation->tokens_used / 1000 ) * $cost_per_1k :
 								</div>
 							</div>
 							
+							<?php 
+							// Get actual token breakdown if available
+							$input_tokens = 0;
+							$output_tokens = 0;
+							$has_token_breakdown = false;
+							
+							if ( strpos( $generation->model, 'claude' ) === 0 && $usage ) {
+								if ( isset( $usage['input_tokens'] ) && isset( $usage['output_tokens'] ) ) {
+									$input_tokens = $usage['input_tokens'];
+									$output_tokens = $usage['output_tokens'];
+									$has_token_breakdown = true;
+								}
+							} elseif ( $usage && isset( $usage['prompt_tokens'] ) && isset( $usage['completion_tokens'] ) ) {
+								$input_tokens = $usage['prompt_tokens'];
+								$output_tokens = $usage['completion_tokens'];
+								$has_token_breakdown = true;
+							}
+							?>
+							
 							<div class="layoutberg-stat-item">
 								<span class="layoutberg-stat-icon">
 									<span class="dashicons dashicons-text"></span>
 								</span>
 								<div>
-									<p class="layoutberg-stat-value">~<?php echo esc_html( number_format( strlen( $generation->prompt ) / 4 ) ); ?></p>
-									<p class="layoutberg-stat-label"><?php esc_html_e( 'Prompt Tokens (est)', 'layoutberg' ); ?></p>
+									<p class="layoutberg-stat-value">
+										<?php if ( $has_token_breakdown ) : ?>
+											<?php echo esc_html( number_format( $input_tokens ) ); ?>
+										<?php else : ?>
+											~<?php echo esc_html( number_format( strlen( $generation->prompt ) / 4 ) ); ?>
+										<?php endif; ?>
+									</p>
+									<p class="layoutberg-stat-label">
+										<?php echo $has_token_breakdown ? esc_html__( 'Input Tokens', 'layoutberg' ) : esc_html__( 'Input Tokens (est)', 'layoutberg' ); ?>
+									</p>
 								</div>
 							</div>
 							
@@ -218,8 +302,16 @@ $total_cost = $generation ? ( $generation->tokens_used / 1000 ) * $cost_per_1k :
 									<span class="dashicons dashicons-media-text"></span>
 								</span>
 								<div>
-									<p class="layoutberg-stat-value">~<?php echo esc_html( number_format( strlen( $generation->response ) / 4 ) ); ?></p>
-									<p class="layoutberg-stat-label"><?php esc_html_e( 'Response Tokens (est)', 'layoutberg' ); ?></p>
+									<p class="layoutberg-stat-value">
+										<?php if ( $has_token_breakdown ) : ?>
+											<?php echo esc_html( number_format( $output_tokens ) ); ?>
+										<?php else : ?>
+											~<?php echo esc_html( number_format( strlen( $generation->response ) / 4 ) ); ?>
+										<?php endif; ?>
+									</p>
+									<p class="layoutberg-stat-label">
+										<?php echo $has_token_breakdown ? esc_html__( 'Output Tokens', 'layoutberg' ) : esc_html__( 'Output Tokens (est)', 'layoutberg' ); ?>
+									</p>
 								</div>
 							</div>
 						</div>
@@ -227,7 +319,13 @@ $total_cost = $generation ? ( $generation->tokens_used / 1000 ) * $cost_per_1k :
 						<div class="layoutberg-alert layoutberg-alert-info layoutberg-mt-3">
 							<span class="dashicons dashicons-info"></span>
 							<div>
-								<p><?php esc_html_e( 'Token counts are provided by the OpenAI API. The prompt/response breakdown is estimated based on character count (1 token ≈ 4 characters). Actual token usage includes system prompts and formatting.', 'layoutberg' ); ?></p>
+								<p><?php 
+								if ( $has_token_breakdown ) {
+									esc_html_e( 'Token counts are provided by the AI provider. For Claude models, costs are calculated separately for input and output tokens.', 'layoutberg' );
+								} else {
+									esc_html_e( 'Token breakdown is estimated based on character count (1 token ≈ 4 characters). Actual token usage includes system prompts and formatting.', 'layoutberg' );
+								}
+								?></p>
 							</div>
 						</div>
 					</div>

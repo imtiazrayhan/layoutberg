@@ -203,11 +203,17 @@ foreach ( $hourly_stats as $hour ) {
 			<span class="dashicons dashicons-info"></span>
 			<div>
 				<strong><?php esc_html_e( 'Data Accuracy Notice', 'layoutberg' ); ?></strong>
-				<p><?php esc_html_e( 'The usage data shown here is tracked locally and may not be 100% accurate. For precise usage statistics and billing information, please refer to your OpenAI dashboard.', 'layoutberg' ); ?></p>
-				<a href="https://platform.openai.com/usage" target="_blank" class="layoutberg-btn layoutberg-btn-sm layoutberg-btn-secondary layoutberg-mt-2">
-					<span class="dashicons dashicons-external"></span>
-					<?php esc_html_e( 'View OpenAI Dashboard', 'layoutberg' ); ?>
-				</a>
+				<p><?php esc_html_e( 'The usage data shown here is tracked locally and may not be 100% accurate. For precise usage statistics and billing information, please refer to your AI provider dashboards.', 'layoutberg' ); ?></p>
+				<div class="layoutberg-flex layoutberg-gap-2 layoutberg-mt-2">
+					<a href="https://platform.openai.com/usage" target="_blank" class="layoutberg-btn layoutberg-btn-sm layoutberg-btn-secondary">
+						<span class="dashicons dashicons-external"></span>
+						<?php esc_html_e( 'OpenAI Dashboard', 'layoutberg' ); ?>
+					</a>
+					<a href="https://console.anthropic.com/usage" target="_blank" class="layoutberg-btn layoutberg-btn-sm layoutberg-btn-secondary">
+						<span class="dashicons dashicons-external"></span>
+						<?php esc_html_e( 'Claude Dashboard', 'layoutberg' ); ?>
+					</a>
+				</div>
 			</div>
 		</div>
 
