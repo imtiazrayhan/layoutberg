@@ -509,10 +509,17 @@ jQuery(document).ready(function($) {
 	$('[data-template]').on('click', function() {
 		var template = $(this).data('template');
 		var prompt = $(this).data('prompt');
-		// Redirect to new page with modal open and prompt pre-filled
-		var url = '<?php echo esc_url( admin_url( 'post-new.php' ) ); ?>';
-		url += '?post_type=page&layoutberg_open_modal=1&hide_pattern_modal=1';
-		url += '&layoutberg_prompt=' + encodeURIComponent(prompt);
+		// Build the URL properly
+		var baseUrl = '<?php echo admin_url( 'post-new.php' ); ?>';
+		var params = {
+			post_type: 'page',
+			layoutberg_open_modal: '1',
+			hide_pattern_modal: '1',
+			layoutberg_prompt: prompt
+		};
+		
+		// Create URL with parameters
+		var url = baseUrl + '?' + $.param(params);
 		window.location.href = url;
 	});
 });
