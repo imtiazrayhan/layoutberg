@@ -111,146 +111,50 @@ class Prompt_Engineer {
 		$model = isset( $options['model'] ) ? $options['model'] : 'gpt-3.5-turbo';
 		$model_limits = $this->get_model_limits( $model );
 		
-		// Start with base prompt (compact or full)
-		$prompt = $use_compact ? $this->get_base_system_prompt_compact() : $this->get_base_system_prompt();
+		// Use simplified prompt that focuses on user description
+		$prompt = $this->get_simplified_system_prompt();
 		
-		// Add specific layout type instructions.
-		if ( isset( $options['layout_type'] ) && isset( $this->layout_templates[ $options['layout_type'] ] ) ) {
-			$prompt .= "\n\n" . $this->layout_templates[ $options['layout_type'] ]['instructions'];
-		}
-		
-		// Add style-specific instructions.
-		if ( isset( $options['style'] ) && $options['style'] !== 'default' ) {
-			$prompt .= "\n\nDEFAULT STYLE GUIDELINES (use only if user doesn't specify):\n";
-			$prompt .= $this->get_style_instructions( $options['style'] );
-		}
-		
-		// Add layout-specific instructions.
-		if ( isset( $options['layout'] ) && $options['layout'] !== 'default' ) {
-			$prompt .= "\n\n" . $this->get_layout_instructions( $options['layout'] );
-		}
-		
-		// Add color scheme instructions.
-		if ( isset( $options['color_scheme'] ) && $options['color_scheme'] !== 'default' && $options['color_scheme'] !== null ) {
-			$prompt .= "\n\nDEFAULT COLOR SCHEME (use only if user doesn't specify colors):\n";
-			$prompt .= $this->get_color_scheme_instructions( $options['color_scheme'] );
-		}
-		
-		// Add layout density instructions.
-		if ( isset( $options['density'] ) && $options['density'] !== 'normal' && $options['density'] !== null ) {
-			$prompt .= "\n\nDEFAULT SPACING (use only if user doesn't specify spacing):\n";
-			$prompt .= $this->get_density_instructions( $options['density'] );
-		}
-		
-		// Add audience targeting instructions.
-		if ( isset( $options['audience'] ) && $options['audience'] !== 'general' && $options['audience'] !== null ) {
-			$prompt .= "\n\n" . $this->get_audience_instructions( $options['audience'] );
-		}
-		
-		// Add industry-specific instructions.
-		if ( isset( $options['industry'] ) && $options['industry'] !== 'general' && $options['industry'] !== null ) {
-			$prompt .= "\n\n" . $this->get_industry_instructions( $options['industry'] );
-		}
-		
-		// Add language-specific instructions.
-		if ( isset( $options['language'] ) && $options['language'] !== 'en' ) {
-			$prompt .= "\n\n" . $this->get_language_instructions( $options['language'] );
-		}
-		
-		// Add responsive design instructions.
-		$prompt .= "\n\n" . $this->get_responsive_instructions();
-		
-		// Add accessibility instructions.
-		$prompt .= "\n\n" . $this->get_accessibility_instructions();
-		
-		// Add example blocks.
+		// Add compact block examples
 		$prompt .= "\n\n" . $this->get_example_blocks();
-		
-		// Add final reminder
-		$prompt .= "\n\nIMPORTANT REMINDER:\n";
-		$prompt .= "1. User instructions take priority over all defaults.\n";
-		$prompt .= "2. If the user specifies colors, gradients, spacing, or styles, use exactly what they request.\n";
-		$prompt .= "3. The style guidelines above are only defaults to use when the user hasn't specified preferences.\n";
-		if ( isset( $options['style'] ) && $options['style'] !== 'default' ) {
-			$prompt .= "4. Default style: " . $options['style'] . " (only use if user doesn't specify)\n";
-		}
 		
 		return $prompt;
 	}
 
 	/**
-	 * Get base system prompt.
+	 * Get simplified system prompt that relies on user description.
 	 *
 	 * @since 1.0.0
-	 * @return string Base system prompt.
+	 * @return string Simplified system prompt.
 	 */
-	private function get_base_system_prompt() {
-		return "You are an expert WordPress Gutenberg layout designer. Your task is to generate valid, semantic, and accessible Gutenberg block markup based on user requirements.
+	private function get_simplified_system_prompt() {
+		return "You are an expert WordPress Gutenberg layout designer. Generate valid Gutenberg block markup based entirely on the user's description.
 
-CRITICAL OUTPUT RULES:
-1. Output ONLY valid Gutenberg block markup - no explanations, markdown backticks, or wrapper text
-2. Start immediately with <!-- wp: and end with --> 
-3. Do NOT include any introductory text like 'Here is the layout:' or code block markers
-4. Do NOT include any concluding text or explanations after the blocks
+CRITICAL RULES:
+1. Output ONLY valid Gutenberg block markup - no explanations or wrapper text
+2. Start immediately with <!-- wp: and end with -->
+3. Follow the user's description exactly for all design choices
+4. Use proper block syntax: <!-- wp:block-name {\"attribute\":\"value\"} -->
+5. Close all blocks properly: <!-- /wp:block-name -->
 
-IMPORTANT: The user's description takes priority. Follow their specific requests for colors, styles, layouts, and design elements exactly as they describe them.
+IMPORTANT: The user's description is your guide. They will specify:
+- Colors (hex codes, gradients, named colors)
+- Layout structure (columns, grids, sidebars)
+- Spacing and density
+- Typography and font sizes
+- Design style (modern, minimal, bold, etc.)
+- Any other visual preferences
 
-BLOCK SYNTAX REQUIREMENTS:
-1. Use ONLY core WordPress blocks unless specifically requested otherwise
-2. Follow exact block comment syntax: <!-- wp:block-name {\"attribute\":\"value\"} -->
-3. Ensure ALL blocks are properly nested and closed with <!-- /wp:block-name -->
-4. Use double quotes for JSON attributes, not single quotes
-5. Escape quotes properly in JSON: {\"text\":\"Welcome to our site\"}
-6. Close all self-closing blocks properly
+BASIC STRUCTURE:
+1. Use semantic HTML through appropriate blocks
+2. Maintain proper heading hierarchy (h1 → h2 → h3)
+3. Ensure responsive design with stackable columns
+4. Include accessibility features (alt text, ARIA labels)
 
-SEMANTIC STRUCTURE REQUIREMENTS:
-1. Use proper heading hierarchy: h1 for main title, h2 for sections, h3 for subsections
-2. Never skip heading levels (don't go from h1 to h3)
-3. Use semantic HTML via appropriate blocks (group for sections, cover for heroes)
-4. Wrap related content in group blocks with semantic class names
-5. Use columns for layout, not for visual styling
+IMAGES:
+Use placehold.co for placeholder images:
+{\"url\":\"https://placehold.co/600x400/007cba/ffffff?text=Description\"}
 
-RESPONSIVE & LAYOUT REQUIREMENTS:
-1. Use mobile-first approach - layouts must work on small screens
-2. Set explicit column widths that add up to 100%
-3. Use stackable columns for mobile compatibility
-4. Add appropriate spacer blocks (minimum 32px, maximum 80px)
-5. Ensure content doesn't overflow on narrow screens
-
-ACCESSIBILITY REQUIREMENTS:
-1. Include descriptive alt text for ALL images
-2. Use meaningful button text (never just 'Click Here')
-3. Maintain proper heading hierarchy
-4. Add appropriate ARIA labels where beneficial
-5. Ensure color contrast considerations in text
-
-CONTENT REQUIREMENTS:
-1. Use contextually relevant placeholder text
-2. Make headings descriptive of the section purpose
-3. Use Lorem Ipsum for body paragraphs (2-3 sentences)
-4. Add realistic company/service names in placeholders
-5. Include specific, actionable button text
-6. Use proper image alt text that describes the visual content
-
-VISUAL DESIGN GUIDELINES:
-1. For placeholder images, use placehold.co URLs:
-   - Example: {\"url\":\"https://placehold.co/600x400/007cba/ffffff?text=Hero+Image\"}
-   - Format: https://placehold.co/WIDTHxHEIGHT/BGCOLOR/TEXTCOLOR?text=DESCRIPTION
-2. For backgrounds, you can use:
-   - Gradients: {\"gradient\":\"linear-gradient(135deg,#667eea 0%,#764ba2 100%)\"}
-   - Solid colors: {\"backgroundColor\":\"primary\"} or {\"customBackgroundColor\":\"#123456\"}
-3. Only use placehold.co for placeholder images, no other external URLs
-
-IMPORTANT: If the user specifies any colors, gradients, or visual preferences in their description, use exactly what they request instead of any defaults.
-
-COMMON MISTAKES TO AVOID:
-1. Don't wrap everything in a single group block
-2. Don't create overly nested structures
-3. Don't use empty blocks or blocks without content
-4. Don't mix up inner and outer HTML structures
-5. Don't forget to close blocks properly
-6. Don't use invalid attribute names or values
-7. Don't create malformed JSON in block attributes";
+Trust the user's description completely. They know what they want.";
 	}
 	
 	/**
@@ -890,67 +794,9 @@ IMPORTANT: Follow the user's instructions precisely. If they specify colors, gra
 	 * @return string Enhanced prompt.
 	 */
 	public function enhance_user_prompt( $prompt, $options = array() ) {
-		$enhanced = $prompt;
-		
-		// Add layout type context.
-		if ( isset( $options['layout_type'] ) && isset( $this->layout_templates[ $options['layout_type'] ] ) ) {
-			$enhanced = $this->layout_templates[ $options['layout_type'] ]['instructions'] . "\n\nAdditional requirements: " . $prompt;
-		}
-		
-		// Add specific requirements.
-		$requirements = array();
-		
-		if ( isset( $options['columns'] ) ) {
-			$requirements[] = "Use a " . $options['columns'] . "-column layout where appropriate";
-		}
-		
-		if ( isset( $options['color_scheme'] ) && $options['color_scheme'] !== 'default' ) {
-			$requirements[] = "Use " . $options['color_scheme'] . " color scheme as default (unless user specifies otherwise)";
-		}
-		
-		if ( isset( $options['density'] ) && $options['density'] !== 'normal' ) {
-			$requirements[] = "Apply " . $options['density'] . " layout density (unless user specifies otherwise)";
-		}
-		
-		if ( isset( $options['audience'] ) && $options['audience'] !== 'general' ) {
-			$requirements[] = "Optimize content for a " . $options['audience'] . " audience";
-		}
-		
-		if ( isset( $options['industry'] ) && $options['industry'] !== 'general' ) {
-			$requirements[] = "Consider " . $options['industry'] . " industry conventions";
-		}
-		
-		if ( isset( $options['include_cta'] ) && $options['include_cta'] ) {
-			$requirements[] = "Include prominent call-to-action sections";
-		}
-		
-		if ( isset( $options['include_testimonials'] ) && $options['include_testimonials'] ) {
-			$requirements[] = "Add a testimonials section";
-		}
-		
-		if ( isset( $options['include_features'] ) && $options['include_features'] ) {
-			$requirements[] = "Include a features or benefits section";
-		}
-		
-		if ( isset( $options['include_pricing'] ) && $options['include_pricing'] ) {
-			$requirements[] = "Add a pricing table or pricing information section";
-		}
-		
-		if ( isset( $options['include_team'] ) && $options['include_team'] ) {
-			$requirements[] = "Include a team members section";
-		}
-		
-		if ( isset( $options['include_faq'] ) && $options['include_faq'] ) {
-			$requirements[] = "Add a frequently asked questions section";
-		}
-		
-		if ( ! empty( $requirements ) ) {
-			$enhanced .= "\n\nSpecific requirements:\n" . implode( "\n", array_map( function( $req ) {
-				return "- " . $req;
-			}, $requirements ) );
-		}
-		
-		return $enhanced;
+		// Simply return the user's prompt as-is
+		// The user's description should contain all necessary details
+		return $prompt;
 	}
 
 	/**

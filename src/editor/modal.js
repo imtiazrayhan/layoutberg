@@ -161,22 +161,22 @@ const LayoutBergModal = ({
                     </CardHeader>
                     <CardBody>
                         <TextareaControl
-                            placeholder={__('Describe the layout you want to create...', 'layoutberg')}
+                            placeholder={__('Describe the layout you want to create in detail. Include colors, style, sections, spacing, and any specific design preferences...', 'layoutberg')}
                             value={prompt}
                             onChange={onPromptChange}
-                            rows={4}
+                            rows={5}
                             className="layoutberg-prompt-input"
-                            help={__('Be specific about your needs: sections, content types, styling preferences, etc.', 'layoutberg')}
+                            help={__('The more detailed your description, the better the results. Include style preferences (modern, minimal, bold), colors (gradient backgrounds, specific hex codes), layout structure (grid, sidebar, asymmetric), spacing preferences, and any other design elements you want.', 'layoutberg')}
                         />
                     </CardBody>
                 </Card>
 
-                {/* Settings */}
+                {/* Advanced Settings */}
                 <Card>
                     <CardHeader>
                         <HStack>
                             <FlexBlock>
-                                <strong>{__('Generation Settings', 'layoutberg')}</strong>
+                                <strong>{__('Advanced Settings', 'layoutberg')}</strong>
                             </FlexBlock>
                             <FlexItem>
                                 <Button
@@ -185,148 +185,53 @@ const LayoutBergModal = ({
                                     onClick={() => setShowAdvanced(!showAdvanced)}
                                     icon={cog}
                                 >
-                                    {showAdvanced ? __('Hide Advanced', 'layoutberg') : __('Show Advanced', 'layoutberg')}
+                                    {showAdvanced ? __('Hide', 'layoutberg') : __('Show', 'layoutberg')}
                                 </Button>
                             </FlexItem>
                         </HStack>
                     </CardHeader>
-                    <CardBody>
-                        <Grid columns={2} gap={4}>
-                            <SelectControl
-                                label={__('Design Style', 'layoutberg')}
-                                value={settings.style}
-                                options={[
-                                    { label: __('Modern - Clean & Contemporary', 'layoutberg'), value: 'modern' },
-                                    { label: __('Classic - Timeless & Professional', 'layoutberg'), value: 'classic' },
-                                    { label: __('Minimal - Simple & Focused', 'layoutberg'), value: 'minimal' },
-                                    { label: __('Bold - Dynamic & Impactful', 'layoutberg'), value: 'bold' },
-                                    { label: __('Elegant - Sophisticated & Refined', 'layoutberg'), value: 'elegant' },
-                                    { label: __('Playful - Fun & Approachable', 'layoutberg'), value: 'playful' },
-                                    { label: __('Corporate - Business Professional', 'layoutberg'), value: 'corporate' },
-                                    { label: __('Tech - Futuristic & Innovative', 'layoutberg'), value: 'tech' }
-                                ]}
-                                onChange={(value) => updateSetting('style', value)}
-                            />
+                    {showAdvanced && (
+                        <CardBody>
+                            <VStack spacing={3}>
+                                <SelectControl
+                                    label={__('AI Model', 'layoutberg')}
+                                    value={settings.model}
+                                    options={[
+                                        { label: __('GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg'), value: 'gpt-3.5-turbo' },
+                                        { label: __('GPT-4 (Most Capable)', 'layoutberg'), value: 'gpt-4' },
+                                        { label: __('GPT-4 Turbo (Fast & Capable)', 'layoutberg'), value: 'gpt-4-turbo' }
+                                    ]}
+                                    onChange={(value) => updateSetting('model', value)}
+                                    help={__('Choose the AI model for generation', 'layoutberg')}
+                                />
 
-                            <SelectControl
-                                label={__('Layout Structure', 'layoutberg')}
-                                value={settings.layout}
-                                options={[
-                                    { label: __('Single Column - Full Width', 'layoutberg'), value: 'single-column' },
-                                    { label: __('With Sidebar - Traditional', 'layoutberg'), value: 'sidebar' },
-                                    { label: __('Grid Layout - Multi-Column', 'layoutberg'), value: 'grid' },
-                                    { label: __('Asymmetric - Creative', 'layoutberg'), value: 'asymmetric' }
-                                ]}
-                                onChange={(value) => updateSetting('layout', value)}
-                            />
+                                <RangeControl
+                                    label={__('Creativity Level', 'layoutberg')}
+                                    value={settings.temperature}
+                                    onChange={(value) => updateSetting('temperature', value)}
+                                    min={0}
+                                    max={2}
+                                    step={0.1}
+                                    marks={[
+                                        { value: 0, label: __('Focused', 'layoutberg') },
+                                        { value: 1, label: __('Balanced', 'layoutberg') },
+                                        { value: 2, label: __('Creative', 'layoutberg') }
+                                    ]}
+                                    help={__('Lower values produce more focused results, higher values are more creative', 'layoutberg')}
+                                />
 
-                            <SelectControl
-                                label={__('Color Scheme', 'layoutberg')}
-                                value={settings.color_scheme || 'default'}
-                                options={[
-                                    { label: __('Default - Based on Style', 'layoutberg'), value: 'default' },
-                                    { label: __('Monochrome - Black & White', 'layoutberg'), value: 'monochrome' },
-                                    { label: __('Blue - Professional & Trust', 'layoutberg'), value: 'blue' },
-                                    { label: __('Green - Natural & Calming', 'layoutberg'), value: 'green' },
-                                    { label: __('Warm - Energetic & Inviting', 'layoutberg'), value: 'warm' },
-                                    { label: __('Cool - Calm & Professional', 'layoutberg'), value: 'cool' },
-                                    { label: __('Pastel - Soft & Dreamy', 'layoutberg'), value: 'pastel' },
-                                    { label: __('Vibrant - Bold & Exciting', 'layoutberg'), value: 'vibrant' },
-                                    { label: __('Dark - Modern & Sophisticated', 'layoutberg'), value: 'dark' }
-                                ]}
-                                onChange={(value) => updateSetting('color_scheme', value)}
-                            />
-
-                            <SelectControl
-                                label={__('Layout Density', 'layoutberg')}
-                                value={settings.density || 'normal'}
-                                options={[
-                                    { label: __('Compact - Minimal Spacing', 'layoutberg'), value: 'compact' },
-                                    { label: __('Normal - Balanced Spacing', 'layoutberg'), value: 'normal' },
-                                    { label: __('Spacious - Generous Spacing', 'layoutberg'), value: 'spacious' }
-                                ]}
-                                onChange={(value) => updateSetting('density', value)}
-                            />
-                        </Grid>
-
-                        {showAdvanced && (
-                            <Fragment>
-                                <CardDivider />
-                                <VStack spacing={3}>
-                                    <Grid columns={2} gap={4}>
-                                        <SelectControl
-                                            label={__('Target Audience', 'layoutberg')}
-                                            value={settings.audience || 'general'}
-                                            options={[
-                                                { label: __('General - All Audiences', 'layoutberg'), value: 'general' },
-                                                { label: __('Professional - Business Users', 'layoutberg'), value: 'professional' },
-                                                { label: __('Casual - Everyday Users', 'layoutberg'), value: 'casual' },
-                                                { label: __('Young - 18-30 Age Group', 'layoutberg'), value: 'young' },
-                                                { label: __('Mature - 50+ Age Group', 'layoutberg'), value: 'mature' },
-                                                { label: __('Tech-Savvy - Digital Natives', 'layoutberg'), value: 'tech-savvy' },
-                                                { label: __('Creative - Artists & Designers', 'layoutberg'), value: 'creative' }
-                                            ]}
-                                            onChange={(value) => updateSetting('audience', value)}
-                                        />
-
-                                        <SelectControl
-                                            label={__('Industry Focus', 'layoutberg')}
-                                            value={settings.industry || 'general'}
-                                            options={[
-                                                { label: __('General - Any Industry', 'layoutberg'), value: 'general' },
-                                                { label: __('Healthcare - Medical & Wellness', 'layoutberg'), value: 'healthcare' },
-                                                { label: __('Finance - Banking & Investment', 'layoutberg'), value: 'finance' },
-                                                { label: __('Education - Schools & Learning', 'layoutberg'), value: 'education' },
-                                                { label: __('Retail - E-commerce & Shopping', 'layoutberg'), value: 'retail' },
-                                                { label: __('Technology - Software & IT', 'layoutberg'), value: 'technology' },
-                                                { label: __('Hospitality - Hotels & Restaurants', 'layoutberg'), value: 'hospitality' },
-                                                { label: __('Nonprofit - Charity & Causes', 'layoutberg'), value: 'nonprofit' },
-                                                { label: __('Legal - Law & Consulting', 'layoutberg'), value: 'legal' }
-                                            ]}
-                                            onChange={(value) => updateSetting('industry', value)}
-                                        />
-                                    </Grid>
-
-                                    <SelectControl
-                                        label={__('AI Model', 'layoutberg')}
-                                        value={settings.model}
-                                        options={[
-                                            { label: __('GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg'), value: 'gpt-3.5-turbo' },
-                                            { label: __('GPT-4 (Most Capable)', 'layoutberg'), value: 'gpt-4' },
-                                            { label: __('GPT-4 Turbo (Fast & Capable)', 'layoutberg'), value: 'gpt-4-turbo' }
-                                        ]}
-                                        onChange={(value) => updateSetting('model', value)}
-                                        help={__('Choose the AI model for generation', 'layoutberg')}
-                                    />
-
-                                    <RangeControl
-                                        label={__('Creativity Level', 'layoutberg')}
-                                        value={settings.temperature}
-                                        onChange={(value) => updateSetting('temperature', value)}
-                                        min={0}
-                                        max={2}
-                                        step={0.1}
-                                        marks={[
-                                            { value: 0, label: __('Focused', 'layoutberg') },
-                                            { value: 1, label: __('Balanced', 'layoutberg') },
-                                            { value: 2, label: __('Creative', 'layoutberg') }
-                                        ]}
-                                        help={__('Lower values produce more focused results, higher values are more creative', 'layoutberg')}
-                                    />
-
-                                    <RangeControl
-                                        label={__('Max Tokens', 'layoutberg')}
-                                        value={settings.maxTokens}
-                                        onChange={(value) => updateSetting('maxTokens', value)}
-                                        min={500}
-                                        max={maxTokensLimit}
-                                        step={100}
-                                        help={__('Higher values allow more complex layouts but cost more. All models support up to 4096 completion tokens.', 'layoutberg')}
-                                    />
-                                </VStack>
-                            </Fragment>
-                        )}
-                    </CardBody>
+                                <RangeControl
+                                    label={__('Max Tokens', 'layoutberg')}
+                                    value={settings.maxTokens}
+                                    onChange={(value) => updateSetting('maxTokens', value)}
+                                    min={500}
+                                    max={maxTokensLimit}
+                                    step={100}
+                                    help={__('Higher values allow more complex layouts but cost more. All models support up to 4096 completion tokens.', 'layoutberg')}
+                                />
+                            </VStack>
+                        </CardBody>
+                    )}
                 </Card>
 
                 {/* Action Buttons */}

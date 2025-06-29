@@ -56,13 +56,7 @@ const LayoutBergEditor = () => {
     const [settings, setSettings] = useState({
         model: 'gpt-3.5-turbo',
         temperature: 0.7,
-        maxTokens: 2000,
-        style: 'modern',
-        layout: 'single-column',
-        color_scheme: 'default',
-        density: 'normal',
-        audience: 'general',
-        industry: 'general'
+        maxTokens: 2000
     });
 
     const { insertBlocks, replaceBlocks } = useDispatch(blockEditorStore);
