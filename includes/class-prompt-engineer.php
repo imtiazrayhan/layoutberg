@@ -172,9 +172,9 @@ IMAGE RULES - CRITICAL FOR VALIDATION:
 COVER BLOCK RULES - NEVER USE IMAGES, ALWAYS USE GRADIENTS:
 - NEVER use \"url\" attribute in cover blocks - this causes validation failures
 - ALWAYS use gradients: {\"gradient\":\"cool-to-warm-spectrum\",\"dimRatio\":50}
-- Required structure: <div class=\"wp-block-cover\"><span class=\"wp-block-cover__background has-background-gradient\"></span><div class=\"wp-block-cover__inner-container\">content</div></div>
+- Simple structure: <div class=\"wp-block-cover\"><div class=\"wp-block-cover__inner-container\">content</div></div>
 - Common gradients: cool-to-warm-spectrum, vivid-cyan-blue-to-vivid-purple, light-green-cyan-to-vivid-green-cyan
-- Background span MUST include gradient classes: has-background-gradient has-[gradient-name]-gradient-background";
+- NO background span needed for gradients - WordPress handles gradient rendering automatically";
 	}
 
 	/**
@@ -213,7 +213,7 @@ COVER BLOCK RULES - NEVER USE IMAGES, ALWAYS USE GRADIENTS:
 5. COVER BLOCKS - CRITICAL VALIDATION RULE:
    - NEVER use \"url\" attribute: {\"url\":\"...\"} causes validation failures
    - ALWAYS use gradient: {\"gradient\":\"cool-to-warm-spectrum\",\"dimRatio\":50}
-   - Background span MUST have gradient classes
+   - NO background span needed - WordPress handles gradients automatically
 
 6. COMMON ATTRIBUTES:
    - align: \"left\", \"center\", \"right\", \"wide\", \"full\"
@@ -802,7 +802,7 @@ Follow user instructions for sections and layout.";
 
 10. COVER BLOCK WITH GRADIENT:
 <!-- wp:cover {\"dimRatio\":50,\"gradient\":\"cool-to-warm-spectrum\",\"align\":\"full\"} -->
-<div class=\"wp-block-cover alignfull has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background\"><span aria-hidden=\"true\" class=\"wp-block-cover__background has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background\"></span><div class=\"wp-block-cover__inner-container\"><!-- wp:heading {\"textAlign\":\"center\",\"level\":1,\"textColor\":\"white\"} -->
+<div class=\"wp-block-cover alignfull has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background\"><div class=\"wp-block-cover__inner-container\"><!-- wp:heading {\"textAlign\":\"center\",\"level\":1,\"textColor\":\"white\"} -->
 <h1 class=\"wp-block-heading has-text-align-center has-white-color has-text-color\">Hero Title</h1>
 <!-- /wp:heading -->
 
@@ -883,7 +883,7 @@ Follow user instructions for sections and layout.";
 <!-- /wp:details -->',
 			
 			'cover' => '<!-- wp:cover {"dimRatio":50,"gradient":"cool-to-warm-spectrum","align":"full"} -->
-<div class="wp-block-cover alignfull has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background"><span aria-hidden="true" class="wp-block-cover__background has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background"></span><div class="wp-block-cover__inner-container"><!-- wp:heading {"textAlign":"center","level":1,"textColor":"white"} -->
+<div class="wp-block-cover alignfull has-background-dim has-background-gradient has-cool-to-warm-spectrum-gradient-background"><div class="wp-block-cover__inner-container"><!-- wp:heading {"textAlign":"center","level":1,"textColor":"white"} -->
 <h1 class="wp-block-heading has-text-align-center has-white-color has-text-color">Hero Title</h1>
 <!-- /wp:heading -->
 

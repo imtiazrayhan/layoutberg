@@ -906,25 +906,14 @@ class Block_Generator {
 			$block['attrs']['dimRatio'] = 50;
 		}
 
-		// Ensure cover block has proper inner structure with background span
+		// Remove any background spans that may have been generated - WordPress handles gradients differently
 		if ( isset( $block['innerHTML'] ) && ! empty( $block['innerHTML'] ) ) {
-			// Check if innerHTML has the background span structure
-			if ( strpos( $block['innerHTML'], 'wp-block-cover__background' ) === false ) {
-				// Add the background span if missing
-				if ( isset( $block['attrs']['gradient'] ) ) {
-					$gradient_class = 'has-' . $block['attrs']['gradient'] . '-gradient-background';
-					$background_span = '<span aria-hidden="true" class="wp-block-cover__background has-background-dim has-background-gradient ' . $gradient_class . '"></span>';
-				} else {
-					$background_span = '<span aria-hidden="true" class="wp-block-cover__background has-background-dim"></span>';
-				}
-				
-				// Insert the background span after the opening div
-				$block['innerHTML'] = preg_replace(
-					'/(<div[^>]*class="[^"]*wp-block-cover[^"]*"[^>]*>)/',
-					'$1' . $background_span,
-					$block['innerHTML']
-				);
-			}
+			// Remove background spans for gradient cover blocks as WordPress doesn't include them in saved content
+			$block['innerHTML'] = preg_replace(
+				'/<span[^>]*wp-block-cover__background[^>]*><\/span>/',
+				'',
+				$block['innerHTML']
+			);
 		}
 
 		return true;
