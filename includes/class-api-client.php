@@ -375,6 +375,96 @@ class API_Client {
 			),
 		);
 	}
+	
+	/**
+	 * Generate layout using simplified approach.
+	 *
+	 * @since 1.0.0
+	 * @param string $prompt  User prompt.
+	 * @param array  $options Generation options.
+	 * @return array|WP_Error Generated result or error.
+	 */
+	public function generate_layout_simple( $prompt, $options = array() ) {
+		// Check API key is set based on provider.
+		if ( empty( $this->api_key ) ) {
+			$provider_name = $this->provider === 'claude' ? 'Claude' : 'OpenAI';
+			return new \WP_Error( 'no_api_key', sprintf( __( '%s API key is not configured.', 'layoutberg' ), $provider_name ) );
+		}
+		
+		// Use Simple_Prompt_Engineer for minimal prompt
+		if ( ! class_exists( '\DotCamp\LayoutBerg\Simple_Prompt_Engineer' ) ) {
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-simple-prompt-engineer.php';
+		}
+		$simple_engineer = new Simple_Prompt_Engineer();
+		
+		// Build simple system prompt
+		$system_prompt = $simple_engineer->build_system_prompt( $options );
+		
+		// Validate user prompt
+		$validation = $simple_engineer->validate_prompt( $prompt );
+		if ( is_wp_error( $validation ) ) {
+			return $validation;
+		}
+		
+		// Use lower temperature for consistency (like the working plugin)
+		$temperature = 0.2;
+		
+		// Fixed max tokens (like the working plugin)
+		$max_tokens = 2000;
+		
+		// Prepare request body based on provider
+		if ( $this->provider === 'claude' ) {
+			$request_body = array(
+				'model'       => $this->model,
+				'max_tokens'  => $max_tokens,
+				'temperature' => $temperature,
+				'system'      => $system_prompt,
+				'messages'    => array(
+					array(
+						'role'    => 'user',
+						'content' => $prompt, // Use original prompt directly
+					),
+				),
+			);
+		} else {
+			// OpenAI format
+			$request_body = array(
+				'model'      => $this->model,
+				'messages'   => array(
+					array(
+						'role'    => 'system',
+						'content' => $system_prompt,
+					),
+					array(
+						'role'    => 'user',
+						'content' => $prompt, // Use original prompt directly
+					),
+				),
+				'max_tokens' => $max_tokens,
+				'temperature' => $temperature,
+			);
+		}
+		
+		// Make API request with retry logic
+		$response = $this->make_api_request_with_retry( $request_body );
+		
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+		
+		// Track usage
+		$this->track_usage( $response, $prompt );
+		
+		return array(
+			'content' => $response['content'],
+			'usage'   => isset( $response['usage'] ) ? $response['usage'] : array(),
+			'model'   => $this->model,
+			'prompts' => array(
+				'system' => $system_prompt,
+				'user'   => $prompt,
+			),
+		);
+	}
 
 	/**
 	 * Make API request with retry logic.

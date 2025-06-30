@@ -207,9 +207,23 @@ class API_Handler {
 
 			// Rate limiting removed - unlimited generations allowed
 
-			// Generate layout.
-			$generator = new Block_Generator();
-			$result    = $generator->generate( $prompt, $options );
+			// Check if simplified generation is enabled
+			$use_simplified = isset( $stored_options['use_simplified_generation'] ) && 
+			                 $stored_options['use_simplified_generation'] === '1';
+
+			// Generate layout using appropriate generator
+			if ( $use_simplified ) {
+				// Use simplified generator with minimal validation
+				if ( ! class_exists( '\DotCamp\LayoutBerg\Simple_Block_Generator' ) ) {
+					require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-simple-block-generator.php';
+				}
+				$generator = new Simple_Block_Generator();
+			} else {
+				// Use standard generator with full validation
+				$generator = new Block_Generator();
+			}
+			
+			$result = $generator->generate( $prompt, $options );
 
 			if ( is_wp_error( $result ) ) {
 				return $result;

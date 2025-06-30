@@ -377,6 +377,34 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 									</button>
 								</div>
 							</div>
+						</div>
+						
+						<!-- Experimental Features -->
+						<div class="layoutberg-card layoutberg-mt-4">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Experimental Features', 'layoutberg' ); ?></h3>
+							</div>
+							
+							<div class="layoutberg-form-group">
+								<label class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
+									<div class="layoutberg-toggle">
+										<input 
+											type="checkbox" 
+											name="layoutberg_options[use_simplified_generation]" 
+											value="1"
+											<?php checked( $options['use_simplified_generation'] ?? false, true ); ?>
+										/>
+										<span class="layoutberg-toggle-slider"></span>
+									</div>
+									<div>
+										<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Use Simplified Generation', 'layoutberg' ); ?></span>
+										<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
+											<?php esc_html_e( 'Enable simplified block generation with minimal validation for better compatibility. This uses a simpler prompt system and lower temperature setting similar to other successful block generation plugins.', 'layoutberg' ); ?>
+										</p>
+									</div>
+								</label>
+							</div>
+						</div>
 					</div>
 
 					<!-- Save Button -->
