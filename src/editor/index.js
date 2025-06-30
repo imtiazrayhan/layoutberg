@@ -64,7 +64,7 @@ const LayoutBergEditor = () => {
         maxTokens: window.layoutbergEditor?.settings?.maxTokens || 2000
     });
 
-    const { insertBlocks, replaceBlocks } = useDispatch(blockEditorStore);
+    // Use direct dispatch like Pattern Pal instead of hooks
     const { createNotice } = useDispatch('core/notices');
     
     const { selectedBlocks, hasSelectedBlocks, allBlocks } = useSelect((select) => {
@@ -141,19 +141,8 @@ const LayoutBergEditor = () => {
                 // Store the response for displaying prompts
                 setLastResponse(response.data);
                 
-                // Parse and insert the generated blocks using global wp.blocks.parse
-                // This matches the approach used by Pattern Pal which never fails validation
-                let parsedBlocks = wp.blocks.parse(response.data.blocks);
-                
-                // Fallback: If parsing returns empty or only has empty blocks, try rawHandler
-                if (!parsedBlocks || parsedBlocks.length === 0 || 
-                    (parsedBlocks.length === 1 && !parsedBlocks[0].name)) {
-                    console.warn('LayoutBerg: Initial parsing failed, trying rawHandler fallback');
-                    parsedBlocks = wp.blocks.rawHandler({ 
-                        HTML: response.data.blocks,
-                        mode: 'BLOCKS' 
-                    });
-                }
+                // Parse blocks using wp.blocks.parse exactly like Pattern Pal
+                const parsedBlocks = wp.blocks.parse(response.data.blocks);
                 
                 // Debug logging to verify parsing
                 if (window.layoutbergDebug) {
@@ -161,10 +150,14 @@ const LayoutBergEditor = () => {
                     console.log('LayoutBerg: Parsed blocks:', parsedBlocks);
                 }
                 
-                if (parsedBlocks && parsedBlocks.length > 0 && parsedBlocks[0].name) {
+                // Use Pattern Pal's dispatch approach instead of hooks
+                const { removeBlocks, insertBlocks: insertBlocksAction } = wp.data.dispatch('core/block-editor');
+                
+                if (parsedBlocks && parsedBlocks.length > 0) {
                     if (hasSelectedBlocks) {
-                        // Replace selected blocks
-                        replaceBlocks(selectedBlocks, parsedBlocks);
+                        // Pattern Pal's approach: remove then insert
+                        removeBlocks(selectedBlocks);
+                        insertBlocksAction(parsedBlocks);
                         createNotice(
                             'success',
                             __('Layout generated and replaced selected blocks!', 'layoutberg'),
@@ -178,8 +171,8 @@ const LayoutBergEditor = () => {
                             }
                         );
                     } else {
-                        // Insert at the end
-                        insertBlocks(parsedBlocks);
+                        // Insert at the end using Pattern Pal's approach
+                        insertBlocksAction(parsedBlocks);
                         createNotice(
                             'success',
                             __('Layout generated and inserted!', 'layoutberg'),
@@ -361,10 +354,11 @@ const LayoutBergEditor = () => {
                 method: 'GET'
             }).then(response => {
                 if (response && response.content) {
-                    // Use global wp.blocks.parse for consistency
+                    // Use global wp.blocks.parse and direct dispatch like Pattern Pal
                     const parsedBlocks = wp.blocks.parse(response.content);
                     if (parsedBlocks && parsedBlocks.length > 0) {
-                        insertBlocks(parsedBlocks);
+                        const { insertBlocks: insertBlocksAction } = wp.data.dispatch('core/block-editor');
+                        insertBlocksAction(parsedBlocks);
                         createNotice(
                             'success',
                             sprintf(
