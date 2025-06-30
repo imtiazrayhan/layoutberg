@@ -327,6 +327,17 @@ class LayoutBerg {
 			array( 'wp-edit-blocks' ),
 			$asset['version']
 		);
+		
+		// Enqueue debug helper in development mode
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			wp_enqueue_script(
+				'layoutberg-debug-helper',
+				LAYOUTBERG_PLUGIN_URL . 'assets/js/debug-helper.js',
+				array(),
+				$this->version,
+				true
+			);
+		}
 
 		// Get available models
 		$available_models = $this->get_available_models();

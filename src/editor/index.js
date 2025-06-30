@@ -34,7 +34,8 @@ import { useState, useEffect } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
 import { store as blockEditorStore } from '@wordpress/block-editor';
-import { parse, serialize } from '@wordpress/blocks';
+import { serialize } from '@wordpress/blocks';
+// Note: We use wp.blocks.parse() instead of importing parse to match Pattern Pal's approach
 import apiFetch from '@wordpress/api-fetch';
 
 // Import styles
@@ -140,10 +141,27 @@ const LayoutBergEditor = () => {
                 // Store the response for displaying prompts
                 setLastResponse(response.data);
                 
-                // Parse and insert the generated blocks immediately
-                const parsedBlocks = parse(response.data.blocks);
+                // Parse and insert the generated blocks using global wp.blocks.parse
+                // This matches the approach used by Pattern Pal which never fails validation
+                let parsedBlocks = wp.blocks.parse(response.data.blocks);
                 
-                if (parsedBlocks.length > 0) {
+                // Fallback: If parsing returns empty or only has empty blocks, try rawHandler
+                if (!parsedBlocks || parsedBlocks.length === 0 || 
+                    (parsedBlocks.length === 1 && !parsedBlocks[0].name)) {
+                    console.warn('LayoutBerg: Initial parsing failed, trying rawHandler fallback');
+                    parsedBlocks = wp.blocks.rawHandler({ 
+                        HTML: response.data.blocks,
+                        mode: 'BLOCKS' 
+                    });
+                }
+                
+                // Debug logging to verify parsing
+                if (window.layoutbergDebug) {
+                    console.log('LayoutBerg: Raw blocks:', response.data.blocks);
+                    console.log('LayoutBerg: Parsed blocks:', parsedBlocks);
+                }
+                
+                if (parsedBlocks && parsedBlocks.length > 0 && parsedBlocks[0].name) {
                     if (hasSelectedBlocks) {
                         // Replace selected blocks
                         replaceBlocks(selectedBlocks, parsedBlocks);
@@ -343,8 +361,9 @@ const LayoutBergEditor = () => {
                 method: 'GET'
             }).then(response => {
                 if (response && response.content) {
-                    const parsedBlocks = parse(response.content);
-                    if (parsedBlocks.length > 0) {
+                    // Use global wp.blocks.parse for consistency
+                    const parsedBlocks = wp.blocks.parse(response.content);
+                    if (parsedBlocks && parsedBlocks.length > 0) {
                         insertBlocks(parsedBlocks);
                         createNotice(
                             'success',
