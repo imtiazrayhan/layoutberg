@@ -74,30 +74,15 @@ class Simple_Block_Generator {
 		// Use wp_kses_post for basic validation (like the working plugin)
 		$content = wp_kses_post( $content );
 
-		// Parse blocks using WordPress function
-		$blocks = parse_blocks( $content );
+		// DO NOT parse blocks in PHP - let JavaScript handle it
+		// This matches Pattern Pal's approach and avoids double parsing
 
-		if ( empty( $blocks ) ) {
-			return new \WP_Error(
-				'no_blocks_parsed',
-				__( 'No blocks could be parsed from the generated content.', 'layoutberg' )
-			);
-		}
-
-		// Filter out empty blocks
-		$blocks = array_filter( $blocks, function( $block ) {
-			return ! empty( $block['blockName'] );
-		} );
-
-		// Serialize blocks for editor
-		$serialized = serialize_blocks( $blocks );
-
-		// Prepare response
+		// Prepare response with raw content for JavaScript to parse
 		$response = array(
-			'blocks'     => $blocks,
-			'serialized' => $serialized,
-			'html'       => do_blocks( $content ),
-			'raw'        => $result['content'],
+			'blocks'     => $content, // Return raw content, not parsed blocks
+			'serialized' => $content, // Same raw content for compatibility
+			'html'       => do_blocks( $content ), // Generate preview HTML
+			'raw'        => $result['content'], // Original unprocessed content
 			'usage'      => $result['usage'],
 			'model'      => $result['model'],
 			'prompts'    => isset( $result['prompts'] ) ? $result['prompts'] : null,
