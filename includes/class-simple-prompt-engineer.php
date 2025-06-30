@@ -52,6 +52,8 @@ class Simple_Prompt_Engineer {
 
 			The block pattern should be designed for the \"%s\" theme and should include proper spacing, padding and margins. Please make sure all inner blocks use content width.
 
+			For cover blocks with images: Use ONLY the url attribute without id attribute. Do not add wp-image-XXX classes. Use gradient backgrounds instead of images when possible.
+
 			%s",
 			esc_html( $theme_name ),
 			esc_html( $color_info )
