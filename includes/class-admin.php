@@ -676,6 +676,7 @@ class Admin {
 		$sanitized['allow_custom_blocks'] = isset( $input['allow_custom_blocks'] ) && $input['allow_custom_blocks'] == '1';
 		$sanitized['analytics_enabled'] = isset( $input['analytics_enabled'] ) && $input['analytics_enabled'] == '1';
 		$sanitized['debug_mode'] = isset( $input['debug_mode'] ) && $input['debug_mode'] == '1';
+		$sanitized['use_simplified_generation'] = isset( $input['use_simplified_generation'] ) && $input['use_simplified_generation'] == '1';
 
 		// Merge with existing options.
 		$options = get_option( 'layoutberg_options', array() );
