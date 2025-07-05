@@ -136,6 +136,21 @@ function layoutberg_load_textdomain() {
 add_action( 'plugins_loaded', __NAMESPACE__ . '\layoutberg_load_textdomain' );
 
 /**
+ * Check and run database upgrades.
+ *
+ * @since 1.0.0
+ */
+function layoutberg_check_upgrades() {
+	require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-database-upgrader.php';
+	
+	$db_version = get_option( 'layoutberg_db_version', '1.0.0' );
+	if ( version_compare( $db_version, '1.1.0', '<' ) ) {
+		Database_Upgrader::upgrade();
+	}
+}
+add_action( 'plugins_loaded', __NAMESPACE__ . '\layoutberg_check_upgrades', 10 );
+
+/**
  * Initialize the plugin.
  *
  * @since 1.0.0

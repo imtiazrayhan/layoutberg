@@ -30,13 +30,22 @@ import {
     PanelRow
 } from '@wordpress/components';
 import { layout } from '@wordpress/icons';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useReducer } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
 import { store as blockEditorStore } from '@wordpress/block-editor';
 import { serialize } from '@wordpress/blocks';
 // Note: We use wp.blocks.parse() instead of importing parse to match Pattern Pal's approach
 import apiFetch from '@wordpress/api-fetch';
+
+// Import state management
+import { 
+    generationReducer, 
+    initialGenerationState, 
+    GENERATION_ACTIONS,
+    getStateDescription,
+    isLoadingState
+} from './state/generationReducer';
 
 // Import styles
 import './editor.css';
@@ -52,17 +61,15 @@ import LayoutBergDocumentPanel from './document-panel';
 const LayoutBergEditor = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [generationError, setGenerationError] = useState(null);
-    const [generationState, setGenerationState] = useState('idle');
     const [prompt, setPrompt] = useState('');
-    const [lastGeneratedBlocks, setLastGeneratedBlocks] = useState('');
-    const [lastResponse, setLastResponse] = useState(null);
     const [settings, setSettings] = useState({
         model: window.layoutbergEditor?.settings?.model || 'gpt-3.5-turbo',
         temperature: window.layoutbergEditor?.settings?.temperature || 0.7,
         maxTokens: window.layoutbergEditor?.settings?.maxTokens || 2000
     });
+
+    // Use reducer for generation state management
+    const [generationState, dispatch] = useReducer(generationReducer, initialGenerationState);
 
     // Use direct dispatch like Pattern Pal instead of hooks
     const { createNotice } = useDispatch('core/notices');
@@ -94,8 +101,7 @@ const LayoutBergEditor = () => {
     const closeModal = () => {
         setIsModalOpen(false);
         setPrompt('');
-        setGenerationError(null);
-        setGenerationState('idle');
+        dispatch({ type: GENERATION_ACTIONS.RESET });
     };
 
     /**
@@ -103,24 +109,20 @@ const LayoutBergEditor = () => {
      */
     const handleGenerate = async () => {
         if (!prompt.trim()) {
-            setGenerationError(__('Please enter a prompt to generate a layout.', 'layoutberg'));
+            dispatch({ 
+                type: GENERATION_ACTIONS.ERROR, 
+                payload: __('Please enter a prompt to generate a layout.', 'layoutberg') 
+            });
             return;
         }
 
-        setIsGenerating(true);
-        setGenerationError(null);
-        setGenerationState('preparing');
+        dispatch({ type: GENERATION_ACTIONS.START });
 
         try {
-            // Small delay for preparing state to be visible
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            setGenerationState('sending');
-            
-            // Small delay for sending state
+            // Small delay for UI feedback
             await new Promise(resolve => setTimeout(resolve, 300));
             
-            setGenerationState('generating');
+            dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'sending' });
             
             const response = await apiFetch({
                 path: '/layoutberg/v1/generate',
@@ -132,7 +134,7 @@ const LayoutBergEditor = () => {
                 }
             });
 
-            setGenerationState('processing');
+            dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'processing' });
 
             if (response.success && response.data && response.data.blocks) {
                 // Store the generated blocks for potential template saving
@@ -187,26 +189,36 @@ const LayoutBergEditor = () => {
                         );
                     }
                     
-                    setGenerationState('complete');
+                    dispatch({ 
+                        type: GENERATION_ACTIONS.SUCCESS, 
+                        payload: { 
+                            response: response.data, 
+                            blocks: parsedBlocks 
+                        } 
+                    });
                     
                     // Small delay to show completion
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
                     closeModal();
                 } else {
-                    setGenerationError(__('No valid blocks found in the generated layout.', 'layoutberg'));
-                    setGenerationState('idle');
+                    dispatch({ 
+                        type: GENERATION_ACTIONS.ERROR, 
+                        payload: __('No valid blocks found in the generated layout.', 'layoutberg') 
+                    });
                 }
             } else {
-                setGenerationError(response.data?.message || __('Failed to generate layout. Please try again.', 'layoutberg'));
-                setGenerationState('idle');
+                dispatch({ 
+                    type: GENERATION_ACTIONS.ERROR, 
+                    payload: response.data?.message || __('Failed to generate layout. Please try again.', 'layoutberg') 
+                });
             }
         } catch (error) {
             console.error('LayoutBerg generation error:', error);
-            setGenerationError(error.message || __('An error occurred while generating the layout.', 'layoutberg'));
-            setGenerationState('idle');
-        } finally {
-            setIsGenerating(false);
+            dispatch({ 
+                type: GENERATION_ACTIONS.ERROR, 
+                payload: error.message || __('An error occurred while generating the layout.', 'layoutberg') 
+            });
         }
     };
 
@@ -241,20 +253,21 @@ const LayoutBergEditor = () => {
         const editorBlocks = wp.data.select('core/block-editor').getBlocks();
         const serializedBlocks = serialize(editorBlocks);
         
-        // Store the current editor blocks for template saving
-        setLastGeneratedBlocks(serializedBlocks);
-        
-        // Open the save template modal
+        // Open the save template modal with current blocks
         setIsSaveTemplateModalOpen(true);
+        
+        // Store blocks in a temporary variable for the modal
+        window.layoutbergCurrentBlocks = serializedBlocks;
     };
 
     /**
      * Handle generation cancel
      */
     const handleCancelGeneration = () => {
-        setIsGenerating(false);
-        setGenerationState('idle');
-        setGenerationError(__('Generation cancelled by user.', 'layoutberg'));
+        dispatch({ 
+            type: GENERATION_ACTIONS.ERROR, 
+            payload: __('Generation cancelled by user.', 'layoutberg') 
+        });
     };
 
 
@@ -424,15 +437,15 @@ const LayoutBergEditor = () => {
                     isOpen={isModalOpen}
                     onClose={closeModal}
                     onGenerate={handleGenerate}
-                    isGenerating={isGenerating}
-                    error={generationError}
+                    isGenerating={generationState.isGenerating}
+                    error={generationState.error}
                     prompt={prompt}
                     onPromptChange={setPrompt}
                     settings={settings}
                     onSettingsChange={setSettings}
                     hasSelectedBlocks={hasSelectedBlocks}
-                    lastResponse={lastResponse}
-                    generationState={generationState}
+                    lastResponse={generationState.lastResponse}
+                    generationState={generationState.state}
                     onCancel={handleCancelGeneration}
                 />
             )}
@@ -443,7 +456,7 @@ const LayoutBergEditor = () => {
                     isOpen={isSaveTemplateModalOpen}
                     onClose={() => setIsSaveTemplateModalOpen(false)}
                     onSave={handleTemplateSave}
-                    blocks={lastGeneratedBlocks}
+                    blocks={window.layoutbergCurrentBlocks || generationState.lastGeneratedBlocks}
                     prompt={prompt}
                 />
             )}

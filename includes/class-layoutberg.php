@@ -129,6 +129,9 @@ class LayoutBerg {
 		// Load security manager.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-security-manager.php';
 
+		// Load model configuration.
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-model-config.php';
+
 		// Load upgrade handler.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-upgrade.php';
 

@@ -31,11 +31,15 @@ class Activator {
 	public static function activate() {
 		// Load required files
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-upgrade.php';
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-database-upgrader.php';
 
 		// Create/upgrade database tables.
 		$upgrade = new Upgrade();
 		$upgrade->create_tables();
 		$upgrade->run();
+
+		// Run database upgrade for performance indexes
+		Database_Upgrader::upgrade();
 
 		// Set default options.
 		self::set_default_options();

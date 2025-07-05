@@ -286,24 +286,35 @@ class API_Client {
 			error_log( 'Estimated tokens - System: ' . $system_tokens . ', User: ' . $user_tokens . ', Total: ' . $total_prompt_tokens );
 		}
 		
-		// Check against model limits
-		$model_limits = $this->prompt_engineer->get_model_limits( $this->model );
-		if ( $total_prompt_tokens + $this->max_tokens > $model_limits['total'] ) {
-			// Adjust max_tokens if needed
-			$available_tokens = $model_limits['total'] - $total_prompt_tokens - 500; // Keep 500 token buffer
-			if ( $available_tokens < 500 ) {
-				return new \WP_Error( 
-					'prompt_too_long', 
-					sprintf( 
-						__( 'Your request is too long for the selected model. Try a shorter description or switch to GPT-4 Turbo for longer requests.', 'layoutberg' )
-					)
-				);
-			}
-			$this->max_tokens = min( $available_tokens, $model_limits['max_completion'] );
-			
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'Adjusted max_tokens to: ' . $this->max_tokens );
-			}
+		// Check against model limits using Model Config
+		$model_config = \DotCamp\LayoutBerg\Model_Config::get_model( $this->model );
+		if ( ! $model_config ) {
+			return new \WP_Error(
+				'invalid_model',
+				sprintf( __( 'Invalid model selected: %s', 'layoutberg' ), $this->model )
+			);
+		}
+		
+		// Calculate safe max tokens for generation
+		$max_tokens = \DotCamp\LayoutBerg\Model_Config::calculate_max_tokens(
+			$this->model, 
+			$total_prompt_tokens,
+			500 // Buffer
+		);
+		
+		if ( $max_tokens < 500 ) {
+			return new \WP_Error(
+				'prompt_too_long',
+				__( 'Your prompt is too long for the selected model. Try a shorter description or use a model with a larger context window.', 'layoutberg' )
+			);
+		}
+		
+		// Update max_tokens
+		$this->max_tokens = min( $max_tokens, $options['max_tokens'] ?? 4096 );
+		
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'Model: ' . $this->model . ', Context window: ' . $model_config['context_window'] . ', Max output: ' . $model_config['max_output'] );
+			error_log( 'Adjusted max_tokens to: ' . $this->max_tokens );
 		}
 
 		// Prepare request body based on provider.
@@ -806,43 +817,30 @@ class API_Client {
 	 *
 	 * @since 1.0.0
 	 * @param int $tokens Number of tokens used.
+	 * @param array $usage Usage data with input/output tokens.
 	 * @return float Cost in USD.
 	 */
 	private function calculate_cost( $tokens, $usage = null ) {
-		// Claude models have separate input/output pricing
-		if ( $this->provider === 'claude' && $usage ) {
-			$input_tokens = isset( $usage['input_tokens'] ) ? intval( $usage['input_tokens'] ) : 0;
-			$output_tokens = isset( $usage['output_tokens'] ) ? intval( $usage['output_tokens'] ) : 0;
+		// Use Model Config for accurate cost calculation
+		if ( $usage && isset( $usage['input_tokens'] ) && isset( $usage['output_tokens'] ) ) {
+			// Use separate input/output tokens for more accurate pricing
+			$input_tokens = intval( $usage['input_tokens'] );
+			$output_tokens = intval( $usage['output_tokens'] );
 			
-			// Claude pricing per 1K tokens (as of late 2024)
-			$claude_costs = array(
-				'claude-3-opus-20240229' => array(
-					'input'  => 0.015,  // $15 per 1M tokens
-					'output' => 0.075,  // $75 per 1M tokens
-				),
-				'claude-3-5-sonnet-20241022' => array(
-					'input'  => 0.003,  // $3 per 1M tokens
-					'output' => 0.015,  // $15 per 1M tokens
-				),
-				'claude-3-sonnet-20240229' => array(
-					'input'  => 0.003,  // $3 per 1M tokens
-					'output' => 0.015,  // $15 per 1M tokens
-				),
-				'claude-3-haiku-20240307' => array(
-					'input'  => 0.00025, // $0.25 per 1M tokens
-					'output' => 0.00125, // $1.25 per 1M tokens
-				),
-			);
-			
-			if ( isset( $claude_costs[ $this->model ] ) ) {
-				$costs = $claude_costs[ $this->model ];
-				$input_cost = ( $input_tokens / 1000 ) * $costs['input'];
-				$output_cost = ( $output_tokens / 1000 ) * $costs['output'];
-				return $input_cost + $output_cost;
-			}
+			return \DotCamp\LayoutBerg\Model_Config::estimate_cost( $this->model, $input_tokens, $output_tokens );
 		}
 		
-		// OpenAI models have combined pricing
+		// Fallback to combined token calculation
+		$model_config = \DotCamp\LayoutBerg\Model_Config::get_model( $this->model );
+		if ( $model_config ) {
+			// Estimate input/output split (typically 70/30 for generation tasks)
+			$input_tokens = intval( $tokens * 0.7 );
+			$output_tokens = intval( $tokens * 0.3 );
+			
+			return \DotCamp\LayoutBerg\Model_Config::estimate_cost( $this->model, $input_tokens, $output_tokens );
+		}
+		
+		// Fallback to old method if model not found
 		$costs = array(
 			'gpt-3.5-turbo' => 0.002,
 			'gpt-4'         => 0.03,
@@ -986,26 +984,23 @@ class API_Client {
 	 * @return array Available models.
 	 */
 	public function get_available_models() {
-		return array(
-			'gpt-3.5-turbo' => array(
-				'name'        => 'GPT-3.5 Turbo',
-				'description' => __( 'Fast and affordable', 'layoutberg' ),
-				'max_tokens'  => 4096,
-				'cost_per_1k' => 0.002,
-			),
-			'gpt-4' => array(
-				'name'        => 'GPT-4',
-				'description' => __( 'Most capable model', 'layoutberg' ),
-				'max_tokens'  => 8192,
-				'cost_per_1k' => 0.03,
-			),
-			'gpt-4-turbo' => array(
-				'name'        => 'GPT-4 Turbo',
-				'description' => __( 'Fast and capable', 'layoutberg' ),
-				'max_tokens'  => 128000,
-				'cost_per_1k' => 0.01,
-			),
-		);
+		// Use Model Config for consistent model information
+		$models = \DotCamp\LayoutBerg\Model_Config::get_all_models();
+		$formatted_models = array();
+		
+		foreach ( $models as $model_id => $config ) {
+			$formatted_models[ $model_id ] = array(
+				'name'        => $config['name'],
+				'description' => $config['description'],
+				'max_tokens'  => $config['max_output'],
+				'context_window' => $config['context_window'],
+				'cost_per_1k_input' => $config['cost_per_1k_input'],
+				'cost_per_1k_output' => $config['cost_per_1k_output'],
+				'provider'    => $config['provider'],
+			);
+		}
+		
+		return $formatted_models;
 	}
 
 	/**
