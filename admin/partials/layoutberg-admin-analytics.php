@@ -388,7 +388,19 @@ foreach ( $hourly_stats as $hour ) {
 jQuery(document).ready(function($) {
 	// Period selector
 	$('#period-selector').on('change', function() {
-		window.location.href = '<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-analytics&period=' ) ); ?>' + $(this).val();
+		var selectedPeriod = $(this).val();
+		var currentUrl = new URL(window.location.href);
+		currentUrl.searchParams.set('period', selectedPeriod);
+		window.location.href = currentUrl.toString();
+	});
+	
+	// Ensure the correct period is selected on page load
+	$(document).ready(function() {
+		var urlParams = new URLSearchParams(window.location.search);
+		var periodParam = urlParams.get('period');
+		if (periodParam) {
+			$('#period-selector').val(periodParam);
+		}
 	});
 
 	// Chart configuration
