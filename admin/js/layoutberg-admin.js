@@ -369,7 +369,7 @@
             $select.addClass('has-value');
             
             // Trigger dependent field updates
-            this.updateDependentFields($select);
+            // this.updateDependentFields($select); // Removed as not implemented
         },
 
         /**
