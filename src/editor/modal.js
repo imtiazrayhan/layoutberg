@@ -91,13 +91,43 @@ const LayoutBergModal = ({
         }
     ];
 
-    // Progress steps configuration
+    // Progress steps configuration with enhanced details
     const progressSteps = [
-        { id: 'preparing', label: __('Preparing your request', 'layoutberg'), icon: '📝' },
-        { id: 'sending', label: __('Connecting to AI model', 'layoutberg'), icon: '🚀' },
-        { id: 'generating', label: __('Generating layout blocks', 'layoutberg'), icon: '✨' },
-        { id: 'processing', label: __('Processing and validating', 'layoutberg'), icon: '🔍' },
-        { id: 'complete', label: __('Finalizing your layout', 'layoutberg'), icon: '✅' }
+        { 
+            id: 'preparing', 
+            label: __('Preparing your request', 'layoutberg'), 
+            icon: '📝',
+            description: __('Analyzing prompt and optimizing parameters', 'layoutberg'),
+            estimatedDuration: 1
+        },
+        { 
+            id: 'sending', 
+            label: __('Connecting to AI model', 'layoutberg'), 
+            icon: '🚀',
+            description: __('Establishing secure connection to AI service', 'layoutberg'),
+            estimatedDuration: 1
+        },
+        { 
+            id: 'generating', 
+            label: __('Generating layout blocks', 'layoutberg'), 
+            icon: '✨',
+            description: __('AI is creating your custom layout design', 'layoutberg'),
+            estimatedDuration: 20
+        },
+        { 
+            id: 'processing', 
+            label: __('Processing and validating', 'layoutberg'), 
+            icon: '🔍',
+            description: __('Validating blocks and optimizing structure', 'layoutberg'),
+            estimatedDuration: 3
+        },
+        { 
+            id: 'complete', 
+            label: __('Finalizing your layout', 'layoutberg'), 
+            icon: '✅',
+            description: __('Inserting blocks into your editor', 'layoutberg'),
+            estimatedDuration: 1
+        }
     ];
 
     // Get current step based on generation state
@@ -112,19 +142,84 @@ const LayoutBergModal = ({
         }
     };
 
+    // Calculate progress percentage
+    const getProgressPercentage = () => {
+        const currentStep = getCurrentStep();
+        if (currentStep === -1) return 0;
+        return Math.min(((currentStep + 1) / progressSteps.length) * 100, 100);
+    };
+
+    // Get estimated time remaining
+    const getEstimatedTimeRemaining = () => {
+        const currentStep = getCurrentStep();
+        if (currentStep === -1) return getEstimatedTime();
+        
+        let remainingSeconds = 0;
+        for (let i = currentStep; i < progressSteps.length; i++) {
+            remainingSeconds += progressSteps[i].estimatedDuration;
+        }
+        
+        if (remainingSeconds < 60) {
+            return sprintf(__('%d seconds', 'layoutberg'), remainingSeconds);
+        } else {
+            const minutes = Math.ceil(remainingSeconds / 60);
+            return sprintf(__('%d minutes', 'layoutberg'), minutes);
+        }
+    };
+
     // Estimated time based on model
     const getEstimatedTime = () => {
         if (settings.model?.includes('gpt-4')) {
-            return __('20-40 seconds', 'layoutberg');
+            return __('25-45 seconds', 'layoutberg');
         } else if (settings.model?.includes('claude')) {
-            return __('15-30 seconds', 'layoutberg');
+            return __('20-35 seconds', 'layoutberg');
         }
-        return __('10-25 seconds', 'layoutberg');
+        return __('15-30 seconds', 'layoutberg');
     };
 
-    // Progress View Component
+    // Get model-specific tips
+    const getModelTips = () => {
+        if (settings.model?.includes('gpt-4')) {
+            return __('GPT-4 provides the highest quality results but may take longer to generate.', 'layoutberg');
+        } else if (settings.model?.includes('claude')) {
+            return __('Claude excels at creative layouts and detailed design descriptions.', 'layoutberg');
+        } else if (settings.model?.includes('gpt-3.5')) {
+            return __('GPT-3.5 offers fast generation with good quality for most layouts.', 'layoutberg');
+        }
+        return __('Your AI model is working to create the perfect layout for you.', 'layoutberg');
+    };
+
+    // Get real-time progress updates
+    const getProgressUpdates = () => {
+        const updates = {
+            preparing: __('Optimizing your prompt for best results...', 'layoutberg'),
+            sending: __('Connecting securely to AI service...', 'layoutberg'),
+            generating: __('AI is analyzing your requirements and creating blocks...', 'layoutberg'),
+            processing: __('Validating generated content and optimizing structure...', 'layoutberg'),
+            complete: __('Finalizing and inserting blocks into your editor...', 'layoutberg')
+        };
+        
+        return updates[generationState] || __('Processing your request...', 'layoutberg');
+    };
+
+    // Get step-specific tips
+    const getStepTips = () => {
+        const currentStep = getCurrentStep();
+        const tips = {
+            0: __('This step analyzes your prompt to ensure optimal results.', 'layoutberg'),
+            1: __('Establishing a secure connection to the AI service.', 'layoutberg'),
+            2: __('This is where the AI does the heavy lifting - creating your layout based on your description. This step typically takes the longest.', 'layoutberg'),
+            3: __('Validating the generated content for compatibility.', 'layoutberg'),
+            4: __('Inserting the blocks into your WordPress editor.', 'layoutberg')
+        };
+        
+        return tips[currentStep] || __('Processing your request...', 'layoutberg');
+    };
+
+    // Progress View Component - Simplified for Performance
     const ProgressView = () => {
         const currentStep = getCurrentStep();
+        const progressPercentage = getProgressPercentage();
         
         return (
             <div className="layoutberg-progress-view">
@@ -133,20 +228,35 @@ const LayoutBergModal = ({
                     <p className="layoutberg-prompt-preview">{prompt}</p>
                 </div>
                 
+                {/* Simple Progress Bar */}
+                <div className="layoutberg-progress-bar-container">
+                    <div className="layoutberg-progress-bar">
+                        <div 
+                            className="layoutberg-progress-bar-fill"
+                            style={{ width: `${progressPercentage}%` }}
+                        />
+                    </div>
+                    <div className="layoutberg-progress-percentage">
+                        {Math.round(progressPercentage)}%
+                    </div>
+                </div>
+                
+                {/* Simple Animation */}
                 <div className="layoutberg-progress-animation">
                     <div className="layoutberg-progress-circle">
                         <Spinner />
                     </div>
-                    <div>
+                    <div className="layoutberg-progress-info">
                         <div className="layoutberg-progress-model">
                             {sprintf(__('Using %s', 'layoutberg'), settings.model || 'AI Model')}
                         </div>
-                        <div className="layoutberg-estimated-time">
-                            {sprintf(__('Estimated: %s', 'layoutberg'), getEstimatedTime())}
+                        <div className="layoutberg-progress-update">
+                            {getProgressUpdates()}
                         </div>
                     </div>
                 </div>
                 
+                {/* Simple Progress Steps */}
                 <div className="layoutberg-progress-steps">
                     {progressSteps.map((step, index) => (
                         <div 
@@ -162,7 +272,10 @@ const LayoutBergModal = ({
                                  index === currentStep ? '⟳' : 
                                  '○'}
                             </span>
-                            <span className="step-label">{step.label}</span>
+                            <div className="step-content">
+                                <span className="step-label">{step.label}</span>
+                                <span className="step-description">{step.description}</span>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -174,7 +287,7 @@ const LayoutBergModal = ({
                             onClick={onCancel}
                             className="layoutberg-cancel-button"
                         >
-                            {__('Cancel', 'layoutberg')}
+                            {__('Cancel Generation', 'layoutberg')}
                         </Button>
                     )}
                 </div>

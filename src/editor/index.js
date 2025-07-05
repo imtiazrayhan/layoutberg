@@ -124,6 +124,12 @@ const LayoutBergEditor = () => {
             
             dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'sending' });
             
+            // Small delay to show connection step
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Move to generating state before making the API call
+            dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'generating' });
+            
             const response = await apiFetch({
                 path: '/layoutberg/v1/generate',
                 method: 'POST',
@@ -134,6 +140,7 @@ const LayoutBergEditor = () => {
                 }
             });
 
+            // Move to processing state after API call completes
             dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'processing' });
 
             if (response.success && response.data && response.data.blocks) {
