@@ -299,28 +299,116 @@ class Admin {
 		$models = array();
 		$options = get_option( 'layoutberg_options', array() );
 		
-		// For now, always show all models for testing
-		// TODO: Revert this after testing
-		$models['openai'] = array(
-			'label' => __( 'OpenAI Models', 'layoutberg' ),
-			'models' => array(
-				'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
-				'gpt-4' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
-				'gpt-4-turbo' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
-			),
-		);
+		// Check API key status
+		$openai_key_status = $this->check_openai_key_status();
+		$claude_key_status = $this->check_claude_key_status();
 		
-		$models['claude'] = array(
-			'label' => __( 'Claude Models', 'layoutberg' ),
-			'models' => array(
-				'claude-3-opus-20240229' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
-				'claude-3-5-sonnet-20241022' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
-				'claude-3-sonnet-20240229' => __( 'Claude 3 Sonnet (Balanced)', 'layoutberg' ),
-				'claude-3-haiku-20240307' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
-			),
-		);
+		try {
+			// Use Model Config for consistent model information
+			$model_config = new \DotCamp\LayoutBerg\Model_Config();
+			$all_models = $model_config->get_all_models();
+			
+			// Group models by provider
+			$openai_models = array();
+			$claude_models = array();
+			
+			foreach ( $all_models as $model_id => $config ) {
+				if ( $config['provider'] === 'openai' ) {
+					$openai_models[ $model_id ] = $config['name'] . ' (' . $config['description'] . ')';
+				} elseif ( $config['provider'] === 'claude' ) {
+					$claude_models[ $model_id ] = $config['name'] . ' (' . $config['description'] . ')';
+				}
+			}
+			
+			// Only show OpenAI models if API key is configured
+			if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) {
+				$models['openai'] = array(
+					'label' => __( 'OpenAI Models', 'layoutberg' ),
+					'models' => $openai_models,
+				);
+			}
+			
+			// Only show Claude models if API key is configured
+			if ( $claude_key_status === 'valid' ) {
+				$models['claude'] = array(
+					'label' => __( 'Claude Models', 'layoutberg' ),
+					'models' => $claude_models,
+				);
+			}
+			
+		} catch ( Exception $e ) {
+			// Fallback to hardcoded models if Model Config fails
+			if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) {
+				$models['openai'] = array(
+					'label' => __( 'OpenAI Models', 'layoutberg' ),
+					'models' => array(
+						'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
+						'gpt-4' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
+						'gpt-4-turbo' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
+					),
+				);
+			}
+			
+			if ( $claude_key_status === 'valid' ) {
+				$models['claude'] = array(
+					'label' => __( 'Claude Models', 'layoutberg' ),
+					'models' => array(
+						'claude-3-opus-20240229' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
+						'claude-3-5-sonnet-20241022' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
+						'claude-3-haiku-20240307' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
+					),
+				);
+			}
+		}
 
 		return $models;
+	}
+
+	/**
+	 * Check OpenAI API key status.
+	 *
+	 * @since 1.0.0
+	 * @return string Status of the OpenAI API key.
+	 */
+	private function check_openai_key_status() {
+		$options = get_option( 'layoutberg_options', array() );
+		
+		if ( ! empty( $options['openai_api_key'] ) ) {
+			$security = new \DotCamp\LayoutBerg\Security_Manager();
+			$decrypted = $security->decrypt_api_key( $options['openai_api_key'] );
+			if ( $decrypted ) {
+				return 'valid';
+			}
+		} elseif ( ! empty( $options['api_key'] ) ) {
+			// Backward compatibility
+			$security = new \DotCamp\LayoutBerg\Security_Manager();
+			$decrypted = $security->decrypt_api_key( $options['api_key'] );
+			if ( $decrypted ) {
+				return 'valid';
+			}
+		}
+		
+		return '';
+	}
+
+	/**
+	 * Check Claude API key status.
+	 *
+	 * @since 1.0.0
+	 * @return string Status of the Claude API key.
+	 */
+	private function check_claude_key_status() {
+		$options = get_option( 'layoutberg_options', array() );
+		
+		if ( ! empty( $options['claude_api_key'] ) ) {
+			$security = new \DotCamp\LayoutBerg\Security_Manager();
+			$decrypted = $security->decrypt_api_key( $options['claude_api_key'] );
+			if ( $decrypted ) {
+				return 'valid';
+			}
+		}
+		
+		return '';
 	}
 
 	/**
@@ -625,17 +713,23 @@ class Admin {
 
 		// Sanitize model.
 		if ( isset( $input['model'] ) ) {
-			$allowed_models = array( 
-				// OpenAI models
-				'gpt-3.5-turbo', 
-				'gpt-4', 
-				'gpt-4-turbo',
-				// Claude models
-				'claude-3-opus-20240229',
-				'claude-3-5-sonnet-20241022',
-				'claude-3-sonnet-20240229',
-				'claude-3-haiku-20240307'
-			);
+			try {
+				$allowed_models = array_keys( \DotCamp\LayoutBerg\Model_Config::get_all_models() );
+			} catch ( Exception $e ) {
+				// Fallback to hardcoded models if Model Config fails
+				$allowed_models = array( 
+					// OpenAI models
+					'gpt-3.5-turbo', 
+					'gpt-4', 
+					'gpt-4-turbo',
+					// Claude models
+					'claude-3-opus-20240229',
+					'claude-3-5-sonnet-20241022',
+					'claude-3-sonnet-20240229',
+					'claude-3-haiku-20240307'
+				);
+			}
+			
 			if ( in_array( $input['model'], $allowed_models, true ) ) {
 				$sanitized['model'] = $input['model'];
 			}
