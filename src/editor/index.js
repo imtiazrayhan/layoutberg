@@ -137,7 +137,7 @@ const LayoutBergEditor = () => {
             dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'processing' });
 
             if (response.success && response.data && response.data.blocks) {
-                // Parse blocks using wp.blocks.parse exactly like Pattern Pal
+                // Parse blocks ONCE in JavaScript
                 const parsedBlocks = wp.blocks.parse(response.data.blocks);
                 
                 // Debug logging to verify parsing
@@ -146,61 +146,69 @@ const LayoutBergEditor = () => {
                     console.log('LayoutBerg: Parsed blocks:', parsedBlocks);
                 }
                 
+                // Validate parsed blocks
+                if (!parsedBlocks || parsedBlocks.length === 0) {
+                    throw new Error(__('No valid blocks found in generated content.', 'layoutberg'));
+                }
+                
+                // Filter out empty blocks
+                const validBlocks = parsedBlocks.filter(block => 
+                    block.blockName !== null || 
+                    (block.innerBlocks && block.innerBlocks.length > 0)
+                );
+                
+                if (validBlocks.length === 0) {
+                    throw new Error(__('Generated content contained only empty blocks.', 'layoutberg'));
+                }
+                
                 // Use Pattern Pal's dispatch approach instead of hooks
                 const { removeBlocks, insertBlocks: insertBlocksAction } = wp.data.dispatch('core/block-editor');
                 
-                if (parsedBlocks && parsedBlocks.length > 0) {
-                    if (hasSelectedBlocks) {
-                        // Pattern Pal's approach: remove then insert
-                        removeBlocks(selectedBlocks);
-                        insertBlocksAction(parsedBlocks);
-                        createNotice(
-                            'success',
-                            __('Layout generated and replaced selected blocks!', 'layoutberg'),
-                            { 
-                                type: 'snackbar', 
-                                isDismissible: true,
-                                actions: [{
-                                    label: __('Save as Template', 'layoutberg'),
-                                    onClick: () => setIsSaveTemplateModalOpen(true)
-                                }]
-                            }
-                        );
-                    } else {
-                        // Insert at the end using Pattern Pal's approach
-                        insertBlocksAction(parsedBlocks);
-                        createNotice(
-                            'success',
-                            __('Layout generated and inserted!', 'layoutberg'),
-                            { 
-                                type: 'snackbar', 
-                                isDismissible: true,
-                                actions: [{
-                                    label: __('Save as Template', 'layoutberg'),
-                                    onClick: () => setIsSaveTemplateModalOpen(true)
-                                }]
-                            }
-                        );
-                    }
-                    
-                    dispatch({ 
-                        type: GENERATION_ACTIONS.SUCCESS, 
-                        payload: { 
-                            response: response.data, 
-                            blocks: parsedBlocks 
-                        } 
-                    });
-                    
-                    // Small delay to show completion
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    closeModal();
+                if (hasSelectedBlocks) {
+                    // Pattern Pal's approach: remove then insert
+                    removeBlocks(selectedBlocks);
+                    insertBlocksAction(validBlocks);
+                    createNotice(
+                        'success',
+                        __('Layout generated and replaced selected blocks!', 'layoutberg'),
+                        { 
+                            type: 'snackbar', 
+                            isDismissible: true,
+                            actions: [{
+                                label: __('Save as Template', 'layoutberg'),
+                                onClick: () => setIsSaveTemplateModalOpen(true)
+                            }]
+                        }
+                    );
                 } else {
-                    dispatch({ 
-                        type: GENERATION_ACTIONS.ERROR, 
-                        payload: __('No valid blocks found in the generated layout.', 'layoutberg') 
-                    });
+                    // Insert at the end using Pattern Pal's approach
+                    insertBlocksAction(validBlocks);
+                    createNotice(
+                        'success',
+                        __('Layout generated and inserted!', 'layoutberg'),
+                        { 
+                            type: 'snackbar', 
+                            isDismissible: true,
+                            actions: [{
+                                label: __('Save as Template', 'layoutberg'),
+                                onClick: () => setIsSaveTemplateModalOpen(true)
+                            }]
+                        }
+                    );
                 }
+                
+                dispatch({ 
+                    type: GENERATION_ACTIONS.SUCCESS, 
+                    payload: { 
+                        response: response.data, 
+                        blocks: validBlocks 
+                    } 
+                });
+                
+                // Small delay to show completion
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                closeModal();
             } else {
                 dispatch({ 
                     type: GENERATION_ACTIONS.ERROR, 
