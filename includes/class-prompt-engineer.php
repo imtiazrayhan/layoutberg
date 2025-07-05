@@ -529,16 +529,18 @@ OUTPUT FORMAT:
 - Use double quotes in JSON
 - Match opening/closing comments
 
+CRITICAL VALIDATION RULES:
+- Cover blocks: Use ONLY "url" attribute, NEVER "id" attribute. Do not add wp-image-XXX classes.
+- Images: Use absolute URLs (https://images.unsplash.com/photo-[id] or https://placehold.co/)
+- Classes: wp-block-[blockname], has-[color]-color has-text-color
+- Alignment: alignfull, alignwide, has-text-align-[left|center|right]
+- Gradient backgrounds: Use predefined gradients like "vivid-cyan-blue-to-vivid-purple"
+
 CRITICAL VISIBILITY RULES:
 - ALWAYS ensure text is visible against backgrounds
 - Hero sections MUST use cover blocks with gradient or image backgrounds
 - Use contrasting colors: light text on dark backgrounds, dark text on light backgrounds
 - Never use white text without a background color/gradient
-
-VALIDATION:
-- Images: Use absolute URLs (https://images.unsplash.com/photo-[id] or https://placehold.co/)
-- Classes: wp-block-[blockname], has-[color]-color has-text-color
-- Alignment: alignfull, alignwide, has-text-align-[left|center|right]
 
 COMMON ATTRIBUTES:
 - Colors: {"textColor":"white","backgroundColor":"primary"}
@@ -562,7 +564,7 @@ COMMON ATTRIBUTES:
 		
 		$block_specs = array(
 			'heading' => '- Heading: {"level":1-6,"textAlign":"center","fontSize":"huge","textColor":"white"} (use white for dark backgrounds)',
-			'cover' => '- Cover: ALWAYS use gradient {"gradient":"vivid-cyan-blue-to-vivid-purple"} or image {"url":"https://...","dimRatio":50}. Inner content should have white text.',
+			'cover' => '- Cover: Use gradient {"gradient":"vivid-cyan-blue-to-vivid-purple"} or image {"url":"https://...","dimRatio":50}. NEVER use "id" attribute. Inner content should have white text.',
 			'buttons' => '- Button: {"backgroundColor":"white","textColor":"black"} or {"backgroundColor":"primary","textColor":"white"}',
 			'columns' => '- Columns: {"style":{"spacing":{"blockGap":{"left":"40px"}}}} with column blocks inside',
 			'image' => '- Image: {"url":"https://...","alt":"description","sizeSlug":"large"}',

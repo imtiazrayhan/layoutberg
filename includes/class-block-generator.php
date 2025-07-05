@@ -93,29 +93,34 @@ class Block_Generator {
 			return $result;
 		}
 
-		// Parse and validate the generated content.
-		$parsed = $this->parse_generated_content( $result['content'] );
+		// Use single parsing approach to avoid validation issues
+		$content = $result['content'];
+		
+		// Remove markdown code blocks if present
+		$content = preg_replace( '/^```html\s*/', '', $content );
+		$content = preg_replace( '/```$/', '', $content );
+		$content = trim( $content );
 
-		if ( is_wp_error( $parsed ) ) {
-			return $parsed;
+		// Basic validation - just check if it looks like blocks
+		if ( ! preg_match( '/<!-- wp:/', $content ) ) {
+			return new \WP_Error(
+				'invalid_block_markup',
+				__( 'Generated content does not contain valid block markup.', 'layoutberg' )
+			);
 		}
 
-		// Validate block structure.
-		$validated = $this->validate_blocks( $parsed );
+		// Use wp_kses_post for basic validation (like the working plugin)
+		$content = wp_kses_post( $content );
 
-		if ( is_wp_error( $validated ) ) {
-			return $validated;
-		}
+		// DO NOT parse blocks in PHP - let JavaScript handle it
+		// This matches Pattern Pal's approach and avoids double parsing
 
-		// Serialize blocks for editor.
-		$serialized = $this->block_serializer->serialize_for_editor( $validated );
-
-		// Prepare response.
+		// Prepare response with raw content for JavaScript to parse
 		$response = array(
-			'blocks'     => $validated,
-			'serialized' => $serialized,
-			'html'       => $this->blocks_to_html( $validated ),
-			'raw'        => $result['content'],
+			'blocks'     => $content, // Return raw content, not parsed blocks
+			'serialized' => $content, // Same raw content for compatibility
+			'html'       => do_blocks( $content ), // Generate preview HTML
+			'raw'        => $result['content'], // Original unprocessed content
 			'usage'      => $result['usage'],
 			'model'      => $result['model'],
 			'prompts'    => isset( $result['prompts'] ) ? $result['prompts'] : null,
