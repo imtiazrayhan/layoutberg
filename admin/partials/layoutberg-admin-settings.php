@@ -358,11 +358,15 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 									<?php esc_html_e( 'Select the default AI model to use for layout generation. Only models with configured API keys are shown.', 'layoutberg' ); ?>
 								</p>
 								
-								<?php 
-								// Debug: Check what models are available
-								error_log( 'LayoutBerg Debug: Models array keys: ' . print_r( array_keys( $models ), true ) );
-								error_log( 'LayoutBerg Debug: Current model: ' . $current_model );
-								error_log( 'LayoutBerg Debug: Models array: ' . print_r( $models, true ) );
+								<script>
+window.layoutbergModels = <?php echo json_encode($models); ?>;
+</script>
+
+<?php 
+// Debug: Check what models are available
+error_log( 'LayoutBerg Debug: Models array keys: ' . print_r( array_keys( $models ), true ) );
+error_log( 'LayoutBerg Debug: Current model: ' . $current_model );
+error_log( 'LayoutBerg Debug: Models array: ' . print_r( $models, true ) );
 								
 								// Show model information if a model is selected
 								$model_config = null;
@@ -393,19 +397,19 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 										<div>
 											<strong><?php esc_html_e( 'Context Window:', 'layoutberg' ); ?></strong>
 											<br>
-											<?php echo esc_html( number_format( $model_config['context_window'] ) ); ?> tokens
+											<span id="layoutberg-context-window"><?php echo esc_html( number_format( $model_config['context_window'] ) ); ?></span> tokens
 										</div>
 										<div>
 											<strong><?php esc_html_e( 'Max Output:', 'layoutberg' ); ?></strong>
 											<br>
-											<?php echo esc_html( number_format( $model_config['max_output'] ) ); ?> tokens
+											<span id="layoutberg-max-output"><?php echo esc_html( number_format( $model_config['max_output'] ) ); ?></span> tokens
 										</div>
 										<div>
 											<strong><?php esc_html_e( 'Cost:', 'layoutberg' ); ?></strong>
 											<br>
-											$<?php echo esc_html( $model_config['cost_per_1k_input'] ); ?>/1k input
+											$<span id="layoutberg-cost-input"><?php echo esc_html( $model_config['cost_per_1k_input'] ); ?></span>/1k input
 											<br>
-											$<?php echo esc_html( $model_config['cost_per_1k_output'] ); ?>/1k output
+											$<span id="layoutberg-cost-output"><?php echo esc_html( $model_config['cost_per_1k_output'] ); ?></span>/1k output
 										</div>
 									</div>
 								</div>
