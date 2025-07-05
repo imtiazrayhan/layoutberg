@@ -89,7 +89,7 @@ const LayoutBergEditor = () => {
      */
     const openModal = () => {
         setIsModalOpen(true);
-        setGenerationError(null);
+        dispatch({ type: GENERATION_ACTIONS.RESET });
     };
 
     // Make openModal available globally for toolbar integration
@@ -137,12 +137,6 @@ const LayoutBergEditor = () => {
             dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'processing' });
 
             if (response.success && response.data && response.data.blocks) {
-                // Store the generated blocks for potential template saving
-                setLastGeneratedBlocks(response.data.blocks);
-                
-                // Store the response for displaying prompts
-                setLastResponse(response.data);
-                
                 // Parse blocks using wp.blocks.parse exactly like Pattern Pal
                 const parsedBlocks = wp.blocks.parse(response.data.blocks);
                 
