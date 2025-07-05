@@ -183,16 +183,17 @@
 }
 
 
-/* Modal Styles */
+/* Modal Styles - Enhanced for Better UX */
 .layoutberg-generation-modal {
-    max-width: 800px !important;
+    max-width: 1000px !important;
     width: 95vw !important;
+    min-height: 600px !important;
 }
 
 .layoutberg-generation-modal .components-modal__header {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: white;
-    padding: 20px 24px;
+    padding: 24px 32px;
     border-bottom: none;
 }
 
@@ -200,12 +201,14 @@
     color: white;
     margin: 0;
     font-weight: 600;
+    font-size: 20px;
 }
 
 .layoutberg-generation-modal .components-modal__content {
-    padding: 24px;
-    max-height: 80vh;
+    padding: 32px;
+    max-height: 85vh;
     overflow-y: auto;
+    min-height: 500px;
 }
 
 .layoutberg-modal-badge {
@@ -219,8 +222,33 @@
     backdrop-filter: blur(10px);
 }
 
+/* Enhanced Card Layout for Larger Modal */
+.layoutberg-generation-modal .components-card {
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.layoutberg-generation-modal .components-card:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.layoutberg-generation-modal .components-card__header {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 20px 24px;
+    border-radius: 12px 12px 0 0;
+}
+
+.layoutberg-generation-modal .components-card__body {
+    padding: 24px;
+}
+
+/* Enhanced Quick Prompts */
 .layoutberg-quick-prompts {
-    gap: 8px;
+    gap: 12px;
 }
 
 .layoutberg-quick-prompt-button {
@@ -228,51 +256,36 @@
     height: auto;
     white-space: normal;
     text-align: center;
-    padding: 12px 8px;
-    min-height: 48px;
+    padding: 16px 12px;
+    min-height: 56px;
     border: 1px solid #e5e7eb;
     background: white;
     transition: all 0.2s ease;
+    border-radius: 8px;
+    font-size: 14px;
 }
 
 .layoutberg-quick-prompt-button:hover {
     border-color: #6366f1;
     background: #f8faff;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.15);
 }
 
+/* Enhanced Prompt Input */
 .layoutberg-prompt-input textarea {
-    min-height: 120px !important;
+    min-height: 140px !important;
     resize: vertical;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    line-height: 1.5;
+    line-height: 1.6;
+    font-size: 14px;
+    padding: 16px;
+    border-radius: 8px;
 }
 
 .layoutberg-prompt-input textarea:focus {
     border-color: #6366f1;
     box-shadow: 0 0 0 1px #6366f1;
-}
-
-/* Card Enhancements - Scoped to LayoutBerg */
-.layoutberg-generation-modal .components-card {
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.2s ease;
-}
-
-.layoutberg-generation-modal .components-card:hover {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.layoutberg-generation-modal .components-card__header {
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 16px 20px;
-}
-
-.layoutberg-generation-modal .components-card__body {
-    padding: 20px;
 }
 
 /* Range Control Enhancements - Scoped to LayoutBerg */
@@ -353,16 +366,101 @@
     grid-template-columns: repeat(3, 1fr);
 }
 
-/* Responsive Design */
+/* Responsive Design - Enhanced for Horizontal Layout */
+@media (max-width: 1024px) {
+    .layoutberg-generation-modal {
+        max-width: 95vw !important;
+        min-height: 500px !important;
+    }
+    
+    .layoutberg-generation-modal .components-modal__content {
+        padding: 24px;
+        max-height: 80vh;
+    }
+    
+    .layoutberg-progress-view {
+        padding: 24px;
+        gap: 20px;
+    }
+    
+    .layoutberg-progress-steps {
+        max-height: 350px;
+    }
+}
+
 @media (max-width: 768px) {
     .layoutberg-generation-modal {
         width: 95vw !important;
         max-width: none !important;
         margin: 10px !important;
+        min-height: 400px !important;
+    }
+    
+    .layoutberg-generation-modal .components-modal__header {
+        padding: 20px 24px;
     }
     
     .layoutberg-generation-modal .components-modal__content {
+        padding: 20px;
+        max-height: 75vh;
+    }
+    
+    /* Switch to vertical layout on mobile */
+    .layoutberg-progress-view {
+        padding: 20px;
+        gap: 20px;
+        min-height: 400px;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto auto;
+    }
+    
+    .layoutberg-progress-header {
+        grid-column: 1;
+    }
+    
+    .layoutberg-progress-bar-container {
+        grid-column: 1;
+    }
+    
+    .layoutberg-progress-animation {
+        grid-column: 1;
+        flex-direction: row;
+        gap: 16px;
         padding: 16px;
+    }
+    
+    .layoutberg-progress-info {
+        text-align: left;
+        flex: 1;
+    }
+    
+    .layoutberg-progress-steps {
+        grid-column: 1;
+        max-height: 200px;
+        gap: 8px;
+    }
+    
+    .layoutberg-progress-step {
+        padding: 12px 16px;
+        gap: 10px;
+        min-height: 50px;
+    }
+    
+    .layoutberg-progress-footer {
+        grid-column: 1;
+    }
+    
+    .layoutberg-progress-header h3 {
+        font-size: 20px;
+    }
+    
+    .layoutberg-progress-circle {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .layoutberg-progress-circle .components-spinner {
+        transform: scale(1.5);
     }
     
     .layoutberg-generation-modal .components-grid[data-columns="3"] {
@@ -374,8 +472,8 @@
     }
     
     .layoutberg-quick-prompt-button {
-        min-height: 44px;
-        padding: 8px;
+        min-height: 48px;
+        padding: 12px 8px;
     }
 }
 
@@ -470,135 +568,154 @@
     justify-content: center;
 }
 
-/* Progress View Styles - Simplified for Performance */
+/* Progress View Styles - Horizontal Layout for Better Visibility */
 .layoutberg-progress-view {
-    padding: 20px;
+    padding: 32px;
     text-align: center;
-    min-height: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    min-height: 500px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    align-items: start;
 }
 
 .layoutberg-progress-header {
+    grid-column: 1 / -1;
     margin-bottom: 0;
 }
 
 .layoutberg-progress-header h3 {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 600;
     color: #1e1e1e;
-    margin: 0 0 12px 0;
+    margin: 0 0 16px 0;
 }
 
 .layoutberg-prompt-preview {
-    font-size: 14px;
+    font-size: 15px;
     color: #757575;
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
-    line-height: 1.5;
-    padding: 12px 16px;
+    line-height: 1.6;
+    padding: 16px 20px;
     background: #f8f9fa;
-    border-radius: 6px;
-    border-left: 3px solid #6366f1;
-    max-height: 80px;
+    border-radius: 8px;
+    border-left: 4px solid #6366f1;
+    max-height: 100px;
     overflow-y: auto;
 }
 
-/* Simple Progress Bar */
+/* Progress Bar - Full Width */
 .layoutberg-progress-bar-container {
+    grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    gap: 16px;
-    max-width: 500px;
+    gap: 20px;
+    max-width: 600px;
     margin: 0 auto;
 }
 
 .layoutberg-progress-bar {
     flex: 1;
-    height: 8px;
+    height: 12px;
     background: #e5e7eb;
-    border-radius: 4px;
+    border-radius: 6px;
     overflow: hidden;
 }
 
 .layoutberg-progress-bar-fill {
     height: 100%;
     background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
-    border-radius: 4px;
+    border-radius: 6px;
     transition: width 0.5s ease;
 }
 
 .layoutberg-progress-percentage {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     color: #6366f1;
-    min-width: 40px;
+    min-width: 50px;
 }
 
+/* Animation and Info - Left Column */
 .layoutberg-progress-animation {
-    margin: 20px 0;
+    grid-column: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 24px;
+    padding: 24px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    height: fit-content;
 }
 
 .layoutberg-progress-circle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
     flex-shrink: 0;
 }
 
 .layoutberg-progress-circle .components-spinner {
     margin: 0;
-    transform: scale(1.5);
+    transform: scale(1.8);
 }
 
 .layoutberg-progress-info {
-    text-align: left;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .layoutberg-progress-model {
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
     font-weight: 500;
-    margin-bottom: 4px;
+    margin: 0;
 }
 
 .layoutberg-progress-update {
-    font-size: 13px;
+    font-size: 14px;
     color: #6366f1;
     font-weight: 500;
     margin: 0;
 }
 
+/* Progress Steps - Right Column */
 .layoutberg-progress-steps {
-    max-width: 500px;
-    margin: 0 auto;
-    text-align: left;
-    display: grid;
-    grid-template-columns: 1fr;
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
 }
 
 .layoutberg-progress-step {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
-    font-size: 13px;
+    padding: 16px 20px;
+    font-size: 14px;
     color: #6b7280;
     transition: all 0.3s ease;
-    border-radius: 8px;
+    border-radius: 12px;
     background: #f9fafb;
     border: 1px solid #e5e7eb;
+    min-height: 60px;
 }
 
 .layoutberg-progress-step.completed {
@@ -617,6 +734,7 @@
     font-weight: 500;
     background: #eff6ff;
     border-color: #bfdbfe;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
 }
 
 .layoutberg-progress-step.active .step-icon {
@@ -625,8 +743,8 @@
 }
 
 .layoutberg-progress-step .step-icon {
-    font-size: 16px;
-    width: 20px;
+    font-size: 18px;
+    width: 24px;
     text-align: center;
     flex-shrink: 0;
 }
@@ -635,25 +753,28 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
 .layoutberg-progress-step .step-label {
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 15px;
 }
 
 .layoutberg-progress-step .step-description {
-    font-size: 11px;
+    font-size: 12px;
     color: #9ca3af;
-    line-height: 1.3;
+    line-height: 1.4;
 }
 
+/* Footer - Full Width */
 .layoutberg-progress-footer {
-    margin-top: auto;
+    grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    margin-top: auto;
 }
 
 .layoutberg-cancel-button {
