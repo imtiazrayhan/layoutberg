@@ -32,6 +32,11 @@ $period = isset( $_GET['period'] ) ? sanitize_text_field( $_GET['period'] ) : 'm
 
 // Calculate date ranges based on period
 switch ( $period ) {
+	case 'today':
+		$start_date = $today;
+		$end_date = $today;
+		$period_label = __( 'Today', 'layoutberg' );
+		break;
 	case 'week':
 		$start_date = date( 'Y-m-d', strtotime( '-6 days' ) );
 		$end_date = $today;
@@ -41,6 +46,11 @@ switch ( $period ) {
 		$start_date = date( 'Y-m-01' );
 		$end_date = date( 'Y-m-t' );
 		$period_label = __( 'This Month', 'layoutberg' );
+		break;
+	case 'last_month':
+		$start_date = date( 'Y-m-01', strtotime( '-1 month' ) );
+		$end_date = date( 'Y-m-t', strtotime( '-1 month' ) );
+		$period_label = __( 'Last Month', 'layoutberg' );
 		break;
 	case 'year':
 		$start_date = date( 'Y-01-01' );
@@ -183,8 +193,10 @@ foreach ( $hourly_stats as $hour ) {
 			</div>
 			<div class="layoutberg-header-actions" style="display: flex; gap: 1rem; align-items: center;">
 				<select id="period-selector" class="layoutberg-select" style="width: 150px;">
+					<option value="today" <?php selected( $period, 'today' ); ?>><?php esc_html_e( 'Today', 'layoutberg' ); ?></option>
 					<option value="week" <?php selected( $period, 'week' ); ?>><?php esc_html_e( 'Last 7 Days', 'layoutberg' ); ?></option>
 					<option value="month" <?php selected( $period, 'month' ); ?>><?php esc_html_e( 'This Month', 'layoutberg' ); ?></option>
+					<option value="last_month" <?php selected( $period, 'last_month' ); ?>><?php esc_html_e( 'Last Month', 'layoutberg' ); ?></option>
 					<option value="year" <?php selected( $period, 'year' ); ?>><?php esc_html_e( 'This Year', 'layoutberg' ); ?></option>
 					<option value="all" <?php selected( $period, 'all' ); ?>><?php esc_html_e( 'All Time', 'layoutberg' ); ?></option>
 				</select>
