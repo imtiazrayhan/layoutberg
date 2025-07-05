@@ -414,6 +414,29 @@ error_log( 'LayoutBerg Debug: Models array: ' . print_r( $models, true ) );
 									</div>
 								</div>
 								<?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modelSelect = document.getElementById('layoutberg_model');
+    if (!modelSelect || !window.layoutbergModels) return;
+    
+    modelSelect.addEventListener('change', function() {
+        var modelId = this.value;
+        var info = window.layoutbergModels[modelId];
+        if (!info) return;
+        
+        var context = document.getElementById('layoutberg-context-window');
+        var maxOut = document.getElementById('layoutberg-max-output');
+        var costIn = document.getElementById('layoutberg-cost-input');
+        var costOut = document.getElementById('layoutberg-cost-output');
+        
+        if (context) context.textContent = info.context_window.toLocaleString();
+        if (maxOut) maxOut.textContent = info.max_output.toLocaleString();
+        if (costIn) costIn.textContent = info.cost_per_1k_input;
+        if (costOut) costOut.textContent = info.cost_per_1k_output;
+    });
+});
+</script>
 							</div>
 						</div>
 
