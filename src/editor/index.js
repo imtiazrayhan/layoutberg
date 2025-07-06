@@ -142,6 +142,11 @@ const LayoutBergEditor = () => {
 
             // Move to processing state after API call completes
             dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'processing' });
+            await new Promise(resolve => setTimeout(resolve, 1000)); // <-- Add delay for processing step
+
+            // Move to complete/finalizing state
+            dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'complete' });
+            await new Promise(resolve => setTimeout(resolve, 1000)); // <-- Add delay for finalizing step
 
             if (response.success && response.data && response.data.blocks) {
                 // Parse blocks ONCE in JavaScript

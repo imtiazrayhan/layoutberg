@@ -221,6 +221,28 @@ const LayoutBergModal = ({
         const currentStep = getCurrentStep();
         const progressPercentage = getProgressPercentage();
         
+        // Scroll to top when progress view is shown
+        React.useEffect(() => {
+            // Try multiple selectors to find the scrollable element
+            const selectors = [
+                '.layoutberg-generation-modal .components-modal__content',
+                '.layoutberg-generation-modal',
+                '.components-modal__content',
+                '.components-modal__frame'
+            ];
+            
+            for (const selector of selectors) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    console.log('Found scrollable element:', selector, element);
+                    element.scrollTop = 0;
+                    // Also try scrolling into view
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    break;
+                }
+            }
+        }, []);
+        
         return (
             <div className="layoutberg-progress-view">
                 <div className="layoutberg-progress-header">
