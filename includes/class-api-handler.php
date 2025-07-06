@@ -169,6 +169,11 @@ class API_Handler {
 			$settings         = $request->get_param( 'settings' );
 			$replace_selected = $request->get_param( 'replace_selected' );
 
+			// Debug logging to verify settings received
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'LayoutBerg API Handler: Settings received from frontend: ' . print_r( $settings, true ) );
+			}
+
 			// Extract only AI-related options.
 			$options = array();
 			if ( ! empty( $settings ) ) {
@@ -179,6 +184,11 @@ class API_Handler {
 				);
 			}
 
+			// Debug logging to verify options extracted
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'LayoutBerg API Handler: Options extracted: ' . print_r( $options, true ) );
+			}
+			
 			// Get stored user preferences from onboarding
 			$stored_options = get_option( 'layoutberg_options', array() );
 			

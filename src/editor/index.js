@@ -119,6 +119,14 @@ const LayoutBergEditor = () => {
         dispatch({ type: GENERATION_ACTIONS.START });
 
         try {
+            // Debug logging to verify settings are being sent
+            if (window.layoutbergDebug) {
+                console.log('LayoutBerg: Modal settings being sent to API:', settings);
+                console.log('LayoutBerg: Model:', settings.model);
+                console.log('LayoutBerg: Max Tokens:', settings.maxTokens);
+                console.log('LayoutBerg: Temperature:', settings.temperature);
+            }
+
             // Small delay for UI feedback
             await new Promise(resolve => setTimeout(resolve, 300));
             
@@ -139,6 +147,11 @@ const LayoutBergEditor = () => {
                     replace_selected: hasSelectedBlocks
                 }
             });
+
+            // Debug logging to verify response
+            if (window.layoutbergDebug) {
+                console.log('LayoutBerg: API response received:', response);
+            }
 
             // Move to processing state after API call completes
             dispatch({ type: GENERATION_ACTIONS.UPDATE_STATE, payload: 'processing' });

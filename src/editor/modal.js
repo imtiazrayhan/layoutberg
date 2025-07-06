@@ -53,8 +53,23 @@ const LayoutBergModal = ({
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [showPrompts, setShowPrompts] = useState(false);
     
-    // All models have the same completion token limit
-    const maxTokensLimit = 4096;
+    // Get max tokens limit based on selected model
+    const getMaxTokensLimit = () => {
+        const models = window.layoutbergEditor?.models || {};
+        let maxLimit = 4096; // Default fallback
+        
+        // Search through all providers for the selected model
+        Object.keys(models).forEach(provider => {
+            if (models[provider].models && models[provider].models[settings.model]) {
+                const modelConfig = models[provider].models[settings.model];
+                if (modelConfig.max_output) {
+                    maxLimit = modelConfig.max_output;
+                }
+            }
+        });
+        
+        return maxLimit;
+    };
 
     const updateSetting = (key, value) => {
         onSettingsChange({
@@ -62,6 +77,14 @@ const LayoutBergModal = ({
             [key]: value
         });
     };
+
+    // Update max tokens when model changes to ensure it doesn't exceed the new limit
+    useEffect(() => {
+        const currentMaxLimit = getMaxTokensLimit();
+        if (settings.maxTokens > currentMaxLimit) {
+            updateSetting('maxTokens', currentMaxLimit);
+        }
+    }, [settings.model]);
 
 
     const quickPrompts = [
@@ -452,8 +475,8 @@ const LayoutBergModal = ({
                                                 });
                                                 
                                                 // Add models for this provider
-                                                Object.entries(models[provider].models).forEach(([value, label]) => {
-                                                    options.push({ label: `  ${label}`, value });
+                                                Object.entries(models[provider].models).forEach(([value, modelConfig]) => {
+                                                    options.push({ label: `  ${modelConfig.label || modelConfig.name}`, value });
                                                 });
                                             }
                                         });
@@ -491,9 +514,9 @@ const LayoutBergModal = ({
                                     value={settings.maxTokens}
                                     onChange={(value) => updateSetting('maxTokens', value)}
                                     min={500}
-                                    max={maxTokensLimit}
+                                    max={getMaxTokensLimit()}
                                     step={100}
-                                    help={__('Higher values allow more complex layouts but cost more. All models support up to 4096 completion tokens.', 'layoutberg')}
+                                    help={sprintf(__('Higher values allow more complex layouts but cost more. This model supports up to %d completion tokens.', 'layoutberg'), getMaxTokensLimit())}
                                 />
                             </VStack>
                         </CardBody>

@@ -441,25 +441,52 @@ class LayoutBerg {
 			error_log( '- Has Claude key: ' . ( $has_claude_key ? 'yes' : 'no' ) );
 		}
 		
+		// Get full model configurations from Model_Config
+		$model_config = new \DotCamp\LayoutBerg\Model_Config();
+		$all_models = $model_config->get_all_models();
+		
+		// Group models by provider with full configuration data
+		$openai_models = array();
+		$claude_models = array();
+		
+		foreach ( $all_models as $model_id => $config ) {
+			if ( $config['provider'] === 'openai' ) {
+				$openai_models[ $model_id ] = array(
+					'label' => $config['name'] . ' (' . $config['description'] . ')',
+					'name' => $config['name'],
+					'description' => $config['description'],
+					'context_window' => $config['context_window'],
+					'max_output' => $config['max_output'],
+					'cost_per_1k_input' => $config['cost_per_1k_input'],
+					'cost_per_1k_output' => $config['cost_per_1k_output'],
+					'supports_json_mode' => $config['supports_json_mode'],
+					'supports_functions' => $config['supports_functions'],
+				);
+			} elseif ( $config['provider'] === 'claude' ) {
+				$claude_models[ $model_id ] = array(
+					'label' => $config['name'] . ' (' . $config['description'] . ')',
+					'name' => $config['name'],
+					'description' => $config['description'],
+					'context_window' => $config['context_window'],
+					'max_output' => $config['max_output'],
+					'cost_per_1k_input' => $config['cost_per_1k_input'],
+					'cost_per_1k_output' => $config['cost_per_1k_output'],
+					'supports_json_mode' => $config['supports_json_mode'],
+					'supports_functions' => $config['supports_functions'],
+				);
+			}
+		}
+		
 		// For now, always show all models for testing
 		// TODO: Revert this after testing
 		$models['openai'] = array(
 			'label' => __( 'OpenAI Models', 'layoutberg' ),
-			'models' => array(
-				'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
-				'gpt-4' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
-				'gpt-4-turbo' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
-			),
+			'models' => $openai_models,
 		);
 		
 		$models['claude'] = array(
 			'label' => __( 'Claude Models', 'layoutberg' ),
-			'models' => array(
-				'claude-3-opus-20240229' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
-				'claude-3-5-sonnet-20241022' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
-				'claude-3-sonnet-20240229' => __( 'Claude 3 Sonnet (Balanced)', 'layoutberg' ),
-				'claude-3-haiku-20240307' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
-			),
+			'models' => $claude_models,
 		);
 
 		return $models;

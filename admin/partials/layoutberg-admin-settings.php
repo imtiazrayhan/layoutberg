@@ -429,11 +429,27 @@ document.addEventListener('DOMContentLoaded', function() {
         var maxOut = document.getElementById('layoutberg-max-output');
         var costIn = document.getElementById('layoutberg-cost-input');
         var costOut = document.getElementById('layoutberg-cost-output');
+        var maxTokensInput = document.getElementById('layoutberg_max_tokens');
+        var helpText = maxTokensInput ? maxTokensInput.parentNode.querySelector('.layoutberg-help-text') : null;
         
         if (context) context.textContent = info.context_window.toLocaleString();
         if (maxOut) maxOut.textContent = info.max_output.toLocaleString();
         if (costIn) costIn.textContent = info.cost_per_1k_input;
         if (costOut) costOut.textContent = info.cost_per_1k_output;
+        
+        // Update max tokens input
+        if (maxTokensInput) {
+            maxTokensInput.max = info.max_output;
+            // If current value exceeds new limit, adjust it
+            if (parseInt(maxTokensInput.value) > info.max_output) {
+                maxTokensInput.value = info.max_output;
+            }
+        }
+        
+        // Update help text
+        if (helpText) {
+            helpText.textContent = 'Maximum completion tokens (output length). This model supports up to ' + info.max_output.toLocaleString() + ' completion tokens. Higher values = longer, more detailed layouts but higher cost.';
+        }
     });
 });
 </script>
@@ -456,12 +472,18 @@ document.addEventListener('DOMContentLoaded', function() {
 										name="layoutberg_options[max_tokens]" 
 										value="<?php echo esc_attr( $options['max_tokens'] ?? 2000 ); ?>" 
 										min="100" 
-										max="4096" 
+										max="<?php echo esc_attr( $model_config ? $model_config['max_output'] : 4096 ); ?>" 
 										step="100"
 										class="layoutberg-input"
 									/>
 									<p class="layoutberg-help-text">
-										<?php esc_html_e( 'Maximum completion tokens (output length). All models support up to 4096 completion tokens. Higher values = longer, more detailed layouts but higher cost.', 'layoutberg' ); ?>
+										<?php 
+										if ( $model_config ) {
+											printf( esc_html__( 'Maximum completion tokens (output length). This model supports up to %d completion tokens. Higher values = longer, more detailed layouts but higher cost.', 'layoutberg' ), $model_config['max_output'] );
+										} else {
+											esc_html_e( 'Maximum completion tokens (output length). All models support up to 4096 completion tokens. Higher values = longer, more detailed layouts but higher cost.', 'layoutberg' );
+										}
+										?>
 									</p>
 								</div>
 

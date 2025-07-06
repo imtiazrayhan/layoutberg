@@ -314,9 +314,29 @@ class Admin {
 			
 			foreach ( $all_models as $model_id => $config ) {
 				if ( $config['provider'] === 'openai' ) {
-					$openai_models[ $model_id ] = $config['name'] . ' (' . $config['description'] . ')';
+					$openai_models[ $model_id ] = array(
+						'label' => $config['name'] . ' (' . $config['description'] . ')',
+						'name' => $config['name'],
+						'description' => $config['description'],
+						'context_window' => $config['context_window'],
+						'max_output' => $config['max_output'],
+						'cost_per_1k_input' => $config['cost_per_1k_input'],
+						'cost_per_1k_output' => $config['cost_per_1k_output'],
+						'supports_json_mode' => $config['supports_json_mode'],
+						'supports_functions' => $config['supports_functions'],
+					);
 				} elseif ( $config['provider'] === 'claude' ) {
-					$claude_models[ $model_id ] = $config['name'] . ' (' . $config['description'] . ')';
+					$claude_models[ $model_id ] = array(
+						'label' => $config['name'] . ' (' . $config['description'] . ')',
+						'name' => $config['name'],
+						'description' => $config['description'],
+						'context_window' => $config['context_window'],
+						'max_output' => $config['max_output'],
+						'cost_per_1k_input' => $config['cost_per_1k_input'],
+						'cost_per_1k_output' => $config['cost_per_1k_output'],
+						'supports_json_mode' => $config['supports_json_mode'],
+						'supports_functions' => $config['supports_functions'],
+					);
 				}
 			}
 			
@@ -342,9 +362,39 @@ class Admin {
 				$models['openai'] = array(
 					'label' => __( 'OpenAI Models', 'layoutberg' ),
 					'models' => array(
-						'gpt-3.5-turbo' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
-						'gpt-4' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
-						'gpt-4-turbo' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
+						'gpt-3.5-turbo' => array(
+							'label' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
+							'name' => 'GPT-3.5 Turbo',
+							'description' => 'Fast & Affordable',
+							'context_window' => 16385,
+							'max_output' => 4096,
+							'cost_per_1k_input' => 0.0005,
+							'cost_per_1k_output' => 0.0015,
+							'supports_json_mode' => true,
+							'supports_functions' => true,
+						),
+						'gpt-4' => array(
+							'label' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
+							'name' => 'GPT-4',
+							'description' => 'Most Capable',
+							'context_window' => 8192,
+							'max_output' => 4096,
+							'cost_per_1k_input' => 0.03,
+							'cost_per_1k_output' => 0.06,
+							'supports_json_mode' => true,
+							'supports_functions' => true,
+						),
+						'gpt-4-turbo' => array(
+							'label' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
+							'name' => 'GPT-4 Turbo',
+							'description' => 'Fast & Capable',
+							'context_window' => 128000,
+							'max_output' => 4096,
+							'cost_per_1k_input' => 0.01,
+							'cost_per_1k_output' => 0.03,
+							'supports_json_mode' => true,
+							'supports_functions' => true,
+						),
 					),
 				);
 			}
@@ -353,9 +403,39 @@ class Admin {
 				$models['claude'] = array(
 					'label' => __( 'Claude Models', 'layoutberg' ),
 					'models' => array(
-						'claude-3-opus-20240229' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
-						'claude-3-5-sonnet-20241022' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
-						'claude-3-haiku-20240307' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
+						'claude-3-opus-20240229' => array(
+							'label' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
+							'name' => 'Claude 3 Opus',
+							'description' => 'Most Powerful',
+							'context_window' => 200000,
+							'max_output' => 4096,
+							'cost_per_1k_input' => 0.015,
+							'cost_per_1k_output' => 0.075,
+							'supports_json_mode' => false,
+							'supports_functions' => false,
+						),
+						'claude-3-5-sonnet-20241022' => array(
+							'label' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
+							'name' => 'Claude 3.5 Sonnet',
+							'description' => 'Latest & Fast',
+							'context_window' => 200000,
+							'max_output' => 8192,
+							'cost_per_1k_input' => 0.003,
+							'cost_per_1k_output' => 0.015,
+							'supports_json_mode' => false,
+							'supports_functions' => false,
+						),
+						'claude-3-haiku-20240307' => array(
+							'label' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
+							'name' => 'Claude 3 Haiku',
+							'description' => 'Fast & Light',
+							'context_window' => 200000,
+							'max_output' => 4096,
+							'cost_per_1k_input' => 0.00025,
+							'cost_per_1k_output' => 0.00125,
+							'supports_json_mode' => false,
+							'supports_functions' => false,
+						),
 					),
 				);
 			}
