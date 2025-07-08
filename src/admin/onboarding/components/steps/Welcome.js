@@ -9,7 +9,13 @@ const Welcome = ({ onNext }) => {
 		<div className="layoutberg-onboarding__step layoutberg-onboarding__step--welcome">
 			<div className="layoutberg-onboarding__welcome-hero">
 				<div className="layoutberg-onboarding__welcome-logo">
-					<span className="layoutberg-logo layoutberg-logo--large">LB</span>
+					<img 
+						src={window.layoutbergOnboarding && window.layoutbergOnboarding.pluginUrl 
+							? window.layoutbergOnboarding.pluginUrl + 'assets/images/layoutberg-logo.png'
+							: '/wp-content/plugins/layoutberg/assets/images/layoutberg-logo.png'}
+						alt="LayoutBerg"
+						className="layoutberg-logo layoutberg-logo--large"
+					/>
 				</div>
 				<h2>{__('Welcome to LayoutBerg!', 'layoutberg')}</h2>
 				<p className="layoutberg-onboarding__welcome-subtitle">

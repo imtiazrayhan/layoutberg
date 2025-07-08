@@ -116,7 +116,9 @@ if ( $generation ) {
 	<div class="layoutberg-header">
 		<div class="layoutberg-header-content">
 			<div class="layoutberg-title">
-				<div class="layoutberg-logo">LB</div>
+				<div class="layoutberg-logo">
+					<img src="<?php echo esc_url( LAYOUTBERG_PLUGIN_URL . 'assets/images/layoutberg-logo.png' ); ?>" alt="<?php esc_attr_e( 'LayoutBerg Logo', 'layoutberg' ); ?>" />
+				</div>
 				<div>
 					<h1><?php esc_html_e( 'Generation Details', 'layoutberg' ); ?></h1>
 					<p>

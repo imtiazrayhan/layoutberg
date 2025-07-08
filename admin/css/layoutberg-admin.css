@@ -33,6 +33,23 @@
     --lberg-radius-lg: 0.75rem;
 }
 
+/* Admin Menu Icon Override */
+#adminmenu #toplevel_page_layoutberg .wp-menu-image::before {
+    content: '';
+    background-image: url('../../../assets/images/layoutberg-logo.png');
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 20px;
+    height: 20px;
+    display: block;
+    margin: 0 auto;
+}
+
+#adminmenu #toplevel_page_layoutberg .wp-menu-image.dashicons-layout::before {
+    content: '';
+}
+
 /* Global Admin Styles */
 .layoutberg-admin-page {
     margin: 0;
@@ -78,14 +95,17 @@
 .layoutberg-logo {
     width: 48px;
     height: 48px;
-    background: var(--lberg-primary);
     border-radius: var(--lberg-radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 1.5rem;
+    overflow: hidden;
+}
+
+.layoutberg-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .layoutberg-title h1 {

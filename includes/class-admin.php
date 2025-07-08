@@ -177,6 +177,7 @@ class Admin {
 					'apiUrl'       => rest_url( 'layoutberg/v1' ),
 					'restNonce'    => wp_create_nonce( 'wp_rest' ),
 					'adminUrl'     => admin_url(),
+					'pluginUrl'    => LAYOUTBERG_PLUGIN_URL,
 					'settingsUrl'  => admin_url( 'admin.php?page=layoutberg-settings' ),
 					'editorUrl'    => admin_url( 'post-new.php?post_type=page' ),
 					'dashboardUrl' => admin_url( 'admin.php?page=layoutberg' ),
@@ -492,6 +493,17 @@ class Admin {
 	}
 
 	/**
+	 * Get base64 encoded menu icon.
+	 *
+	 * @since 1.0.0
+	 * @return string Base64 encoded icon data URI.
+	 */
+	private function get_menu_icon() {
+		// For now, use dashicon and we'll override with CSS
+		return 'dashicons-layout';
+	}
+
+	/**
 	 * Add admin menu items.
 	 *
 	 * @since 1.0.0
@@ -504,7 +516,7 @@ class Admin {
 			'layoutberg_view_analytics',
 			'layoutberg',
 			array( $this, 'display_dashboard_page' ),
-			'dashicons-layout',
+			$this->get_menu_icon(),
 			30
 		);
 

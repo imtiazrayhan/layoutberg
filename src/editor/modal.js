@@ -346,7 +346,15 @@ const LayoutBergModal = ({
         <Modal
             title={
                 <HStack>
-                    <FlexItem>{starFilled}</FlexItem>
+                    <FlexItem>
+                        <img 
+                            src={window.layoutbergEditor && window.layoutbergEditor.pluginUrl 
+                                ? window.layoutbergEditor.pluginUrl + 'assets/images/layoutberg-logo.png'
+                                : '/wp-content/plugins/layoutberg/assets/images/layoutberg-logo.png'}
+                            alt="LayoutBerg"
+                            style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                        />
+                    </FlexItem>
                     <FlexBlock>
                         {__('Generate AI Layout', 'layoutberg')}
                     </FlexBlock>

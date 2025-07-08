@@ -55,7 +55,9 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 	<div class="layoutberg-header">
 		<div class="layoutberg-header-content">
 			<div class="layoutberg-title">
-				<div class="layoutberg-logo">LB</div>
+				<div class="layoutberg-logo">
+					<img src="<?php echo esc_url( LAYOUTBERG_PLUGIN_URL . 'assets/images/layoutberg-logo.png' ); ?>" alt="<?php esc_attr_e( 'LayoutBerg Logo', 'layoutberg' ); ?>" />
+				</div>
 				<div>
 					<h1><?php esc_html_e( 'LayoutBerg Settings', 'layoutberg' ); ?></h1>
 					<p><?php esc_html_e( 'Configure your AI-powered layout generation preferences', 'layoutberg' ); ?></p>

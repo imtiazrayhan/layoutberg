@@ -65,11 +65,14 @@ const addLayoutBergButton = () => {
         button.setAttribute('aria-label', __('Generate AI Layout', 'layoutberg'));
         button.style.cssText = 'display: inline-flex !important; align-items: center !important;';
         
-        // Add icon
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'dashicons dashicons-layout';
-        iconSpan.style.cssText = 'width: 20px; height: 20px; font-size: 20px;';
-        button.appendChild(iconSpan);
+        // Add logo icon
+        const iconImg = document.createElement('img');
+        iconImg.src = window.layoutbergEditor && window.layoutbergEditor.pluginUrl 
+            ? window.layoutbergEditor.pluginUrl + 'assets/images/layoutberg-logo.png'
+            : '/wp-content/plugins/layoutberg/assets/images/layoutberg-logo.png';
+        iconImg.alt = 'LayoutBerg';
+        iconImg.style.cssText = 'width: 20px; height: 20px; object-fit: contain;';
+        button.appendChild(iconImg);
         
         // Add text
         const textSpan = document.createElement('span');

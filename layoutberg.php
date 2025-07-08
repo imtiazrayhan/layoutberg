@@ -34,12 +34,12 @@ define( 'LAYOUTBERG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'LAYOUTBERG_MIN_PHP_VERSION', '7.4' );
 define( 'LAYOUTBERG_MIN_WP_VERSION', '6.0' );
 
-if ( ! function_exists( 'lay_fs' ) ) {
+if ( ! function_exists( 'layoutberg_fs' ) ) {
     // Create a helper function for easy SDK access.
-    function lay_fs() {
-        global $lay_fs;
+    function layoutberg_fs() {
+        global $layoutberg_fs;
 
-        if ( ! isset( $lay_fs ) ) {
+        if ( ! isset( $layoutberg_fs ) ) {
             // Activate multisite network integration.
             if ( ! defined( 'WP_FS__PRODUCT_19761_MULTISITE' ) ) {
                 define( 'WP_FS__PRODUCT_19761_MULTISITE', true );
@@ -47,7 +47,7 @@ if ( ! function_exists( 'lay_fs' ) ) {
 
             // Include Freemius SDK.
             require_once dirname( __FILE__ ) . '/vendor/freemius/start.php';
-            $lay_fs = fs_dynamic_init( array(
+            $layoutberg_fs = fs_dynamic_init( array(
                 'id'                  => '19761',
                 'slug'                => 'layoutberg',
                 'premium_slug'        => 'layoutberg',
@@ -67,13 +67,13 @@ if ( ! function_exists( 'lay_fs' ) ) {
             ) );
         }
 
-        return $lay_fs;
+        return $layoutberg_fs;
     }
 
     // Init Freemius.
-    lay_fs();
+    layoutberg_fs();
     // Signal that SDK was initiated.
-    do_action( 'lay_fs_loaded' );
+    do_action( 'layoutberg_fs_loaded' );
 }
 
 /**

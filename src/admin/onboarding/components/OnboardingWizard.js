@@ -171,7 +171,13 @@ const OnboardingWizard = () => {
 				{/* Header */}
 				<div className="layoutberg-onboarding__header">
 					<div className="layoutberg-onboarding__logo">
-						<span className="layoutberg-logo">LB</span>
+						<img 
+							src={window.layoutbergOnboarding && window.layoutbergOnboarding.pluginUrl 
+								? window.layoutbergOnboarding.pluginUrl + 'assets/images/layoutberg-logo.png'
+								: '/wp-content/plugins/layoutberg/assets/images/layoutberg-logo.png'}
+							alt="LayoutBerg"
+							className="layoutberg-logo"
+						/>
 						<h1>{__('LayoutBerg Setup', 'layoutberg')}</h1>
 					</div>
 					{currentStep > 0 && currentStep < steps.length - 1 && (
