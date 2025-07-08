@@ -138,8 +138,8 @@ class Pattern_Variations {
 		$with_icons = isset( $options['with_icons'] ) ? $options['with_icons'] : ( rand( 0, 1 ) === 1 );
 		$alignment = $this->get_random_alignment();
 		
-		$pattern = '<!-- wp:group {"align":"wide"} -->
-<div class="wp-block-group alignwide">';
+		$pattern = '<!-- wp:group {"align":"full"} -->
+<div class="wp-block-group alignfull">';
 		
 		// Add section heading
 		$pattern .= '<!-- wp:heading {"textAlign":"center","level":2} -->
@@ -157,8 +157,8 @@ class Pattern_Variations {
 		// Add columns
 		$pattern .= '
 
-<!-- wp:columns {"align":"wide"} -->
-<div class="wp-block-columns alignwide">';
+<!-- wp:columns {"align":"full"} -->
+<div class="wp-block-columns alignfull">';
 
 		for ( $i = 0; $i < $columns; $i++ ) {
 			$pattern .= '<!-- wp:column -->
