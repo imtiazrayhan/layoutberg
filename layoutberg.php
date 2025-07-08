@@ -31,8 +31,50 @@ define( 'LAYOUTBERG_PLUGIN_FILE', __FILE__ );
 define( 'LAYOUTBERG_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
 // Minimum requirements.
-define( 'LAYOUTBERG_MIN_PHP_VERSION', '8.1' );
+define( 'LAYOUTBERG_MIN_PHP_VERSION', '7.4' );
 define( 'LAYOUTBERG_MIN_WP_VERSION', '6.0' );
+
+if ( ! function_exists( 'lay_fs' ) ) {
+    // Create a helper function for easy SDK access.
+    function lay_fs() {
+        global $lay_fs;
+
+        if ( ! isset( $lay_fs ) ) {
+            // Activate multisite network integration.
+            if ( ! defined( 'WP_FS__PRODUCT_19761_MULTISITE' ) ) {
+                define( 'WP_FS__PRODUCT_19761_MULTISITE', true );
+            }
+
+            // Include Freemius SDK.
+            require_once dirname( __FILE__ ) . '/vendor/freemius/start.php';
+            $lay_fs = fs_dynamic_init( array(
+                'id'                  => '19761',
+                'slug'                => 'layoutberg',
+                'premium_slug'        => 'layoutberg',
+                'type'                => 'plugin',
+                'public_key'          => 'pk_6fbf13f450f12e2a396f3071c4e2c',
+                'is_premium'          => true,
+                'is_premium_only'     => true,
+                'has_addons'          => false,
+                'has_paid_plans'      => true,
+                'is_org_compliant'    => false,
+                'menu'                => array(
+                    'slug'           => 'layoutberg',
+                    'first-path'     => 'admin.php?page=layoutberg-onboarding',
+                    'contact'        => false,
+                    'support'        => false,
+                ),
+            ) );
+        }
+
+        return $lay_fs;
+    }
+
+    // Init Freemius.
+    lay_fs();
+    // Signal that SDK was initiated.
+    do_action( 'lay_fs_loaded' );
+}
 
 /**
  * Check minimum requirements.
