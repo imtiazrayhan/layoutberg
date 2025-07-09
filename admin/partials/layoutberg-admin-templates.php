@@ -761,6 +761,21 @@ $categories = array_merge(
 	align-items: center;
 }
 
+/* Searching indicator */
+.layoutberg-search-container.searching::after {
+	content: '';
+	position: absolute;
+	right: 40px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 16px;
+	height: 16px;
+	border: 2px solid #e5e7eb;
+	border-top-color: #6366f1;
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+}
+
 .layoutberg-search {
 	border: 1px solid #d1d5db;
 	border-radius: 6px;
@@ -1464,10 +1479,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 
 		const gridContainer = document.querySelector('.layoutberg-templates-grid') || document.querySelector('.layoutberg-templates-empty');
+		const searchContainer = document.querySelector('.layoutberg-search-container');
+		
+		// Add searching indicator to search input
+		if (searchContainer) {
+			searchContainer.classList.add('searching');
+		}
+		
 		if (gridContainer) {
 			const loadingOverlay = document.createElement('div');
 			loadingOverlay.className = 'layoutberg-loading-overlay';
-			loadingOverlay.innerHTML = '<div class="layoutberg-spinner"></div><p>Loading templates...</p>';
+			loadingOverlay.innerHTML = '<div class="layoutberg-spinner"></div><p>Searching...</p>';
 			gridContainer.parentNode.insertBefore(loadingOverlay, gridContainer);
 			gridContainer.style.opacity = '0.5';
 		}
@@ -1490,7 +1512,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			.finally(() => {
 				const loading = document.querySelector('.layoutberg-loading-overlay');
 				if (loading) loading.remove();
-				if (searchInput) searchInput.focus();
+				
+				// Remove searching indicator
+				const searchContainer = document.querySelector('.layoutberg-search-container');
+				if (searchContainer) {
+					searchContainer.classList.remove('searching');
+				}
+				
+				// Keep focus on search input for better UX
+				if (searchInput && document.activeElement === searchInput) {
+					const cursorPosition = searchInput.selectionStart;
+					searchInput.focus();
+					searchInput.setSelectionRange(cursorPosition, cursorPosition);
+				}
 			});
 	}
 	
@@ -1504,10 +1538,41 @@ document.addEventListener('DOMContentLoaded', function() {
 			updateTemplatesGridAJAX();
 		});
 	}
+	// Debounce function for live search
+	function debounce(func, wait) {
+		let timeout;
+		return function executedFunction(...args) {
+			const later = () => {
+				clearTimeout(timeout);
+				func(...args);
+			};
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+		};
+	}
+	
+	// Create debounced version of updateTemplatesGridAJAX
+	const debouncedUpdate = debounce(updateTemplatesGridAJAX, 300);
+	
 	if (searchInput) {
+		// Live search as you type
+		searchInput.addEventListener('input', function(e) {
+			// Show instant feedback
+			if (e.target.value.trim()) {
+				searchInput.setAttribute('data-searching', 'true');
+			} else {
+				searchInput.removeAttribute('data-searching');
+			}
+			debouncedUpdate();
+		});
+		
+		// Also handle Enter key for immediate search
 		searchInput.addEventListener('keypress', function(e) {
 			if (e.key === 'Enter') {
 				e.preventDefault();
+				// Cancel any pending debounced calls
+				clearTimeout(debouncedUpdate.timeout);
+				// Execute search immediately
 				updateTemplatesGridAJAX();
 			}
 		});
