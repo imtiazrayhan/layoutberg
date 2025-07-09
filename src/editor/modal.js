@@ -711,7 +711,7 @@ const LayoutBergModal = ( {
 								<ToggleControl
 									label={ __( 'Use variations for faster generation', 'layoutberg' ) }
 									help={ __( 'Generate layouts instantly without API calls using our pre-built variations', 'layoutberg' ) }
-									checked={ settings.useVariations !== false }
+									checked={ settings.useVariations === true }
 									onChange={ ( value ) => updateSetting( 'useVariations', value ) }
 								/>
 							</CardBody>
@@ -986,14 +986,15 @@ const LayoutBergModal = ( {
 						<Button
 							variant="primary"
 							onClick={ () => {
-								// Pass variation data if available and variations are enabled
-								if ( matchedTemplate && settings.useVariations !== false && selectedVariation ) {
+								// Only use variations if explicitly enabled and template is matched
+								if ( matchedTemplate && settings.useVariations === true ) {
 									onGenerate({
 										useVariations: true,
 										variationStyle: selectedVariation,
 										templateKey: matchedTemplate.key
 									});
 								} else {
+									// Use regular AI generation
 									onGenerate();
 								}
 							} }

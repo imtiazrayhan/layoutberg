@@ -68,6 +68,7 @@ const LayoutBergEditor = () => {
 		model: window.layoutbergEditor?.settings?.model || 'gpt-3.5-turbo',
 		temperature: window.layoutbergEditor?.settings?.temperature || 0.7,
 		maxTokens: window.layoutbergEditor?.settings?.maxTokens || 2000,
+		useVariations: false, // Default to false - user must explicitly enable
 	} );
 
 	// Use reducer for generation state management
