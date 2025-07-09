@@ -28,7 +28,10 @@
 		"format": "wp-scripts format",
 		"test": "wp-scripts test-unit-js",
 		"test:watch": "npm run test -- --watch",
-		"packages-update": "wp-scripts packages-update"
+		"packages-update": "wp-scripts packages-update",
+		"zip": "wp-scripts plugin-zip",
+		"package": "npm run build && npm run zip",
+		"release": "npm run lint && npm run test && npm run package"
 	},
 	"devDependencies": {
 		"@wordpress/scripts": "^26.19.0",

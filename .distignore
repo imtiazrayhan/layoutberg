@@ -1,0 +1,40 @@
+# Development files
+node_modules/
+.git/
+.gitignore
+.phpunit.result.cache
+tsconfig.json
+webpack.config.js
+package.json
+package-lock.json
+composer.json
+composer.lock
+
+# Documentation and development notes
+README.md
+CLAUDE.md
+pricing-tiers-implementation-status.md
+docs/
+
+# Source files (only built files should be included)
+src/
+
+# Test files
+tests/
+phpunit.xml
+
+# Development directories
+.claude/
+
+# Build artifacts that shouldn't be in the zip
+build/*.map
+build/*.asset.php
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db 
