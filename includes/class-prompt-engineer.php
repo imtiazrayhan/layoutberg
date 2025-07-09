@@ -597,6 +597,11 @@ COMMON ATTRIBUTES:
 	 * @return string Style instructions.
 	 */
 	private function get_style_instructions( $style ) {
+		// Get user's style defaults
+		$options = get_option( 'layoutberg_options', array() );
+		$use_defaults = ! empty( $options['use_style_defaults'] );
+		
+		// Base styles
 		$styles = array(
 			'modern' => 'STYLE: Clean, minimal. Use: gradient backgrounds (vivid-cyan-blue-to-vivid-purple), white text on gradients, sans-serif, generous spacing (60-80px).',
 			'classic' => 'STYLE: Traditional, professional. Use: light backgrounds (base-2), dark text (contrast), serif headings, moderate spacing (40-60px).',
@@ -606,7 +611,95 @@ COMMON ATTRIBUTES:
 			'playful' => 'STYLE: Friendly, fun. Use: bright gradient backgrounds (blush-light-purple), white text, rounded corners.',
 		);
 		
-		return $styles[ $style ] ?? $styles['modern'];
+		// Get base style instructions
+		$style_instructions = $styles[ $style ] ?? $styles['modern'];
+		
+		// Apply user defaults if enabled
+		if ( $use_defaults ) {
+			$defaults = array();
+			
+			// Typography defaults
+			if ( ! empty( $options['default_heading_size'] ) && $options['default_heading_size'] !== 'default' ) {
+				$size_map = array(
+					'small' => 'small headings (1.5rem-2rem)',
+					'medium' => 'medium headings (2rem-3rem)',
+					'large' => 'large headings (3rem-4rem)',
+					'x-large' => 'extra large headings (4rem-5rem)'
+				);
+				if ( isset( $size_map[ $options['default_heading_size'] ] ) ) {
+					$defaults[] = $size_map[ $options['default_heading_size'] ];
+				}
+			}
+			
+			if ( ! empty( $options['default_text_size'] ) && $options['default_text_size'] !== 'default' ) {
+				$text_size_map = array(
+					'small' => 'small body text (14px)',
+					'medium' => 'medium body text (16px)',
+					'large' => 'large body text (18px)'
+				);
+				if ( isset( $text_size_map[ $options['default_text_size'] ] ) ) {
+					$defaults[] = $text_size_map[ $options['default_text_size'] ];
+				}
+			}
+			
+			if ( ! empty( $options['default_font_weight'] ) && $options['default_font_weight'] !== 'default' ) {
+				$defaults[] = 'font-weight: ' . $options['default_font_weight'];
+			}
+			
+			if ( ! empty( $options['default_text_align'] ) && $options['default_text_align'] !== 'default' ) {
+				$defaults[] = 'text-align: ' . $options['default_text_align'];
+			}
+			
+			// Color defaults
+			if ( ! empty( $options['default_text_color'] ) ) {
+				$defaults[] = 'text color: ' . $options['default_text_color'];
+			}
+			
+			if ( ! empty( $options['default_background_color'] ) ) {
+				$defaults[] = 'background: ' . $options['default_background_color'];
+			}
+			
+			if ( ! empty( $options['default_button_color'] ) ) {
+				$defaults[] = 'button background: ' . $options['default_button_color'];
+			}
+			
+			if ( ! empty( $options['default_button_text_color'] ) ) {
+				$defaults[] = 'button text: ' . $options['default_button_text_color'];
+			}
+			
+			// Layout defaults
+			if ( ! empty( $options['default_content_width'] ) && $options['default_content_width'] !== 'default' ) {
+				$defaults[] = 'content width: ' . $options['default_content_width'];
+			}
+			
+			if ( ! empty( $options['default_spacing'] ) && $options['default_spacing'] !== 'default' ) {
+				$spacing_map = array(
+					'compact' => 'compact spacing (20-40px)',
+					'comfortable' => 'comfortable spacing (40-60px)',
+					'spacious' => 'spacious spacing (60-80px)'
+				);
+				if ( isset( $spacing_map[ $options['default_spacing'] ] ) ) {
+					$defaults[] = $spacing_map[ $options['default_spacing'] ];
+				}
+			}
+			
+			// Append user defaults to style instructions
+			if ( ! empty( $defaults ) ) {
+				$style_instructions .= "\nUSER DEFAULTS: " . implode( ', ', $defaults );
+			}
+		}
+		
+		// Override with preferred style if set
+		if ( ! empty( $options['preferred_style'] ) && $options['preferred_style'] !== 'auto' ) {
+			if ( isset( $styles[ $options['preferred_style'] ] ) && $style !== $options['preferred_style'] ) {
+				$style_instructions = $styles[ $options['preferred_style'] ];
+				if ( $use_defaults && ! empty( $defaults ) ) {
+					$style_instructions .= "\nUSER DEFAULTS: " . implode( ', ', $defaults );
+				}
+			}
+		}
+		
+		return $style_instructions;
 	}
 
 	/**

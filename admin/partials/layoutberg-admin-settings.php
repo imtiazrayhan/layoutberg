@@ -101,6 +101,10 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 						<span class="dashicons dashicons-admin-generic"></span>
 						<?php esc_html_e( 'Advanced', 'layoutberg' ); ?>
 					</a>
+					<a href="#style-defaults" class="layoutberg-settings-nav-item" data-tab="style-defaults">
+						<span class="dashicons dashicons-art"></span>
+						<?php esc_html_e( 'Style Defaults', 'layoutberg' ); ?>
+					</a>
 				</nav>
 			</div>
 
@@ -633,6 +637,303 @@ document.addEventListener('DOMContentLoaded', function() {
 						</div>
 					</div>
 
+					<!-- Style Defaults Tab -->
+					<div id="style-defaults" class="layoutberg-settings-tab">
+						<div class="layoutberg-card">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Typography Defaults', 'layoutberg' ); ?></h3>
+							</div>
+
+							<div class="layoutberg-grid layoutberg-grid-2">
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_heading_size" class="layoutberg-label">
+										<?php esc_html_e( 'Default Heading Size', 'layoutberg' ); ?>
+									</label>
+									<select id="layoutberg_default_heading_size" name="layoutberg_options[default_heading_size]" class="layoutberg-select">
+										<option value="default" <?php selected( $options['default_heading_size'] ?? 'default', 'default' ); ?>>
+											<?php esc_html_e( 'Theme Default', 'layoutberg' ); ?>
+										</option>
+										<option value="small" <?php selected( $options['default_heading_size'] ?? '', 'small' ); ?>>
+											<?php esc_html_e( 'Small', 'layoutberg' ); ?>
+										</option>
+										<option value="medium" <?php selected( $options['default_heading_size'] ?? '', 'medium' ); ?>>
+											<?php esc_html_e( 'Medium', 'layoutberg' ); ?>
+										</option>
+										<option value="large" <?php selected( $options['default_heading_size'] ?? '', 'large' ); ?>>
+											<?php esc_html_e( 'Large', 'layoutberg' ); ?>
+										</option>
+										<option value="x-large" <?php selected( $options['default_heading_size'] ?? '', 'x-large' ); ?>>
+											<?php esc_html_e( 'Extra Large', 'layoutberg' ); ?>
+										</option>
+									</select>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default size for headings in generated layouts.', 'layoutberg' ); ?>
+									</p>
+								</div>
+
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_text_size" class="layoutberg-label">
+										<?php esc_html_e( 'Default Text Size', 'layoutberg' ); ?>
+									</label>
+									<select id="layoutberg_default_text_size" name="layoutberg_options[default_text_size]" class="layoutberg-select">
+										<option value="default" <?php selected( $options['default_text_size'] ?? 'default', 'default' ); ?>>
+											<?php esc_html_e( 'Theme Default', 'layoutberg' ); ?>
+										</option>
+										<option value="small" <?php selected( $options['default_text_size'] ?? '', 'small' ); ?>>
+											<?php esc_html_e( 'Small', 'layoutberg' ); ?>
+										</option>
+										<option value="medium" <?php selected( $options['default_text_size'] ?? '', 'medium' ); ?>>
+											<?php esc_html_e( 'Medium', 'layoutberg' ); ?>
+										</option>
+										<option value="large" <?php selected( $options['default_text_size'] ?? '', 'large' ); ?>>
+											<?php esc_html_e( 'Large', 'layoutberg' ); ?>
+										</option>
+									</select>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default size for body text in generated layouts.', 'layoutberg' ); ?>
+									</p>
+								</div>
+
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_font_weight" class="layoutberg-label">
+										<?php esc_html_e( 'Default Font Weight', 'layoutberg' ); ?>
+									</label>
+									<select id="layoutberg_default_font_weight" name="layoutberg_options[default_font_weight]" class="layoutberg-select">
+										<option value="default" <?php selected( $options['default_font_weight'] ?? 'default', 'default' ); ?>>
+											<?php esc_html_e( 'Theme Default', 'layoutberg' ); ?>
+										</option>
+										<option value="300" <?php selected( $options['default_font_weight'] ?? '', '300' ); ?>>
+											<?php esc_html_e( 'Light (300)', 'layoutberg' ); ?>
+										</option>
+										<option value="400" <?php selected( $options['default_font_weight'] ?? '', '400' ); ?>>
+											<?php esc_html_e( 'Normal (400)', 'layoutberg' ); ?>
+										</option>
+										<option value="500" <?php selected( $options['default_font_weight'] ?? '', '500' ); ?>>
+											<?php esc_html_e( 'Medium (500)', 'layoutberg' ); ?>
+										</option>
+										<option value="600" <?php selected( $options['default_font_weight'] ?? '', '600' ); ?>>
+											<?php esc_html_e( 'Semi Bold (600)', 'layoutberg' ); ?>
+										</option>
+										<option value="700" <?php selected( $options['default_font_weight'] ?? '', '700' ); ?>>
+											<?php esc_html_e( 'Bold (700)', 'layoutberg' ); ?>
+										</option>
+									</select>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default font weight for text in generated layouts.', 'layoutberg' ); ?>
+									</p>
+								</div>
+
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_text_align" class="layoutberg-label">
+										<?php esc_html_e( 'Default Text Alignment', 'layoutberg' ); ?>
+									</label>
+									<select id="layoutberg_default_text_align" name="layoutberg_options[default_text_align]" class="layoutberg-select">
+										<option value="default" <?php selected( $options['default_text_align'] ?? 'default', 'default' ); ?>>
+											<?php esc_html_e( 'Theme Default', 'layoutberg' ); ?>
+										</option>
+										<option value="left" <?php selected( $options['default_text_align'] ?? '', 'left' ); ?>>
+											<?php esc_html_e( 'Left', 'layoutberg' ); ?>
+										</option>
+										<option value="center" <?php selected( $options['default_text_align'] ?? '', 'center' ); ?>>
+											<?php esc_html_e( 'Center', 'layoutberg' ); ?>
+										</option>
+										<option value="right" <?php selected( $options['default_text_align'] ?? '', 'right' ); ?>>
+											<?php esc_html_e( 'Right', 'layoutberg' ); ?>
+										</option>
+									</select>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default text alignment for content in generated layouts.', 'layoutberg' ); ?>
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div class="layoutberg-card layoutberg-mt-4">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Color Defaults', 'layoutberg' ); ?></h3>
+							</div>
+
+							<div class="layoutberg-grid layoutberg-grid-2">
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_text_color" class="layoutberg-label">
+										<?php esc_html_e( 'Default Text Color', 'layoutberg' ); ?>
+									</label>
+									<input 
+										type="text" 
+										id="layoutberg_default_text_color" 
+										name="layoutberg_options[default_text_color]" 
+										value="<?php echo esc_attr( $options['default_text_color'] ?? '' ); ?>" 
+										class="layoutberg-input layoutberg-color-input"
+										placeholder="<?php esc_attr_e( 'e.g., #000000 or contrast', 'layoutberg' ); ?>"
+									/>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default text color. Use hex values (#000000) or theme color slugs (contrast, primary, etc.).', 'layoutberg' ); ?>
+									</p>
+								</div>
+
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_background_color" class="layoutberg-label">
+										<?php esc_html_e( 'Default Background Color', 'layoutberg' ); ?>
+									</label>
+									<input 
+										type="text" 
+										id="layoutberg_default_background_color" 
+										name="layoutberg_options[default_background_color]" 
+										value="<?php echo esc_attr( $options['default_background_color'] ?? '' ); ?>" 
+										class="layoutberg-input layoutberg-color-input"
+										placeholder="<?php esc_attr_e( 'e.g., #FFFFFF or base', 'layoutberg' ); ?>"
+									/>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default background color. Use hex values (#FFFFFF) or theme color slugs (base, secondary, etc.).', 'layoutberg' ); ?>
+									</p>
+								</div>
+
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_button_color" class="layoutberg-label">
+										<?php esc_html_e( 'Default Button Color', 'layoutberg' ); ?>
+									</label>
+									<input 
+										type="text" 
+										id="layoutberg_default_button_color" 
+										name="layoutberg_options[default_button_color]" 
+										value="<?php echo esc_attr( $options['default_button_color'] ?? '' ); ?>" 
+										class="layoutberg-input layoutberg-color-input"
+										placeholder="<?php esc_attr_e( 'e.g., #6366f1 or primary', 'layoutberg' ); ?>"
+									/>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default button background color. Use hex values or theme color slugs.', 'layoutberg' ); ?>
+									</p>
+								</div>
+
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_button_text_color" class="layoutberg-label">
+										<?php esc_html_e( 'Default Button Text Color', 'layoutberg' ); ?>
+									</label>
+									<input 
+										type="text" 
+										id="layoutberg_default_button_text_color" 
+										name="layoutberg_options[default_button_text_color]" 
+										value="<?php echo esc_attr( $options['default_button_text_color'] ?? '' ); ?>" 
+										class="layoutberg-input layoutberg-color-input"
+										placeholder="<?php esc_attr_e( 'e.g., #FFFFFF or base', 'layoutberg' ); ?>"
+									/>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default button text color. Use hex values or theme color slugs.', 'layoutberg' ); ?>
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div class="layoutberg-card layoutberg-mt-4">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Layout Defaults', 'layoutberg' ); ?></h3>
+							</div>
+
+							<div class="layoutberg-grid layoutberg-grid-2">
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_content_width" class="layoutberg-label">
+										<?php esc_html_e( 'Default Content Width', 'layoutberg' ); ?>
+									</label>
+									<select id="layoutberg_default_content_width" name="layoutberg_options[default_content_width]" class="layoutberg-select">
+										<option value="default" <?php selected( $options['default_content_width'] ?? 'default', 'default' ); ?>>
+											<?php esc_html_e( 'Theme Default', 'layoutberg' ); ?>
+										</option>
+										<option value="wide" <?php selected( $options['default_content_width'] ?? '', 'wide' ); ?>>
+											<?php esc_html_e( 'Wide Width', 'layoutberg' ); ?>
+										</option>
+										<option value="full" <?php selected( $options['default_content_width'] ?? '', 'full' ); ?>>
+											<?php esc_html_e( 'Full Width', 'layoutberg' ); ?>
+										</option>
+									</select>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default width for content blocks in generated layouts.', 'layoutberg' ); ?>
+									</p>
+								</div>
+
+								<div class="layoutberg-form-group">
+									<label for="layoutberg_default_spacing" class="layoutberg-label">
+										<?php esc_html_e( 'Default Spacing', 'layoutberg' ); ?>
+									</label>
+									<select id="layoutberg_default_spacing" name="layoutberg_options[default_spacing]" class="layoutberg-select">
+										<option value="default" <?php selected( $options['default_spacing'] ?? 'default', 'default' ); ?>>
+											<?php esc_html_e( 'Theme Default', 'layoutberg' ); ?>
+										</option>
+										<option value="compact" <?php selected( $options['default_spacing'] ?? '', 'compact' ); ?>>
+											<?php esc_html_e( 'Compact (20-40px)', 'layoutberg' ); ?>
+										</option>
+										<option value="comfortable" <?php selected( $options['default_spacing'] ?? '', 'comfortable' ); ?>>
+											<?php esc_html_e( 'Comfortable (40-60px)', 'layoutberg' ); ?>
+										</option>
+										<option value="spacious" <?php selected( $options['default_spacing'] ?? '', 'spacious' ); ?>>
+											<?php esc_html_e( 'Spacious (60-80px)', 'layoutberg' ); ?>
+										</option>
+									</select>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Set the default spacing between blocks and sections.', 'layoutberg' ); ?>
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div class="layoutberg-card layoutberg-mt-4">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Style Presets', 'layoutberg' ); ?></h3>
+							</div>
+
+							<div class="layoutberg-form-group">
+								<label class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
+									<div class="layoutberg-toggle">
+										<input 
+											type="checkbox" 
+											name="layoutberg_options[use_style_defaults]" 
+											value="1"
+											<?php checked( $options['use_style_defaults'] ?? false, true ); ?>
+										/>
+										<span class="layoutberg-toggle-slider"></span>
+									</div>
+									<div>
+										<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Apply Style Defaults', 'layoutberg' ); ?></span>
+										<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
+											<?php esc_html_e( 'When enabled, the AI will use these style defaults when generating layouts. When disabled, it will use theme defaults or AI-determined styles.', 'layoutberg' ); ?>
+										</p>
+									</div>
+								</label>
+							</div>
+
+							<div class="layoutberg-form-group layoutberg-mt-4">
+								<label for="layoutberg_preferred_style" class="layoutberg-label">
+									<?php esc_html_e( 'Preferred Design Style', 'layoutberg' ); ?>
+								</label>
+								<select id="layoutberg_preferred_style" name="layoutberg_options[preferred_style]" class="layoutberg-select">
+									<option value="auto" <?php selected( $options['preferred_style'] ?? 'auto', 'auto' ); ?>>
+										<?php esc_html_e( 'Auto (AI decides)', 'layoutberg' ); ?>
+									</option>
+									<option value="modern" <?php selected( $options['preferred_style'] ?? '', 'modern' ); ?>>
+										<?php esc_html_e( 'Modern - Clean, gradient backgrounds', 'layoutberg' ); ?>
+									</option>
+									<option value="classic" <?php selected( $options['preferred_style'] ?? '', 'classic' ); ?>>
+										<?php esc_html_e( 'Classic - Traditional, professional', 'layoutberg' ); ?>
+									</option>
+									<option value="bold" <?php selected( $options['preferred_style'] ?? '', 'bold' ); ?>>
+										<?php esc_html_e( 'Bold - High impact, dramatic', 'layoutberg' ); ?>
+									</option>
+									<option value="minimal" <?php selected( $options['preferred_style'] ?? '', 'minimal' ); ?>>
+										<?php esc_html_e( 'Minimal - Ultra-clean, lots of whitespace', 'layoutberg' ); ?>
+									</option>
+									<option value="creative" <?php selected( $options['preferred_style'] ?? '', 'creative' ); ?>>
+										<?php esc_html_e( 'Creative - Artistic, colorful', 'layoutberg' ); ?>
+									</option>
+									<option value="playful" <?php selected( $options['preferred_style'] ?? '', 'playful' ); ?>>
+										<?php esc_html_e( 'Playful - Friendly, fun', 'layoutberg' ); ?>
+									</option>
+								</select>
+								<p class="layoutberg-help-text">
+									<?php esc_html_e( 'Set a preferred design style that the AI will use as a baseline for generated layouts.', 'layoutberg' ); ?>
+								</p>
+							</div>
+						</div>
+					</div>
+
 					<!-- Save Button -->
 					<div class="layoutberg-mt-4">
 						<button type="submit" class="layoutberg-btn layoutberg-btn-primary layoutberg-btn-lg">
@@ -735,6 +1036,15 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Remove any browser default styling */
 .layoutberg-toggle input[type="checkbox"]:focus + .layoutberg-toggle-slider {
 	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Color input styling */
+.layoutberg-color-input {
+	font-family: monospace;
+}
+
+.layoutberg-color-input:placeholder-shown {
+	font-family: inherit;
 }
 </style>
 

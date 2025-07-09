@@ -41,6 +41,95 @@ class Simple_Prompt_Engineer {
 			$color_info .= "Use these colors when appropriate.\n";
 		}
 		
+		// Get user's style defaults
+		$user_options = get_option( 'layoutberg_options', array() );
+		$style_defaults = '';
+		
+		if ( ! empty( $user_options['use_style_defaults'] ) ) {
+			$defaults = array();
+			
+			// Typography defaults
+			if ( ! empty( $user_options['default_heading_size'] ) && $user_options['default_heading_size'] !== 'default' ) {
+				$size_map = array(
+					'small' => 'Use small headings (1.5rem-2rem)',
+					'medium' => 'Use medium headings (2rem-3rem)',
+					'large' => 'Use large headings (3rem-4rem)',
+					'x-large' => 'Use extra large headings (4rem-5rem)'
+				);
+				if ( isset( $size_map[ $user_options['default_heading_size'] ] ) ) {
+					$defaults[] = $size_map[ $user_options['default_heading_size'] ];
+				}
+			}
+			
+			if ( ! empty( $user_options['default_text_size'] ) && $user_options['default_text_size'] !== 'default' ) {
+				$text_size_map = array(
+					'small' => 'Use small body text (14px)',
+					'medium' => 'Use medium body text (16px)',
+					'large' => 'Use large body text (18px)'
+				);
+				if ( isset( $text_size_map[ $user_options['default_text_size'] ] ) ) {
+					$defaults[] = $text_size_map[ $user_options['default_text_size'] ];
+				}
+			}
+			
+			if ( ! empty( $user_options['default_text_align'] ) && $user_options['default_text_align'] !== 'default' ) {
+				$defaults[] = 'Default text alignment: ' . $user_options['default_text_align'];
+			}
+			
+			// Color defaults
+			if ( ! empty( $user_options['default_text_color'] ) ) {
+				$defaults[] = 'Default text color: ' . $user_options['default_text_color'];
+			}
+			
+			if ( ! empty( $user_options['default_background_color'] ) ) {
+				$defaults[] = 'Default background color: ' . $user_options['default_background_color'];
+			}
+			
+			if ( ! empty( $user_options['default_button_color'] ) ) {
+				$defaults[] = 'Default button background: ' . $user_options['default_button_color'];
+			}
+			
+			if ( ! empty( $user_options['default_button_text_color'] ) ) {
+				$defaults[] = 'Default button text color: ' . $user_options['default_button_text_color'];
+			}
+			
+			// Layout defaults
+			if ( ! empty( $user_options['default_content_width'] ) && $user_options['default_content_width'] !== 'default' ) {
+				$defaults[] = 'Use ' . $user_options['default_content_width'] . ' width for content blocks';
+			}
+			
+			if ( ! empty( $user_options['default_spacing'] ) && $user_options['default_spacing'] !== 'default' ) {
+				$spacing_map = array(
+					'compact' => 'Use compact spacing (20-40px between blocks)',
+					'comfortable' => 'Use comfortable spacing (40-60px between blocks)',
+					'spacious' => 'Use spacious spacing (60-80px between blocks)'
+				);
+				if ( isset( $spacing_map[ $user_options['default_spacing'] ] ) ) {
+					$defaults[] = $spacing_map[ $user_options['default_spacing'] ];
+				}
+			}
+			
+			if ( ! empty( $defaults ) ) {
+				$style_defaults = "\n\nUser style preferences:\n" . implode( "\n", $defaults ) . "\n";
+			}
+		}
+		
+		// Apply preferred style if set
+		$style_instruction = '';
+		if ( ! empty( $user_options['preferred_style'] ) && $user_options['preferred_style'] !== 'auto' ) {
+			$style_map = array(
+				'modern' => 'Use a modern, clean design with gradient backgrounds and sans-serif fonts',
+				'classic' => 'Use a traditional, professional design with light backgrounds and serif headings',
+				'bold' => 'Use a high-impact design with strong gradients and large fonts',
+				'minimal' => 'Use an ultra-clean design with maximum whitespace',
+				'creative' => 'Use an artistic design with colorful gradients and mixed fonts',
+				'playful' => 'Use a friendly, fun design with bright colors and rounded corners'
+			);
+			if ( isset( $style_map[ $user_options['preferred_style'] ] ) ) {
+				$style_instruction = "\n" . $style_map[ $user_options['preferred_style'] ] . "\n";
+			}
+		}
+		
 		// Simple, direct instructions like the working plugin
 		$prompt = sprintf(
 			"You are an AI that generates valid WordPress block patterns. 
@@ -54,9 +143,11 @@ class Simple_Prompt_Engineer {
 
 			For cover blocks with images: Use ONLY the url attribute without id attribute. Do not add wp-image-XXX classes. Use gradient backgrounds instead of images when possible.
 
-			%s",
+			%s%s%s",
 			esc_html( $theme_name ),
-			esc_html( $color_info )
+			esc_html( $color_info ),
+			esc_html( $style_instruction ),
+			esc_html( $style_defaults )
 		);
 		
 		return $prompt;
