@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"target": "ES2018",
 		"module": "esnext",
-		"lib": ["es2018", "dom"],
+		"lib": [ "es2018", "dom" ],
 		"jsx": "react",
 		"declaration": true,
 		"declarationMap": true,
@@ -23,21 +23,14 @@
 		"noEmit": true,
 		"baseUrl": ".",
 		"paths": {
-			"@components/*": ["src/components/*"],
-			"@utils/*": ["src/utils/*"],
-			"@hooks/*": ["src/hooks/*"],
-			"@admin/*": ["src/admin/*"],
-			"@blocks/*": ["src/blocks/*"],
-			"@editor/*": ["src/editor/*"]
+			"@components/*": [ "src/components/*" ],
+			"@utils/*": [ "src/utils/*" ],
+			"@hooks/*": [ "src/hooks/*" ],
+			"@admin/*": [ "src/admin/*" ],
+			"@blocks/*": [ "src/blocks/*" ],
+			"@editor/*": [ "src/editor/*" ]
 		}
 	},
-	"include": [
-		"src/**/*"
-	],
-	"exclude": [
-		"node_modules",
-		"build",
-		"vendor",
-		"tests"
-	]
+	"include": [ "src/**/*" ],
+	"exclude": [ "node_modules", "build", "vendor", "tests" ]
 }

@@ -7,10 +7,10 @@
 	"category": "layoutberg",
 	"icon": "layout",
 	"description": "Generate layouts using AI-powered prompts.",
-	"keywords": ["ai", "layout", "generate", "blocks"],
+	"keywords": [ "ai", "layout", "generate", "blocks" ],
 	"supports": {
 		"html": false,
-		"align": ["wide", "full"],
+		"align": [ "wide", "full" ],
 		"spacing": {
 			"margin": true,
 			"padding": true

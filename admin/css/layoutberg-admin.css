@@ -1363,6 +1363,12 @@
     transform: scale(1);
 }
 
+/* Pricing modal needs more width */
+#layoutberg-pricing-modal .layoutberg-modal-content {
+    max-width: 1200px;
+    width: 95%;
+}
+
 /* Charts */
 .layoutberg-chart {
     height: 200px;
@@ -1661,4 +1667,198 @@ body.layoutberg-dark-theme .layoutberg-textarea {
 .layoutberg-badge.danger {
     background: var(--lberg-danger);
     color: white;
+}
+
+/* Pricing Modal Styles */
+.layoutberg-pricing-modal-content {
+    max-width: 1200px;
+    width: 95%;
+    padding: 2rem;
+}
+
+.layoutberg-pricing-intro {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.layoutberg-pricing-intro p {
+    font-size: 1.1rem;
+    color: var(--lberg-text-secondary);
+    margin-bottom: 1rem;
+}
+
+.layoutberg-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.layoutberg-pricing-plan {
+    background: var(--lberg-bg-secondary);
+    border: 2px solid var(--lberg-border);
+    border-radius: var(--lberg-radius-lg);
+    padding: 1.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.layoutberg-pricing-plan:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.layoutberg-pricing-popular {
+    border-color: var(--lberg-primary);
+    transform: scale(1.05);
+}
+
+.layoutberg-pricing-popular:hover {
+    transform: scale(1.05) translateY(-4px);
+}
+
+.layoutberg-pricing-highlight {
+    border-color: var(--lberg-primary);
+    background: rgba(0, 123, 186, 0.05);
+}
+
+.layoutberg-pricing-current {
+    border-color: var(--lberg-success);
+}
+
+.layoutberg-pricing-badge,
+.layoutberg-pricing-current-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--lberg-primary);
+    color: white;
+    padding: 0.25rem 1rem;
+    border-radius: var(--lberg-radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.layoutberg-pricing-current-badge {
+    background: var(--lberg-success);
+}
+
+.layoutberg-pricing-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--lberg-border);
+}
+
+.layoutberg-pricing-header h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--lberg-text-primary);
+}
+
+.layoutberg-pricing-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.layoutberg-price-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--lberg-primary);
+}
+
+.layoutberg-price-period {
+    font-size: 1rem;
+    color: var(--lberg-text-secondary);
+}
+
+.layoutberg-pricing-features {
+    margin-bottom: 1.5rem;
+}
+
+.layoutberg-pricing-features h4 {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    color: var(--lberg-text-secondary);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.layoutberg-pricing-features ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.layoutberg-pricing-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.layoutberg-pricing-features .dashicons {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.layoutberg-pricing-features .dashicons-yes {
+    color: var(--lberg-success);
+}
+
+.layoutberg-pricing-limitations .dashicons-no {
+    color: var(--lberg-danger);
+}
+
+.layoutberg-pricing-action {
+    text-align: center;
+}
+
+.layoutberg-pricing-action .button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+.layoutberg-pricing-footer {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--lberg-border);
+}
+
+.layoutberg-pricing-footer p {
+    margin: 0.25rem 0;
+    color: var(--lberg-text-secondary);
+}
+
+.layoutberg-pricing-feature-message {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* Mobile responsiveness for pricing modal */
+@media (max-width: 768px) {
+    .layoutberg-pricing-modal-content {
+        padding: 1rem;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .layoutberg-pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .layoutberg-pricing-popular {
+        transform: none;
+    }
+    
+    .layoutberg-pricing-popular:hover {
+        transform: translateY(-4px);
+    }
 }

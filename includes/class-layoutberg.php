@@ -197,6 +197,9 @@ class LayoutBerg {
 
 		// Settings save.
 		$this->loader->add_action( 'admin_init', $admin, 'register_settings' );
+
+		// Add pricing modal to admin footer.
+		$this->loader->add_action( 'admin_footer', $admin, 'render_pricing_modal' );
 	}
 
 	/**

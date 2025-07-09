@@ -1,61 +1,61 @@
 {
-  "name": "layoutberg",
-  "version": "1.0.0",
-  "description": "AI-powered layout designer for WordPress Gutenberg editor",
-  "author": "DotCamp",
-  "license": "GPL-2.0-or-later",
-  "keywords": [
-    "wordpress",
-    "gutenberg",
-    "blocks",
-    "ai",
-    "openai",
-    "layout"
-  ],
-  "homepage": "https://dotcamp.com/layoutberg",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/dotcamp/layoutberg.git"
-  },
-  "main": "build/index.js",
-  "scripts": {
-    "build": "wp-scripts build",
-    "start": "wp-scripts start",
-    "dev": "wp-scripts start",
-    "lint:css": "wp-scripts lint-style",
-    "lint:js": "wp-scripts lint-js",
-    "lint": "npm run lint:js && npm run lint:css",
-    "format": "wp-scripts format",
-    "test": "wp-scripts test-unit-js",
-    "test:watch": "npm run test -- --watch",
-    "packages-update": "wp-scripts packages-update"
-  },
-  "devDependencies": {
-    "@wordpress/scripts": "^26.19.0",
-    "@wordpress/env": "^8.13.0",
-    "@types/wordpress__blocks": "^12.5.9",
-    "@types/wordpress__block-editor": "^11.5.6",
-    "@types/wordpress__components": "^23.0.7",
-    "@types/react": "^18.2.45",
-    "@typescript-eslint/eslint-plugin": "^6.13.2",
-    "@typescript-eslint/parser": "^6.13.2",
-    "typescript": "^5.3.3",
-    "ts-loader": "^9.5.1"
-  },
-  "dependencies": {
-    "@wordpress/block-editor": "^12.15.0",
-    "@wordpress/blocks": "^12.24.0",
-    "@wordpress/components": "^25.13.0",
-    "@wordpress/compose": "^6.24.0",
-    "@wordpress/data": "^9.17.0",
-    "@wordpress/element": "^5.24.0",
-    "@wordpress/hooks": "^3.47.0",
-    "@wordpress/i18n": "^4.47.0",
-    "@wordpress/icons": "^9.38.0",
-    "classnames": "^2.3.2"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
-  }
+	"name": "layoutberg",
+	"version": "1.0.0",
+	"description": "AI-powered layout designer for WordPress Gutenberg editor",
+	"author": "DotCamp",
+	"license": "GPL-2.0-or-later",
+	"keywords": [
+		"wordpress",
+		"gutenberg",
+		"blocks",
+		"ai",
+		"openai",
+		"layout"
+	],
+	"homepage": "https://dotcamp.com/layoutberg",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/dotcamp/layoutberg.git"
+	},
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"dev": "wp-scripts start",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"lint": "npm run lint:js && npm run lint:css",
+		"format": "wp-scripts format",
+		"test": "wp-scripts test-unit-js",
+		"test:watch": "npm run test -- --watch",
+		"packages-update": "wp-scripts packages-update"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^26.19.0",
+		"@wordpress/env": "^8.13.0",
+		"@types/wordpress__blocks": "^12.5.9",
+		"@types/wordpress__block-editor": "^11.5.6",
+		"@types/wordpress__components": "^23.0.7",
+		"@types/react": "^18.2.45",
+		"@typescript-eslint/eslint-plugin": "^6.13.2",
+		"@typescript-eslint/parser": "^6.13.2",
+		"typescript": "^5.3.3",
+		"ts-loader": "^9.5.1"
+	},
+	"dependencies": {
+		"@wordpress/block-editor": "^12.15.0",
+		"@wordpress/blocks": "^12.24.0",
+		"@wordpress/components": "^25.13.0",
+		"@wordpress/compose": "^6.24.0",
+		"@wordpress/data": "^9.17.0",
+		"@wordpress/element": "^5.24.0",
+		"@wordpress/hooks": "^3.47.0",
+		"@wordpress/i18n": "^4.47.0",
+		"@wordpress/icons": "^9.38.0",
+		"classnames": "^2.3.2"
+	},
+	"engines": {
+		"node": ">=18.0.0",
+		"npm": ">=8.0.0"
+	}
 }

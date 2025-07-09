@@ -1,2 +1,2 @@
 // AI Layout Block
-console.log('LayoutBerg AI Layout block loaded');
+console.log( 'LayoutBerg AI Layout block loaded' );

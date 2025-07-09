@@ -6,12 +6,21 @@ module.exports = {
 	entry: {
 		// Admin scripts
 		'admin/index': path.resolve( process.cwd(), 'src/admin/index.js' ),
-		'admin/template-preview': path.resolve( process.cwd(), 'src/admin/template-preview.js' ),
-		'admin/onboarding': path.resolve( process.cwd(), 'src/admin/onboarding/index.js' ),
+		'admin/template-preview': path.resolve(
+			process.cwd(),
+			'src/admin/template-preview.js'
+		),
+		'admin/onboarding': path.resolve(
+			process.cwd(),
+			'src/admin/onboarding/index.js'
+		),
 		// Editor scripts (main entry for Gutenberg)
-		'editor': path.resolve( process.cwd(), 'src/editor/index.js' ),
+		editor: path.resolve( process.cwd(), 'src/editor/index.js' ),
 		// Blocks
-		'blocks/ai-layout/index': path.resolve( process.cwd(), 'src/blocks/ai-layout/index.js' ),
+		'blocks/ai-layout/index': path.resolve(
+			process.cwd(),
+			'src/blocks/ai-layout/index.js'
+		),
 		// Public scripts
 		'public/index': path.resolve( process.cwd(), 'src/public/index.js' ),
 	},

@@ -11,7 +11,7 @@ export const GENERATION_ACTIONS = {
 	UPDATE_PROGRESS: 'UPDATE_GENERATION_PROGRESS',
 	SUCCESS: 'GENERATION_SUCCESS',
 	ERROR: 'GENERATION_ERROR',
-	RESET: 'RESET_GENERATION'
+	RESET: 'RESET_GENERATION',
 };
 
 export const initialGenerationState = {
@@ -25,8 +25,8 @@ export const initialGenerationState = {
 	progressDetails: {
 		tokensUsed: 0,
 		blocksGenerated: 0,
-		validationErrors: 0
-	}
+		validationErrors: 0,
+	},
 };
 
 /**
@@ -36,8 +36,8 @@ export const initialGenerationState = {
  * @param {Object} action Action to dispatch.
  * @return {Object} New state.
  */
-export function generationReducer(state, action) {
-	switch (action.type) {
+export function generationReducer( state, action ) {
+	switch ( action.type ) {
 		case GENERATION_ACTIONS.START:
 			return {
 				...state,
@@ -49,23 +49,23 @@ export function generationReducer(state, action) {
 				progressDetails: {
 					tokensUsed: 0,
 					blocksGenerated: 0,
-					validationErrors: 0
-				}
+					validationErrors: 0,
+				},
 			};
-			
+
 		case GENERATION_ACTIONS.UPDATE_STATE:
 			return {
 				...state,
 				state: action.payload,
-				stepStartTime: Date.now()
+				stepStartTime: Date.now(),
 			};
-			
+
 		case GENERATION_ACTIONS.UPDATE_PROGRESS:
 			return {
 				...state,
-				progressDetails: action.payload
+				progressDetails: action.payload,
 			};
-			
+
 		case GENERATION_ACTIONS.SUCCESS:
 			return {
 				...state,
@@ -73,20 +73,20 @@ export function generationReducer(state, action) {
 				state: 'complete',
 				error: null,
 				lastResponse: action.payload.response,
-				lastGeneratedBlocks: action.payload.blocks
+				lastGeneratedBlocks: action.payload.blocks,
 			};
-			
+
 		case GENERATION_ACTIONS.ERROR:
 			return {
 				...state,
 				isGenerating: false,
 				state: 'idle',
-				error: action.payload
+				error: action.payload,
 			};
-			
+
 		case GENERATION_ACTIONS.RESET:
 			return initialGenerationState;
-			
+
 		default:
 			return state;
 	}
@@ -98,17 +98,17 @@ export function generationReducer(state, action) {
  * @param {string} state Current state.
  * @return {string} Human-readable state description.
  */
-export function getStateDescription(state) {
+export function getStateDescription( state ) {
 	const descriptions = {
 		idle: 'Ready to generate',
 		preparing: 'Preparing generation...',
 		sending: 'Sending request...',
 		generating: 'Generating layout...',
 		processing: 'Processing response...',
-		complete: 'Generation complete'
+		complete: 'Generation complete',
 	};
-	
-	return descriptions[state] || 'Unknown state';
+
+	return descriptions[ state ] || 'Unknown state';
 }
 
 /**
@@ -117,8 +117,10 @@ export function getStateDescription(state) {
  * @param {string} state Current state.
  * @return {boolean} True if loading.
  */
-export function isLoadingState(state) {
-	return ['preparing', 'sending', 'generating', 'processing'].includes(state);
+export function isLoadingState( state ) {
+	return [ 'preparing', 'sending', 'generating', 'processing' ].includes(
+		state
+	);
 }
 
 /**
@@ -127,6 +129,6 @@ export function isLoadingState(state) {
  * @param {Object} state Current state object.
  * @return {boolean} True if error state.
  */
-export function isErrorState(state) {
+export function isErrorState( state ) {
 	return state.error !== null;
-} 
+}

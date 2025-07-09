@@ -72,7 +72,7 @@ class Admin {
 			$this->enqueue_editor_scripts();
 			return;
 		}
-		
+
 		// Only enqueue admin scripts on our admin pages.
 		if ( ! $this->is_layoutberg_admin_page() ) {
 			return;
@@ -91,19 +91,22 @@ class Admin {
 		if ( $screen && 'layoutberg_page_layoutberg-templates' === $screen->id ) {
 			// Check if build file exists for template preview
 			$preview_asset_file = LAYOUTBERG_PLUGIN_DIR . 'build/admin/template-preview.asset.php';
-			$preview_asset = file_exists( $preview_asset_file ) 
-				? include $preview_asset_file 
-				: array( 'dependencies' => array(), 'version' => $this->version );
+			$preview_asset      = file_exists( $preview_asset_file )
+				? include $preview_asset_file
+				: array(
+					'dependencies' => array(),
+					'version'      => $this->version,
+				);
 
 			// Ensure wp-blocks is in the dependencies
 			$dependencies = $preview_asset['dependencies'];
-			if (!in_array('wp-blocks', $dependencies)) {
+			if ( ! in_array( 'wp-blocks', $dependencies ) ) {
 				$dependencies[] = 'wp-blocks';
 			}
-			if (!in_array('wp-block-library', $dependencies)) {
+			if ( ! in_array( 'wp-block-library', $dependencies ) ) {
 				$dependencies[] = 'wp-block-library';
 			}
-			
+
 			wp_enqueue_script(
 				'layoutberg-template-preview',
 				LAYOUTBERG_PLUGIN_URL . 'build/admin/template-preview.js',
@@ -131,13 +134,13 @@ class Admin {
 				'apiUrl'    => rest_url( 'layoutberg/v1' ),
 				'restNonce' => wp_create_nonce( 'wp_rest' ),
 				'strings'   => array(
-					'confirmDelete'   => __( 'Are you sure you want to delete this template?', 'layoutberg' ),
-					'saving'          => __( 'Saving...', 'layoutberg' ),
-					'saved'           => __( 'Saved!', 'layoutberg' ),
-					'error'           => __( 'An error occurred. Please try again.', 'layoutberg' ),
-					'apiKeyRequired'  => __( 'API key is required.', 'layoutberg' ),
-					'generating'      => __( 'Generating layout...', 'layoutberg' ),
-					'generated'       => __( 'Layout generated successfully!', 'layoutberg' ),
+					'confirmDelete'  => __( 'Are you sure you want to delete this template?', 'layoutberg' ),
+					'saving'         => __( 'Saving...', 'layoutberg' ),
+					'saved'          => __( 'Saved!', 'layoutberg' ),
+					'error'          => __( 'An error occurred. Please try again.', 'layoutberg' ),
+					'apiKeyRequired' => __( 'API key is required.', 'layoutberg' ),
+					'generating'     => __( 'Generating layout...', 'layoutberg' ),
+					'generated'      => __( 'Layout generated successfully!', 'layoutberg' ),
 				),
 			)
 		);
@@ -149,9 +152,12 @@ class Admin {
 		if ( $screen && 'admin_page_layoutberg-onboarding' === $screen->id ) {
 			// Check if build file exists for onboarding
 			$onboarding_asset_file = LAYOUTBERG_PLUGIN_DIR . 'build/admin/onboarding.asset.php';
-			$onboarding_asset = file_exists( $onboarding_asset_file ) 
-				? include $onboarding_asset_file 
-				: array( 'dependencies' => array(), 'version' => $this->version );
+			$onboarding_asset      = file_exists( $onboarding_asset_file )
+				? include $onboarding_asset_file
+				: array(
+					'dependencies' => array(),
+					'version'      => $this->version,
+				);
 
 			wp_enqueue_script(
 				'layoutberg-onboarding',
@@ -189,7 +195,7 @@ class Admin {
 							'installed'   => file_exists( WP_PLUGIN_DIR . '/ultimate-blocks/ultimate-blocks.php' ),
 							'active'      => is_plugin_active( 'ultimate-blocks/ultimate-blocks.php' ),
 						),
-						'tableberg' => array(
+						'tableberg'       => array(
 							'slug'        => 'tableberg',
 							'name'        => 'TableBerg',
 							'description' => __( 'Create beautiful, responsive tables with advanced features.', 'layoutberg' ),
@@ -198,17 +204,17 @@ class Admin {
 						),
 					),
 					'strings'      => array(
-						'welcome'         => __( 'Welcome to LayoutBerg', 'layoutberg' ),
-						'next'            => __( 'Next', 'layoutberg' ),
-						'back'            => __( 'Back', 'layoutberg' ),
-						'skip'            => __( 'Skip', 'layoutberg' ),
-						'finish'          => __( 'Finish Setup', 'layoutberg' ),
-						'installing'      => __( 'Installing...', 'layoutberg' ),
-						'activating'      => __( 'Activating...', 'layoutberg' ),
-						'installed'       => __( 'Installed', 'layoutberg' ),
-						'active'          => __( 'Active', 'layoutberg' ),
-						'error'           => __( 'An error occurred. Please try again.', 'layoutberg' ),
-						'connectionError' => __( 'Failed to connect. Please check your API key.', 'layoutberg' ),
+						'welcome'           => __( 'Welcome to LayoutBerg', 'layoutberg' ),
+						'next'              => __( 'Next', 'layoutberg' ),
+						'back'              => __( 'Back', 'layoutberg' ),
+						'skip'              => __( 'Skip', 'layoutberg' ),
+						'finish'            => __( 'Finish Setup', 'layoutberg' ),
+						'installing'        => __( 'Installing...', 'layoutberg' ),
+						'activating'        => __( 'Activating...', 'layoutberg' ),
+						'installed'         => __( 'Installed', 'layoutberg' ),
+						'active'            => __( 'Active', 'layoutberg' ),
+						'error'             => __( 'An error occurred. Please try again.', 'layoutberg' ),
+						'connectionError'   => __( 'Failed to connect. Please check your API key.', 'layoutberg' ),
 						'connectionSuccess' => __( 'Connected successfully!', 'layoutberg' ),
 					),
 				)
@@ -227,9 +233,12 @@ class Admin {
 	public function enqueue_editor_scripts() {
 		// Check if build file exists.
 		$editor_asset_file = LAYOUTBERG_PLUGIN_DIR . 'build/editor.asset.php';
-		$editor_asset = file_exists( $editor_asset_file ) 
-			? include $editor_asset_file 
-			: array( 'dependencies' => array(), 'version' => $this->version );
+		$editor_asset      = file_exists( $editor_asset_file )
+			? include $editor_asset_file
+			: array(
+				'dependencies' => array(),
+				'version'      => $this->version,
+			);
 
 		wp_enqueue_script(
 			'layoutberg-editor',
@@ -247,9 +256,9 @@ class Admin {
 		);
 
 		// Get available template categories based on user's plan
-		$template_manager = new Template_Manager();
+		$template_manager     = new Template_Manager();
 		$available_categories = $template_manager->get_categories();
-		
+
 		// Format categories for JavaScript
 		$categories = array();
 		foreach ( $available_categories as $value => $label ) {
@@ -258,7 +267,7 @@ class Admin {
 				'value' => $value,
 			);
 		}
-		
+
 		// Localize script for the editor.
 		wp_localize_script(
 			'layoutberg-editor',
@@ -294,7 +303,7 @@ class Admin {
 	 */
 	private function get_default_settings() {
 		$options = get_option( 'layoutberg_options', array() );
-		
+
 		return array(
 			'model'       => $options['model'] ?? 'gpt-3.5-turbo',
 			'temperature' => floatval( $options['temperature'] ?? 0.7 ),
@@ -311,57 +320,57 @@ class Admin {
 	 * @return array Available models grouped by provider.
 	 */
 	private function get_available_models() {
-		$models = array();
+		$models  = array();
 		$options = get_option( 'layoutberg_options', array() );
-		
+
 		// Check API key status
 		$openai_key_status = $this->check_openai_key_status();
 		$claude_key_status = $this->check_claude_key_status();
-		
+
 		try {
 			// Use Model Config for consistent model information
 			$model_config = new \DotCamp\LayoutBerg\Model_Config();
-			$all_models = $model_config->get_all_models();
-			
+			$all_models   = $model_config->get_all_models();
+
 			// Group models by provider
 			$openai_models = array();
 			$claude_models = array();
-			
+
 			foreach ( $all_models as $model_id => $config ) {
 				if ( $config['provider'] === 'openai' ) {
 					$openai_models[ $model_id ] = array(
-						'label' => $config['name'] . ' (' . $config['description'] . ')',
-						'name' => $config['name'],
-						'description' => $config['description'],
-						'context_window' => $config['context_window'],
-						'max_output' => $config['max_output'],
-						'cost_per_1k_input' => $config['cost_per_1k_input'],
+						'label'              => $config['name'] . ' (' . $config['description'] . ')',
+						'name'               => $config['name'],
+						'description'        => $config['description'],
+						'context_window'     => $config['context_window'],
+						'max_output'         => $config['max_output'],
+						'cost_per_1k_input'  => $config['cost_per_1k_input'],
 						'cost_per_1k_output' => $config['cost_per_1k_output'],
 						'supports_json_mode' => $config['supports_json_mode'],
 						'supports_functions' => $config['supports_functions'],
 					);
 				} elseif ( $config['provider'] === 'claude' ) {
 					$claude_models[ $model_id ] = array(
-						'label' => $config['name'] . ' (' . $config['description'] . ')',
-						'name' => $config['name'],
-						'description' => $config['description'],
-						'context_window' => $config['context_window'],
-						'max_output' => $config['max_output'],
-						'cost_per_1k_input' => $config['cost_per_1k_input'],
+						'label'              => $config['name'] . ' (' . $config['description'] . ')',
+						'name'               => $config['name'],
+						'description'        => $config['description'],
+						'context_window'     => $config['context_window'],
+						'max_output'         => $config['max_output'],
+						'cost_per_1k_input'  => $config['cost_per_1k_input'],
 						'cost_per_1k_output' => $config['cost_per_1k_output'],
 						'supports_json_mode' => $config['supports_json_mode'],
 						'supports_functions' => $config['supports_functions'],
 					);
 				}
 			}
-			
+
 			// Only show OpenAI models if API key is configured
 			if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) {
 				// Check user's plan for model access
 				if ( ! LayoutBerg_Licensing::can_use_premium_code() ) {
 					// Expired monthly - only show GPT-3.5 Turbo
 					$models['openai'] = array(
-						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'label'  => __( 'OpenAI Models', 'layoutberg' ),
 						'models' => array(
 							'gpt-3.5-turbo' => $openai_models['gpt-3.5-turbo'],
 						),
@@ -369,7 +378,7 @@ class Admin {
 				} elseif ( LayoutBerg_Licensing::is_starter_plan() ) {
 					// Starter plan - only show GPT-3.5 Turbo
 					$models['openai'] = array(
-						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'label'  => __( 'OpenAI Models', 'layoutberg' ),
 						'models' => array(
 							'gpt-3.5-turbo' => $openai_models['gpt-3.5-turbo'],
 						),
@@ -377,53 +386,52 @@ class Admin {
 				} else {
 					// Professional and Agency - show all OpenAI models
 					$models['openai'] = array(
-						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'label'  => __( 'OpenAI Models', 'layoutberg' ),
 						'models' => $openai_models,
 					);
 				}
 			}
-			
+
 			// Only show Claude models if API key is configured AND user has appropriate plan
 			if ( $claude_key_status === 'valid' && LayoutBerg_Licensing::can_use_all_models() ) {
 				$models['claude'] = array(
-					'label' => __( 'Claude Models', 'layoutberg' ),
+					'label'  => __( 'Claude Models', 'layoutberg' ),
 					'models' => $claude_models,
 				);
 			}
-			
 		} catch ( Exception $e ) {
 			// Fallback to hardcoded models if Model Config fails
 			if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) {
 				$fallback_openai_models = array(
 					'gpt-3.5-turbo' => array(
-						'label' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
-						'name' => 'GPT-3.5 Turbo',
-						'description' => 'Fast & Affordable',
-						'context_window' => 16385,
-						'max_output' => 4096,
-						'cost_per_1k_input' => 0.0005,
+						'label'              => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
+						'name'               => 'GPT-3.5 Turbo',
+						'description'        => 'Fast & Affordable',
+						'context_window'     => 16385,
+						'max_output'         => 4096,
+						'cost_per_1k_input'  => 0.0005,
 						'cost_per_1k_output' => 0.0015,
 						'supports_json_mode' => true,
 						'supports_functions' => true,
 					),
-					'gpt-4' => array(
-						'label' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
-						'name' => 'GPT-4',
-						'description' => 'Most Capable',
-						'context_window' => 8192,
-						'max_output' => 4096,
-						'cost_per_1k_input' => 0.03,
+					'gpt-4'         => array(
+						'label'              => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
+						'name'               => 'GPT-4',
+						'description'        => 'Most Capable',
+						'context_window'     => 8192,
+						'max_output'         => 4096,
+						'cost_per_1k_input'  => 0.03,
 						'cost_per_1k_output' => 0.06,
 						'supports_json_mode' => true,
 						'supports_functions' => true,
 					),
-					'gpt-4-turbo' => array(
-						'label' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
-						'name' => 'GPT-4 Turbo',
-						'description' => 'Fast & Capable',
-						'context_window' => 128000,
-						'max_output' => 4096,
-						'cost_per_1k_input' => 0.01,
+					'gpt-4-turbo'   => array(
+						'label'              => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
+						'name'               => 'GPT-4 Turbo',
+						'description'        => 'Fast & Capable',
+						'context_window'     => 128000,
+						'max_output'         => 4096,
+						'cost_per_1k_input'  => 0.01,
 						'cost_per_1k_output' => 0.03,
 						'supports_json_mode' => true,
 						'supports_functions' => true,
@@ -434,7 +442,7 @@ class Admin {
 				if ( ! LayoutBerg_Licensing::can_use_premium_code() || LayoutBerg_Licensing::is_starter_plan() ) {
 					// Expired monthly or Starter - only show GPT-3.5 Turbo
 					$models['openai'] = array(
-						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'label'  => __( 'OpenAI Models', 'layoutberg' ),
 						'models' => array(
 							'gpt-3.5-turbo' => $fallback_openai_models['gpt-3.5-turbo'],
 						),
@@ -442,46 +450,46 @@ class Admin {
 				} else {
 					// Professional and Agency - show all OpenAI models
 					$models['openai'] = array(
-						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'label'  => __( 'OpenAI Models', 'layoutberg' ),
 						'models' => $fallback_openai_models,
 					);
 				}
 			}
-			
+
 			// Only show Claude models if API key is configured AND user has Professional or Agency plan
 			if ( $claude_key_status === 'valid' && LayoutBerg_Licensing::can_use_all_models() ) {
 				$models['claude'] = array(
-					'label' => __( 'Claude Models', 'layoutberg' ),
+					'label'  => __( 'Claude Models', 'layoutberg' ),
 					'models' => array(
-						'claude-3-opus-20240229' => array(
-							'label' => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
-							'name' => 'Claude 3 Opus',
-							'description' => 'Most Powerful',
-							'context_window' => 200000,
-							'max_output' => 4096,
-							'cost_per_1k_input' => 0.015,
+						'claude-3-opus-20240229'     => array(
+							'label'              => __( 'Claude 3 Opus (Most Powerful)', 'layoutberg' ),
+							'name'               => 'Claude 3 Opus',
+							'description'        => 'Most Powerful',
+							'context_window'     => 200000,
+							'max_output'         => 4096,
+							'cost_per_1k_input'  => 0.015,
 							'cost_per_1k_output' => 0.075,
 							'supports_json_mode' => false,
 							'supports_functions' => false,
 						),
 						'claude-3-5-sonnet-20241022' => array(
-							'label' => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
-							'name' => 'Claude 3.5 Sonnet',
-							'description' => 'Latest & Fast',
-							'context_window' => 200000,
-							'max_output' => 8192,
-							'cost_per_1k_input' => 0.003,
+							'label'              => __( 'Claude 3.5 Sonnet (Latest & Fast)', 'layoutberg' ),
+							'name'               => 'Claude 3.5 Sonnet',
+							'description'        => 'Latest & Fast',
+							'context_window'     => 200000,
+							'max_output'         => 8192,
+							'cost_per_1k_input'  => 0.003,
 							'cost_per_1k_output' => 0.015,
 							'supports_json_mode' => false,
 							'supports_functions' => false,
 						),
-						'claude-3-haiku-20240307' => array(
-							'label' => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
-							'name' => 'Claude 3 Haiku',
-							'description' => 'Fast & Light',
-							'context_window' => 200000,
-							'max_output' => 4096,
-							'cost_per_1k_input' => 0.00025,
+						'claude-3-haiku-20240307'    => array(
+							'label'              => __( 'Claude 3 Haiku (Fast & Light)', 'layoutberg' ),
+							'name'               => 'Claude 3 Haiku',
+							'description'        => 'Fast & Light',
+							'context_window'     => 200000,
+							'max_output'         => 4096,
+							'cost_per_1k_input'  => 0.00025,
 							'cost_per_1k_output' => 0.00125,
 							'supports_json_mode' => false,
 							'supports_functions' => false,
@@ -502,22 +510,22 @@ class Admin {
 	 */
 	private function check_openai_key_status() {
 		$options = get_option( 'layoutberg_options', array() );
-		
+
 		if ( ! empty( $options['openai_api_key'] ) ) {
-			$security = new \DotCamp\LayoutBerg\Security_Manager();
+			$security  = new \DotCamp\LayoutBerg\Security_Manager();
 			$decrypted = $security->decrypt_api_key( $options['openai_api_key'] );
 			if ( $decrypted ) {
 				return 'valid';
 			}
 		} elseif ( ! empty( $options['api_key'] ) ) {
 			// Backward compatibility
-			$security = new \DotCamp\LayoutBerg\Security_Manager();
+			$security  = new \DotCamp\LayoutBerg\Security_Manager();
 			$decrypted = $security->decrypt_api_key( $options['api_key'] );
 			if ( $decrypted ) {
 				return 'valid';
 			}
 		}
-		
+
 		return '';
 	}
 
@@ -529,15 +537,15 @@ class Admin {
 	 */
 	private function check_claude_key_status() {
 		$options = get_option( 'layoutberg_options', array() );
-		
+
 		if ( ! empty( $options['claude_api_key'] ) ) {
-			$security = new \DotCamp\LayoutBerg\Security_Manager();
+			$security  = new \DotCamp\LayoutBerg\Security_Manager();
 			$decrypted = $security->decrypt_api_key( $options['claude_api_key'] );
 			if ( $decrypted ) {
 				return 'valid';
 			}
 		}
-		
+
 		return '';
 	}
 
@@ -608,7 +616,7 @@ class Admin {
 			'layoutberg-analytics',
 			array( $this, 'display_analytics_page' )
 		);
-		
+
 		// Debug submenu (temporary - remove in production).
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			add_submenu_page(
@@ -640,7 +648,7 @@ class Admin {
 			'layoutberg-upgrade-db',
 			array( $this, 'display_upgrade_db_page' )
 		);
-		
+
 		// Temporary: Add hidden test usage page
 		add_submenu_page(
 			null, // Hidden from menu
@@ -650,7 +658,7 @@ class Admin {
 			'layoutberg-test-usage',
 			array( $this, 'display_test_usage_page' )
 		);
-		
+
 		// Temporary: Add hidden reset data page
 		add_submenu_page(
 			null, // Hidden from menu
@@ -660,7 +668,7 @@ class Admin {
 			'layoutberg-reset-data',
 			array( $this, 'display_reset_data_page' )
 		);
-		
+
 		// Add hidden generation details page
 		add_submenu_page(
 			null, // Hidden from menu
@@ -812,12 +820,12 @@ class Admin {
 
 		// Get existing options.
 		$existing_options = get_option( 'layoutberg_options', array() );
-		$security = new Security_Manager();
-		
+		$security         = new Security_Manager();
+
 		// Handle OpenAI API key.
 		if ( isset( $input['openai_api_key'] ) ) {
 			$openai_key = sanitize_text_field( $input['openai_api_key'] );
-			
+
 			// Check if the API key is masked (contains asterisks) or empty when we have a stored key.
 			if ( ( strpos( $openai_key, '*' ) !== false ) || ( empty( $openai_key ) && isset( $input['has_openai_key'] ) && $input['has_openai_key'] == '1' ) ) {
 				// Keep the existing encrypted key.
@@ -843,11 +851,11 @@ class Admin {
 				$sanitized['openai_api_key'] = $existing_options['api_key'];
 			}
 		}
-		
+
 		// Handle Claude API key.
 		if ( isset( $input['claude_api_key'] ) ) {
 			$claude_key = sanitize_text_field( $input['claude_api_key'] );
-			
+
 			// Check if the API key is masked (contains asterisks) or empty when we have a stored key.
 			if ( ( strpos( $claude_key, '*' ) !== false ) || ( empty( $claude_key ) && isset( $input['has_claude_key'] ) && $input['has_claude_key'] == '1' ) ) {
 				// Keep the existing encrypted key.
@@ -867,7 +875,7 @@ class Admin {
 				$sanitized['claude_api_key'] = $existing_options['claude_api_key'];
 			}
 		}
-		
+
 		// Clean up old api_key field if migration happened
 		if ( isset( $sanitized['openai_api_key'] ) && isset( $existing_options['api_key'] ) ) {
 			// We'll let it be removed by not including it in sanitized
@@ -879,19 +887,19 @@ class Admin {
 				$allowed_models = array_keys( \DotCamp\LayoutBerg\Model_Config::get_all_models() );
 			} catch ( Exception $e ) {
 				// Fallback to hardcoded models if Model Config fails
-				$allowed_models = array( 
+				$allowed_models = array(
 					// OpenAI models
-					'gpt-3.5-turbo', 
-					'gpt-4', 
+					'gpt-3.5-turbo',
+					'gpt-4',
 					'gpt-4-turbo',
 					// Claude models
 					'claude-3-opus-20240229',
 					'claude-3-5-sonnet-20241022',
 					'claude-3-sonnet-20240229',
-					'claude-3-haiku-20240307'
+					'claude-3-haiku-20240307',
 				);
 			}
-			
+
 			if ( in_array( $input['model'], $allowed_models, true ) ) {
 				$sanitized['model'] = $input['model'];
 			}
@@ -910,14 +918,14 @@ class Admin {
 			$sanitized['temperature'] = floatval( $input['temperature'] );
 			$sanitized['temperature'] = max( 0, min( 2, $sanitized['temperature'] ) );
 		}
-		
+
 		// Cache settings.
 		$sanitized['cache_enabled'] = isset( $input['cache_enabled'] ) && $input['cache_enabled'] == '1';
-		
+
 		if ( isset( $input['cache_duration'] ) ) {
 			$sanitized['cache_duration'] = absint( $input['cache_duration'] );
 		}
-		
+
 		// Style defaults.
 		if ( isset( $input['style_defaults'] ) && is_array( $input['style_defaults'] ) ) {
 			$sanitized['style_defaults'] = array(
@@ -927,11 +935,11 @@ class Admin {
 				'density' => sanitize_text_field( $input['style_defaults']['density'] ?? 'balanced' ),
 			);
 		}
-		
+
 		// Advanced settings.
-		$sanitized['allow_custom_blocks'] = isset( $input['allow_custom_blocks'] ) && $input['allow_custom_blocks'] == '1';
-		$sanitized['analytics_enabled'] = isset( $input['analytics_enabled'] ) && $input['analytics_enabled'] == '1';
-		$sanitized['debug_mode'] = isset( $input['debug_mode'] ) && $input['debug_mode'] == '1';
+		$sanitized['allow_custom_blocks']       = isset( $input['allow_custom_blocks'] ) && $input['allow_custom_blocks'] == '1';
+		$sanitized['analytics_enabled']         = isset( $input['analytics_enabled'] ) && $input['analytics_enabled'] == '1';
+		$sanitized['debug_mode']                = isset( $input['debug_mode'] ) && $input['debug_mode'] == '1';
 		$sanitized['use_simplified_generation'] = isset( $input['use_simplified_generation'] ) && $input['use_simplified_generation'] == '1';
 
 		// Merge with existing options.
@@ -952,17 +960,17 @@ class Admin {
 	/**
 	 * Render API key field.
 	 *
-	 * @since 1.0.0  
+	 * @since 1.0.0
 	 * @deprecated No longer used - using custom tabbed interface
 	 */
 	public function render_api_key_field() {
-		$options = get_option( 'layoutberg_options', array() );
+		$options       = get_option( 'layoutberg_options', array() );
 		$encrypted_key = isset( $options['api_key'] ) ? $options['api_key'] : '';
-		
+
 		// Decrypt the API key for display.
 		$api_key = '';
 		if ( ! empty( $encrypted_key ) ) {
-			$security = new Security_Manager();
+			$security  = new Security_Manager();
 			$decrypted = $security->decrypt_api_key( $encrypted_key );
 			if ( $decrypted ) {
 				// Mask the API key for security.
@@ -979,12 +987,12 @@ class Admin {
 			placeholder="sk-..."
 		/>
 		<p class="description">
-			<?php 
+			<?php
 			printf(
 				/* translators: %s: OpenAI platform URL */
 				esc_html__( 'Enter your OpenAI API key. Get one from %s', 'layoutberg' ),
 				'<a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>'
-			); 
+			);
 			?>
 		</p>
 		<?php
@@ -1066,12 +1074,12 @@ class Admin {
 				?>
 				<div class="notice notice-warning">
 					<p>
-						<?php 
+						<?php
 						printf(
 							/* translators: %s: Settings page URL */
 							esc_html__( 'LayoutBerg requires an OpenAI API key to function. Please %s.', 'layoutberg' ),
 							'<a href="' . esc_url( admin_url( 'admin.php?page=layoutberg-settings' ) ) . '">' . esc_html__( 'add your API key', 'layoutberg' ) . '</a>'
-						); 
+						);
 						?>
 					</p>
 				</div>
@@ -1159,13 +1167,13 @@ class Admin {
 
 		// Save template.
 		$template_manager = new Template_Manager();
-		$result           = $template_manager->save_template( 
+		$result           = $template_manager->save_template(
 			array(
 				'name'        => $name,
 				'content'     => $content,
 				'description' => $description,
 				'category'    => $category,
-			) 
+			)
 		);
 
 		if ( is_wp_error( $result ) ) {
@@ -1192,11 +1200,11 @@ class Admin {
 
 		// Get templates.
 		$template_manager = new Template_Manager();
-		$templates        = $template_manager->get_templates( 
+		$templates        = $template_manager->get_templates(
 			array(
 				'category' => $category,
 				'search'   => $search,
-			) 
+			)
 		);
 
 		wp_send_json_success( $templates );
@@ -1220,16 +1228,18 @@ class Admin {
 
 		// Clear the cache.
 		$cache_manager = new Cache_Manager();
-		$result = $cache_manager->flush();
+		$result        = $cache_manager->flush();
 
 		if ( $result ) {
 			// Get cache stats after clearing.
 			$stats = $cache_manager->get_stats();
-			
-			wp_send_json_success( array(
-				'message' => __( 'Cache cleared successfully!', 'layoutberg' ),
-				'stats' => $stats
-			) );
+
+			wp_send_json_success(
+				array(
+					'message' => __( 'Cache cleared successfully!', 'layoutberg' ),
+					'stats'   => $stats,
+				)
+			);
 		} else {
 			wp_send_json_error( __( 'Failed to clear cache.', 'layoutberg' ) );
 		}
@@ -1292,7 +1302,7 @@ class Admin {
 
 		// Get template.
 		$template_manager = new Template_Manager();
-		$template = $template_manager->get_template( $template_id, $increment_usage );
+		$template         = $template_manager->get_template( $template_id, $increment_usage );
 
 		if ( is_wp_error( $template ) ) {
 			wp_send_json_error( $template->get_error_message() );
@@ -1314,7 +1324,7 @@ class Admin {
 	private function generate_template_preview_html( $content ) {
 		// Parse the block content.
 		$blocks = parse_blocks( $content );
-		
+
 		if ( empty( $blocks ) ) {
 			return '<p>' . __( 'No blocks found in template.', 'layoutberg' ) . '</p>';
 		}
@@ -1326,7 +1336,7 @@ class Admin {
 		}
 
 		// Wrap in a container with some basic styling for preview.
-		$preview_html = '<div class="layoutberg-template-preview-wrapper">';
+		$preview_html  = '<div class="layoutberg-template-preview-wrapper">';
 		$preview_html .= '<style>
 			.layoutberg-template-preview-wrapper {
 				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -1410,7 +1420,7 @@ class Admin {
 
 		// Update template.
 		$template_manager = new Template_Manager();
-		$result = $template_manager->update_template( $template_id, $data );
+		$result           = $template_manager->update_template( $template_id, $data );
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( $result->get_error_message() );
@@ -1441,19 +1451,19 @@ class Admin {
 		}
 
 		// Validate file type - check the file extension manually since wp_check_filetype might not recognize .json
-		$filename = $_FILES['import_file']['name'];
+		$filename       = $_FILES['import_file']['name'];
 		$file_extension = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
-		
+
 		if ( $file_extension !== 'json' ) {
 			wp_send_json_error( __( 'Invalid file type. Please upload a JSON file.', 'layoutberg' ) );
 		}
-		
+
 		// Read and validate file content
 		$content = file_get_contents( $_FILES['import_file']['tmp_name'] );
 		if ( ! $content ) {
 			wp_send_json_error( __( 'Failed to read file content.', 'layoutberg' ) );
 		}
-		
+
 		// Parse and validate JSON
 		$template_data = json_decode( $content, true );
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
@@ -1463,7 +1473,7 @@ class Admin {
 		// Import template.
 		try {
 			$template_manager = new Template_Manager();
-			$template_id = $template_manager->import_template( $template_data );
+			$template_id      = $template_manager->import_template( $template_data );
 
 			if ( is_wp_error( $template_id ) ) {
 				wp_send_json_error( $template_id->get_error_message() );
@@ -1495,7 +1505,7 @@ class Admin {
 
 		// Check if user can export templates (Professional or Agency plan).
 		if ( ! LayoutBerg_Licensing::can_export_templates() ) {
-			$message = LayoutBerg_Licensing::is_expired_monthly() 
+			$message = LayoutBerg_Licensing::is_expired_monthly()
 				? __( 'Your subscription has expired. Please renew to export templates.', 'layoutberg' )
 				: __( 'Template export is available in the Professional and Agency plans. Please upgrade to export templates.', 'layoutberg' );
 			wp_send_json_error( $message );
@@ -1509,7 +1519,7 @@ class Admin {
 
 		// Export template.
 		$template_manager = new Template_Manager();
-		$template_data = $template_manager->export_template( $template_id );
+		$template_data    = $template_manager->export_template( $template_id );
 
 		if ( is_wp_error( $template_data ) ) {
 			wp_send_json_error( $template_data->get_error_message() );
@@ -1544,7 +1554,7 @@ class Admin {
 		// Get generation from database.
 		global $wpdb;
 		$table_generations = $wpdb->prefix . 'layoutberg_generations';
-		
+
 		$generation = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM {$table_generations} WHERE id = %d AND user_id = %d",
@@ -1568,10 +1578,10 @@ class Admin {
 		// If generation was successful, process the result.
 		if ( $generation->status === 'completed' && ! empty( $generation->result_data ) ) {
 			$result_data = json_decode( $generation->result_data, true );
-			
+
 			if ( $result_data && isset( $result_data['serialized'] ) ) {
 				$response_data['content'] = $result_data['serialized'];
-				
+
 				// Generate HTML preview.
 				$response_data['html_preview'] = $this->generate_generation_preview_html( $result_data['serialized'] );
 			}
@@ -1590,7 +1600,7 @@ class Admin {
 	private function generate_generation_preview_html( $content ) {
 		// Parse the block content.
 		$blocks = parse_blocks( $content );
-		
+
 		if ( empty( $blocks ) ) {
 			return '<p>' . __( 'No blocks found in generation result.', 'layoutberg' ) . '</p>';
 		}
@@ -1602,7 +1612,7 @@ class Admin {
 		}
 
 		// Wrap in a container with some basic styling for preview.
-		$preview_html = '<div class="layoutberg-generation-preview-wrapper">';
+		$preview_html  = '<div class="layoutberg-generation-preview-wrapper">';
 		$preview_html .= '<style>
 			.layoutberg-generation-preview-wrapper {
 				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -1652,5 +1662,116 @@ class Admin {
 		$preview_html .= '</div>';
 
 		return $preview_html;
+	}
+
+	/**
+	 * Render pricing modal in admin footer.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_pricing_modal() {
+		// Only show on LayoutBerg pages
+		if ( ! $this->is_layoutberg_admin_page() ) {
+			return;
+		}
+
+		$pricing_data = LayoutBerg_Licensing::get_pricing_data();
+		$current_plan = LayoutBerg_Licensing::get_plan_name();
+		$action_url   = LayoutBerg_Licensing::get_action_url();
+		$is_expired   = LayoutBerg_Licensing::is_expired_monthly();
+		?>
+		<div id="layoutberg-pricing-modal" class="layoutberg-modal" style="display: none;">
+			<div class="layoutberg-modal-backdrop"></div>
+			<div class="layoutberg-modal-content layoutberg-pricing-modal-content">
+				<div class="layoutberg-modal-header">
+					<h2><?php esc_html_e( 'Choose Your Plan', 'layoutberg' ); ?></h2>
+					<button type="button" class="layoutberg-modal-close">
+						<span class="dashicons dashicons-no-alt"></span>
+					</button>
+				</div>
+				<div class="layoutberg-modal-body">
+					<div class="layoutberg-pricing-intro">
+						<p><?php esc_html_e( 'Unlock powerful features to supercharge your layout creation with LayoutBerg Pro.', 'layoutberg' ); ?></p>
+						<?php if ( $is_expired ) : ?>
+							<div class="layoutberg-alert layoutberg-alert-warning">
+								<span class="dashicons dashicons-warning"></span>
+								<?php esc_html_e( 'Your subscription has expired. Renew now to continue using premium features.', 'layoutberg' ); ?>
+							</div>
+						<?php endif; ?>
+					</div>
+					
+					<div class="layoutberg-pricing-grid">
+						<?php foreach ( $pricing_data as $plan_key => $plan ) : ?>
+							<?php
+							$is_current   = stripos( $current_plan, $plan['name'] ) !== false;
+							$plan_classes = 'layoutberg-pricing-plan';
+							if ( ! empty( $plan['popular'] ) ) {
+								$plan_classes .= ' layoutberg-pricing-popular';
+							}
+							if ( $is_current ) {
+								$plan_classes .= ' layoutberg-pricing-current';
+							}
+							?>
+							<div class="<?php echo esc_attr( $plan_classes ); ?>" data-plan="<?php echo esc_attr( $plan_key ); ?>">
+								<?php if ( ! empty( $plan['popular'] ) ) : ?>
+									<div class="layoutberg-pricing-badge"><?php esc_html_e( 'Most Popular', 'layoutberg' ); ?></div>
+								<?php endif; ?>
+								<?php if ( $is_current ) : ?>
+									<div class="layoutberg-pricing-current-badge"><?php esc_html_e( 'Current Plan', 'layoutberg' ); ?></div>
+								<?php endif; ?>
+								
+								<div class="layoutberg-pricing-header">
+									<h3><?php echo esc_html( $plan['name'] ); ?></h3>
+									<div class="layoutberg-pricing-price">
+										<span class="layoutberg-price-amount"><?php echo esc_html( $plan['price'] ); ?></span>
+										<span class="layoutberg-price-period"><?php echo esc_html( $plan['period'] ); ?></span>
+									</div>
+								</div>
+								
+								<div class="layoutberg-pricing-features">
+									<h4><?php esc_html_e( 'Features:', 'layoutberg' ); ?></h4>
+									<ul>
+										<?php foreach ( $plan['features'] as $feature ) : ?>
+											<li>
+												<span class="dashicons dashicons-yes"></span>
+												<?php echo esc_html( $feature ); ?>
+											</li>
+										<?php endforeach; ?>
+									</ul>
+									
+									<?php if ( ! empty( $plan['limitations'] ) ) : ?>
+										<h4><?php esc_html_e( 'Limitations:', 'layoutberg' ); ?></h4>
+										<ul class="layoutberg-pricing-limitations">
+											<?php foreach ( $plan['limitations'] as $limitation ) : ?>
+												<li>
+													<span class="dashicons dashicons-no"></span>
+													<?php echo esc_html( $limitation ); ?>
+												</li>
+											<?php endforeach; ?>
+										</ul>
+									<?php endif; ?>
+								</div>
+								
+								<div class="layoutberg-pricing-action">
+									<?php if ( $is_current && ! $is_expired ) : ?>
+										<button class="button" disabled><?php esc_html_e( 'Your Current Plan', 'layoutberg' ); ?></button>
+									<?php else : ?>
+										<a href="<?php echo esc_url( $action_url ); ?>" class="button button-primary layoutberg-upgrade-button" data-plan="<?php echo esc_attr( $plan_key ); ?>">
+											<?php echo $is_expired ? esc_html__( 'Renew Now', 'layoutberg' ) : esc_html__( 'Upgrade Now', 'layoutberg' ); ?>
+										</a>
+									<?php endif; ?>
+								</div>
+							</div>
+						<?php endforeach; ?>
+					</div>
+					
+					<div class="layoutberg-pricing-footer">
+						<p><?php esc_html_e( 'All plans include priority support and regular updates.', 'layoutberg' ); ?></p>
+						<p><small><?php esc_html_e( 'Cancel anytime. No hidden fees.', 'layoutberg' ); ?></small></p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 }

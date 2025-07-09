@@ -1,2 +1,2 @@
 // Admin entry point
-console.log('LayoutBerg admin loaded');
+console.log( 'LayoutBerg admin loaded' );

@@ -69,16 +69,19 @@ _For teams managing multiple client sites_
     - ~~Fix import/export compatibility issues~~
 
 2. ~~**License Validation**~~ ✅ **COMPLETED (2025-01-09)**
+
     - ~~Updated `validate_license()` method to use Freemius SDK~~
     - ~~Updated `is_pro()` method to use `can_use_premium_code()`~~
     - ~~Properly integrated with Freemius licensing system~~
 
 3. ~~**Template Categories Gatekeeping**~~ ✅ **COMPLETED (2025-01-09)**
+
     - ~~Dynamic categories in admin templates page based on plan~~
     - ~~Dynamic categories in save template modal based on plan~~
     - ~~Proper filtering in all template-related UI elements~~
 
 4. ~~**Export Functionality Gatekeeping**~~ ✅ **COMPLETED (2025-01-09)**
+
     - ~~Export button shows only for Professional and Agency plans~~
     - ~~Proper upgrade/renewal messages for other plans~~
     - ~~Backend validation in AJAX handler~~
@@ -96,11 +99,13 @@ _For teams managing multiple client sites_
     - Add variations selector in generation modal
     - Implementation: Extend `GeneratorModal.tsx` to include variation options
     - Leverage existing `Block_Variations` and `Pattern_Variations` classes
+    - **Status**: Backend classes exist but no UI components found
 
 2. **Style Defaults Configuration UI**
     - Add settings tab for default styles
     - Implementation: Add new tab in settings page
     - Save to `layoutberg_options['style_defaults']`
+    - **Status**: No UI found in settings page
 
 ### Medium Priority (Agency Plan) - TODO
 
@@ -109,17 +114,20 @@ _For teams managing multiple client sites_
     - Expose templates in settings/editor
     - Implementation: Create interface to view/select prompt templates
     - Use existing `Prompt_Engineer` class templates
+    - **Status**: Backend class exists but no UI exposure found
 
 2. **Debug Mode Toggle**
 
     - Add toggle in Advanced settings
     - Implementation: Add checkbox in settings to enable/disable debug mode
     - Control `WP_DEBUG` logging for LayoutBerg specifically
+    - **Status**: No UI toggle found in settings page
 
 3. **Multisite Features**
     - Enhance network support beyond basic compatibility
     - Implementation: Add network admin pages
     - Create network-wide settings management
+    - **Status**: Basic compatibility only, no network-specific features
 
 ### Low Priority (Future Enhancement) - TODO
 
@@ -127,11 +135,13 @@ _For teams managing multiple client sites_
 
     - New feature development required
     - Would need custom block attribute controls
+    - **Status**: Not implemented at all
 
 2. **Template Sharing Between Sites**
     - Requires significant architecture changes
     - Would need central template repository
     - API for cross-site communication
+    - **Status**: Not implemented at all
 
 ## Freemius Feature Gatekeeping Implementation
 
@@ -507,26 +517,29 @@ The plugin uses a separated architecture for Freemius integration to avoid names
 3. **`class-layoutberg-licensing.php`** - Helper class for all licensing checks
 
 This separation ensures that:
-- `layoutberg_fs()` is available globally as expected by Freemius SDK
-- The rest of the plugin code remains properly namespaced
-- No PHP namespace declaration errors occur
+
+-   `layoutberg_fs()` is available globally as expected by Freemius SDK
+-   The rest of the plugin code remains properly namespaced
+-   No PHP namespace declaration errors occur
 
 ### Key Implementation Decisions
 
 1. **Dynamic Category Loading**
-   - Categories are loaded from `Template_Manager->get_categories()` in all UI elements
-   - JavaScript components receive categories via `wp_localize_script()`
-   - Ensures consistency across admin pages and editor
+
+    - Categories are loaded from `Template_Manager->get_categories()` in all UI elements
+    - JavaScript components receive categories via `wp_localize_script()`
+    - Ensures consistency across admin pages and editor
 
 2. **Plan Detection**
-   - Uses case-insensitive checks for plan names
-   - Supports variations (e.g., "agency", "business", "enterprise")
-   - Falls back to actual Freemius plan name if no match found
+
+    - Uses case-insensitive checks for plan names
+    - Supports variations (e.g., "agency", "business", "enterprise")
+    - Falls back to actual Freemius plan name if no match found
 
 3. **Debug Tools**
-   - Debug page available at `LayoutBerg > Debug` when `WP_DEBUG` is enabled
-   - Shows comprehensive Freemius status and licensing information
-   - Helps troubleshoot plan detection and feature access issues
+    - Debug page available at `LayoutBerg > Debug` when `WP_DEBUG` is enabled
+    - Shows comprehensive Freemius status and licensing information
+    - Helps troubleshoot plan detection and feature access issues
 
 ## Notes
 
