@@ -58,17 +58,12 @@ $templates = array_map( function( $template ) {
 	return (object) $template;
 }, $templates );
 
-// Get categories
-$categories = array(
-	'all'      => __( 'All Categories', 'layoutberg' ),
-	'general'  => __( 'General', 'layoutberg' ),
-	'business' => __( 'Business', 'layoutberg' ),
-	'creative' => __( 'Creative', 'layoutberg' ),
-	'ecommerce' => __( 'E-commerce', 'layoutberg' ),
-	'blog'     => __( 'Blog', 'layoutberg' ),
-	'portfolio' => __( 'Portfolio', 'layoutberg' ),
-	'landing'  => __( 'Landing Pages', 'layoutberg' ),
-	'custom'   => __( 'Custom', 'layoutberg' ),
+// Get categories based on user's plan
+$available_categories = $template_manager->get_categories();
+// Add 'All Categories' option for filter
+$categories = array_merge(
+	array( 'all' => __( 'All Categories', 'layoutberg' ) ),
+	$available_categories
 );
 ?>
 
@@ -242,28 +237,34 @@ $categories = array(
 									|
 									<?php 
 									// Check if user can export templates (Professional or Agency plan)
-									if ( function_exists( 'layoutberg_fs' ) && \layoutberg_fs()->can_use_premium_code() && 
-										 ( \layoutberg_fs()->is_plan('professional') || \layoutberg_fs()->is_plan('agency') ) ) : 
+									$can_export = false;
+									if ( function_exists( 'layoutberg_fs' ) ) {
+										$can_export = \layoutberg_fs()->can_use_premium_code() && 
+													 ( \layoutberg_fs()->is_plan('professional') || \layoutberg_fs()->is_plan('agency') );
+									}
+									
+									if ( $can_export ) : 
 									?>
 										<a href="#" class="export-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
 											<?php esc_html_e( 'Export', 'layoutberg' ); ?>
 										</a>
 										|
-									<?php elseif ( function_exists( 'layoutberg_fs' ) ) : ?>
-										<?php 
-										$button_text = ! \layoutberg_fs()->can_use_premium_code() 
-											? __( 'Renew to export', 'layoutberg' )
-											: __( 'Upgrade to export', 'layoutberg' );
-										$button_url = ! \layoutberg_fs()->can_use_premium_code() 
-											? \layoutberg_fs()->get_account_url() 
-											: \layoutberg_fs()->get_upgrade_url();
-										?>
-										<a href="<?php echo esc_url( $button_url ); ?>" class="export-template-locked" title="<?php echo esc_attr( $button_text ); ?>">
-											<?php esc_html_e( 'Export', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 12px; vertical-align: middle;"></span>
-										</a>
-										|
 									<?php else : ?>
-										<!-- Freemius not loaded, hide export option -->
+										<?php 
+										// Show locked export option if Freemius is available
+										if ( function_exists( 'layoutberg_fs' ) ) :
+											$button_text = ! \layoutberg_fs()->can_use_premium_code() 
+												? __( 'Renew to export', 'layoutberg' )
+												: __( 'Upgrade to export', 'layoutberg' );
+											$button_url = ! \layoutberg_fs()->can_use_premium_code() 
+												? \layoutberg_fs()->get_account_url() 
+												: \layoutberg_fs()->get_upgrade_url();
+										?>
+											<a href="<?php echo esc_url( $button_url ); ?>" class="export-template-locked" title="<?php echo esc_attr( $button_text ); ?>">
+												<?php esc_html_e( 'Export', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 12px; vertical-align: middle;"></span>
+											</a>
+											|
+										<?php endif; ?>
 									<?php endif; ?>
 									<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'delete', 'template_id' => $template->id ), admin_url( 'admin.php?page=layoutberg-templates' ) ), 'delete_template_' . $template->id ) ); ?>" class="delete-template" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete this template?', 'layoutberg' ); ?>');">
 										<?php esc_html_e( 'Delete', 'layoutberg' ); ?>
@@ -323,8 +324,7 @@ $categories = array(
 				<div class="form-field">
 					<label for="template-category"><?php esc_html_e( 'Category', 'layoutberg' ); ?></label>
 					<select id="template-category" name="category">
-						<?php foreach ( $categories as $key => $label ) : ?>
-							<?php if ( 'all' === $key ) continue; ?>
+						<?php foreach ( $available_categories as $key => $label ) : ?>
 							<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
 						<?php endforeach; ?>
 					</select>

@@ -54,7 +54,20 @@ class LayoutBerg_Licensing {
 	 * @return bool True if user is on Starter plan.
 	 */
 	public static function is_starter_plan() {
-		return self::can_use_premium_code() && \layoutberg_fs()->is_plan( 'starter' );
+		if ( ! self::can_use_premium_code() ) {
+			return false;
+		}
+		
+		$plan = \layoutberg_fs()->get_plan();
+		if ( ! $plan ) {
+			return false;
+		}
+		
+		// Check by plan name (case insensitive) or common variations
+		$plan_name = strtolower( $plan->name );
+		return in_array( $plan_name, array( 'starter', 'start', 'basic' ), true ) ||
+		       \layoutberg_fs()->is_plan( 'starter' ) ||
+		       \layoutberg_fs()->is_plan( 'Starter' );
 	}
 
 	/**
@@ -64,7 +77,20 @@ class LayoutBerg_Licensing {
 	 * @return bool True if user is on Professional plan.
 	 */
 	public static function is_professional_plan() {
-		return self::can_use_premium_code() && \layoutberg_fs()->is_plan( 'professional' );
+		if ( ! self::can_use_premium_code() ) {
+			return false;
+		}
+		
+		$plan = \layoutberg_fs()->get_plan();
+		if ( ! $plan ) {
+			return false;
+		}
+		
+		// Check by plan name (case insensitive) or common variations
+		$plan_name = strtolower( $plan->name );
+		return in_array( $plan_name, array( 'professional', 'pro', 'premium' ), true ) ||
+		       \layoutberg_fs()->is_plan( 'professional' ) ||
+		       \layoutberg_fs()->is_plan( 'Professional' );
 	}
 
 	/**
@@ -74,7 +100,20 @@ class LayoutBerg_Licensing {
 	 * @return bool True if user is on Agency plan.
 	 */
 	public static function is_agency_plan() {
-		return self::can_use_premium_code() && \layoutberg_fs()->is_plan( 'agency' );
+		if ( ! self::can_use_premium_code() ) {
+			return false;
+		}
+		
+		$plan = \layoutberg_fs()->get_plan();
+		if ( ! $plan ) {
+			return false;
+		}
+		
+		// Check by plan name (case insensitive) or common variations
+		$plan_name = strtolower( $plan->name );
+		return in_array( $plan_name, array( 'agency', 'business', 'enterprise', 'team' ), true ) ||
+		       \layoutberg_fs()->is_plan( 'agency' ) ||
+		       \layoutberg_fs()->is_plan( 'Agency' );
 	}
 
 	/**
@@ -206,16 +245,23 @@ class LayoutBerg_Licensing {
 			return __( 'Free (Expired)', 'layoutberg' );
 		}
 
-		if ( self::is_starter_plan() ) {
-			return __( 'Starter', 'layoutberg' );
+		// First check using our enhanced plan detection
+		if ( self::is_agency_plan() ) {
+			return __( 'Agency', 'layoutberg' );
 		}
 
 		if ( self::is_professional_plan() ) {
 			return __( 'Professional', 'layoutberg' );
 		}
 
-		if ( self::is_agency_plan() ) {
-			return __( 'Agency', 'layoutberg' );
+		if ( self::is_starter_plan() ) {
+			return __( 'Starter', 'layoutberg' );
+		}
+
+		// If none match, return the actual plan name from Freemius
+		$plan = \layoutberg_fs()->get_plan();
+		if ( $plan && ! empty( $plan->name ) ) {
+			return ucfirst( $plan->name );
 		}
 
 		return __( 'Unknown', 'layoutberg' );

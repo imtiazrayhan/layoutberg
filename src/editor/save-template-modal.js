@@ -36,24 +36,20 @@ const SaveTemplateModal = ({
 }) => {
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState(null);
+    // Get categories from localized data first
+    const availableCategories = window.layoutbergEditor?.categories || [
+        { label: __('General', 'layoutberg'), value: 'general' },
+        { label: __('Business', 'layoutberg'), value: 'business' },
+        { label: __('Blog', 'layoutberg'), value: 'blog' }
+    ];
+    
     const [templateData, setTemplateData] = useState({
         name: '',
         description: '',
-        category: 'custom',
+        category: availableCategories[0]?.value || 'general',
         tags: '',
         is_public: false
     });
-
-    const categories = [
-        { label: __('General', 'layoutberg'), value: 'general' },
-        { label: __('Business', 'layoutberg'), value: 'business' },
-        { label: __('Creative', 'layoutberg'), value: 'creative' },
-        { label: __('E-commerce', 'layoutberg'), value: 'ecommerce' },
-        { label: __('Blog', 'layoutberg'), value: 'blog' },
-        { label: __('Portfolio', 'layoutberg'), value: 'portfolio' },
-        { label: __('Landing Pages', 'layoutberg'), value: 'landing' },
-        { label: __('Custom', 'layoutberg'), value: 'custom' }
-    ];
 
     const updateField = (field, value) => {
         setTemplateData({
@@ -164,7 +160,7 @@ const SaveTemplateModal = ({
                 <SelectControl
                     label={__('Category', 'layoutberg')}
                     value={templateData.category}
-                    options={categories}
+                    options={availableCategories}
                     onChange={(value) => updateField('category', value)}
                 />
 

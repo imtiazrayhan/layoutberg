@@ -246,6 +246,19 @@ class Admin {
 			$this->version
 		);
 
+		// Get available template categories based on user's plan
+		$template_manager = new Template_Manager();
+		$available_categories = $template_manager->get_categories();
+		
+		// Format categories for JavaScript
+		$categories = array();
+		foreach ( $available_categories as $value => $label ) {
+			$categories[] = array(
+				'label' => $label,
+				'value' => $value,
+			);
+		}
+		
 		// Localize script for the editor.
 		wp_localize_script(
 			'layoutberg-editor',
@@ -257,6 +270,7 @@ class Admin {
 				'templatesUrl' => admin_url( 'admin.php?page=layoutberg-templates' ),
 				'settings'     => $this->get_default_settings(),
 				'models'       => $this->get_available_models(),
+				'categories'   => $categories,
 				'strings'      => array(
 					'generating'     => __( 'Generating layout...', 'layoutberg' ),
 					'generated'      => __( 'Layout generated successfully!', 'layoutberg' ),
@@ -594,6 +608,18 @@ class Admin {
 			'layoutberg-analytics',
 			array( $this, 'display_analytics_page' )
 		);
+		
+		// Debug submenu (temporary - remove in production).
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			add_submenu_page(
+				'layoutberg',
+				__( 'Debug', 'layoutberg' ),
+				__( 'Debug', 'layoutberg' ),
+				'manage_options',
+				'layoutberg-debug',
+				array( $this, 'display_debug_page' )
+			);
+		}
 
 		// History submenu.
 		add_submenu_page(
@@ -699,6 +725,15 @@ class Admin {
 	 */
 	public function display_analytics_page() {
 		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-analytics.php';
+	}
+
+	/**
+	 * Display the debug page.
+	 *
+	 * @since 1.0.0
+	 */
+	public function display_debug_page() {
+		require_once LAYOUTBERG_PLUGIN_DIR . 'admin/partials/layoutberg-admin-debug.php';
 	}
 
 	/**
