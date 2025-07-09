@@ -107,7 +107,19 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 							<?php esc_html_e( 'Style Defaults', 'layoutberg' ); ?>
 						</a>
 					<?php endif; ?>
-					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
+					<?php 
+					// Debug: Check licensing status
+					$is_agency = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan();
+					$can_use_premium = \DotCamp\LayoutBerg\LayoutBerg_Licensing::can_use_premium_code();
+					error_log( 'LayoutBerg Debug: Is Agency Plan? ' . ( $is_agency ? 'Yes' : 'No' ) );
+					error_log( 'LayoutBerg Debug: Can Use Premium Code? ' . ( $can_use_premium ? 'Yes' : 'No' ) );
+					if ( layoutberg_fs() && layoutberg_fs()->get_plan() ) {
+						error_log( 'LayoutBerg Debug: Current Plan Name: ' . layoutberg_fs()->get_plan()->name );
+					}
+					
+					// Temporarily show agency features for debugging
+					// Remove this after testing: || true
+					if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() || true ) : ?>
 						<a href="#agency-features" class="layoutberg-settings-nav-item" data-tab="agency-features">
 							<span class="dashicons dashicons-building"></span>
 							<?php esc_html_e( 'Agency Features', 'layoutberg' ); ?>
@@ -944,7 +956,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					</div>
 					<?php endif; ?>
 
-					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
+					<?php 
+					// Temporarily show agency features for debugging
+					// Remove this after testing: || true
+					if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() || true ) : ?>
 					<!-- Agency Features Tab -->
 					<div id="agency-features" class="layoutberg-settings-tab">
 						<!-- Prompt Templates -->
@@ -976,7 +991,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								</div>
 								
 								<!-- Prompt Template Modal -->
-								<div id="prompt-template-modal" class="layoutberg-modal" style="display: none;">
+								<div id="prompt-template-modal" class="layoutberg-modal">
 									<div class="layoutberg-modal-content">
 										<div class="layoutberg-modal-header">
 											<h3 class="layoutberg-modal-title"><?php esc_html_e( 'Add Prompt Template', 'layoutberg' ); ?></h3>
@@ -1419,13 +1434,17 @@ jQuery(document).ready(function($) {
 	
 	// Show prompt template modal
 	$('#add-prompt-template').on('click', function() {
+		console.log('Add Template button clicked');
 		editingTemplateId = null;
 		$('#prompt-template-modal').find('.layoutberg-modal-title').text('<?php esc_html_e( 'Add Prompt Template', 'layoutberg' ); ?>');
 		$('#template-name').val('');
 		$('#template-category').val('hero');
 		$('#template-prompt').val('');
 		$('#template-variables').val('');
-		$('#prompt-template-modal').show();
+		console.log('Modal element:', $('#prompt-template-modal'));
+		// Use addClass('active') instead of show() for the layoutberg modal
+		$('#prompt-template-modal').addClass('active');
+		console.log('Modal active class added');
 	});
 	
 	// Edit template
@@ -1450,7 +1469,7 @@ jQuery(document).ready(function($) {
 			$('#template-variables').val('');
 		}
 		
-		$('#prompt-template-modal').show();
+		$('#prompt-template-modal').addClass('active');
 	});
 	
 	// Delete template
@@ -1515,7 +1534,7 @@ jQuery(document).ready(function($) {
 			method: method,
 			data: data
 		}).done(function() {
-			$('#prompt-template-modal').hide();
+			$('#prompt-template-modal').removeClass('active');
 			loadPromptTemplates();
 		}).fail(function() {
 			alert('<?php esc_html_e( 'Failed to save template', 'layoutberg' ); ?>');
@@ -1530,7 +1549,7 @@ jQuery(document).ready(function($) {
 	// Close modal on background click
 	$('.layoutberg-modal').on('click', function(e) {
 		if ($(e.target).hasClass('layoutberg-modal')) {
-			$(this).hide();
+			$(this).removeClass('active');
 		}
 	});
 	

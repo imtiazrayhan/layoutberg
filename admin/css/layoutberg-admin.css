@@ -1459,7 +1459,8 @@
     border-bottom: 1px solid var(--lberg-border);
 }
 
-.layoutberg-modal-header h2 {
+.layoutberg-modal-header h2,
+.layoutberg-modal-title {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
@@ -2358,6 +2359,14 @@ body.layoutberg-dark-theme .layoutberg-textarea {
     margin-top: 0.25rem;
     font-size: 0.75rem;
     color: #6b7280;
+}
+
+.layoutberg-modal-footer {
+    padding: 1.25rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
 }
 
 .layoutberg-btn-sm {
