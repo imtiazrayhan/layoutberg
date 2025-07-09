@@ -1050,6 +1050,54 @@
         min-height: 44px; /* Apple's recommended minimum touch target */
     }
     
+    /* Search bar mobile styles */
+    .layoutberg-search-container {
+        min-width: 100%;
+        width: 100%;
+        border-radius: 10px;
+    }
+    
+    .layoutberg-search {
+        padding: 10px 12px;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+    
+    /* Filter bar mobile styles */
+    .layoutberg-filter-bar {
+        padding: 12px 16px;
+        gap: 12px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .layoutberg-filter-group {
+        gap: 8px;
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .layoutberg-filter-group select {
+        min-width: 100%;
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .layoutberg-template-stats {
+        padding: 8px 12px;
+        min-width: 100%;
+        justify-content: center;
+    }
+    
+    .layoutberg-template-stats .stat-value {
+        font-size: 16px;
+    }
+    
+    .layoutberg-template-stats .stat-label {
+        font-size: 10px;
+    }
+    
     /* Optimize tables for mobile */
     .layoutberg-table-responsive {
         overflow-x: auto;
@@ -1503,19 +1551,129 @@
 }
 
 /* Search */
-.layoutberg-search {
+.layoutberg-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
     background: white;
-    border: 1px solid var(--lberg-gray-300);
-    border-radius: var(--lberg-radius);
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
+    border: 2px solid var(--lberg-gray-200);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    min-width: 280px;
+}
+
+.layoutberg-search-container:hover {
+    border-color: var(--lberg-gray-300);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.layoutberg-search-container:focus-within {
+    border-color: var(--lberg-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.layoutberg-search {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--lberg-gray-900);
+    outline: none;
+    border-radius: 12px;
     transition: all 0.2s ease;
+}
+
+.layoutberg-search::placeholder {
+    color: var(--lberg-gray-400);
+    font-weight: 400;
 }
 
 .layoutberg-search:focus {
     outline: none;
+}
+
+/* Filter Bar Styles */
+.layoutberg-filter-bar {
+    background: white;
+    border: 1px solid var(--lberg-gray-200);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.layoutberg-filter-bar:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.layoutberg-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.layoutberg-filter-group select {
+    background: white;
+    border: 2px solid var(--lberg-gray-200);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--lberg-gray-900);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+}
+
+.layoutberg-filter-group select:hover {
+    border-color: var(--lberg-gray-300);
+}
+
+.layoutberg-filter-group select:focus {
+    outline: none;
     border-color: var(--lberg-primary);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.layoutberg-template-stats {
+    background: var(--lberg-gray-50);
+    border-radius: 8px;
+    border: 1px solid var(--lberg-gray-200);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.layoutberg-template-stats:hover {
+    background: var(--lberg-gray-100);
+    border-color: var(--lberg-gray-300);
+}
+
+.layoutberg-template-stats .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--lberg-gray-900);
+    line-height: 1;
+}
+
+.layoutberg-template-stats .stat-label {
+    font-size: 12px;
+    color: var(--lberg-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
 }
 
 /* Responsive Menu */
@@ -1646,11 +1804,55 @@ body.layoutberg-dark-theme .layoutberg-textarea {
     .layoutberg-chart-bars {
         gap: 0.25rem;
     }
+    
+    /* Search bar responsive styles */
+    .layoutberg-search-container {
+        min-width: 200px;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .layoutberg-search {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    
+    /* Filter bar responsive styles */
+    .layoutberg-filter-bar {
+        padding: 16px 20px;
+        gap: 16px;
+    }
+    
+    .layoutberg-filter-group {
+        gap: 12px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .layoutberg-filter-group select {
+        min-width: 120px;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .layoutberg-template-stats {
+        padding: 10px 16px;
+        min-width: 100px;
+    }
+    
+    .layoutberg-template-stats .stat-value {
+        font-size: 18px;
+    }
+    
+    .layoutberg-template-stats .stat-label {
+        font-size: 11px;
+    }
 }
 
 /* Upsell/Lock Elements - Cursor Pointer */
 .layoutberg-pricing-trigger,
 .export-template-locked,
+.import-template-locked,
 .layoutberg-upgrade-button,
 .button.disabled.layoutberg-pricing-trigger,
 .layoutberg-locked-feature,

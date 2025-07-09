@@ -96,9 +96,8 @@ $categories = array_merge(
 				$button_text = $is_expired 
 					? __( 'Renew to import', 'layoutberg' )
 					: __( 'Upgrade to import', 'layoutberg' );
-				$button_url = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url();
 				?>
-					<a href="<?php echo esc_url( $button_url ); ?>" class="page-title-action disabled" title="<?php echo esc_attr( $button_text ); ?>" style="opacity: 0.6; cursor: pointer;">
+					<a href="#" class="page-title-action import-template-locked" title="<?php echo esc_attr( $button_text ); ?>" style="opacity: 0.6; cursor: pointer;">
 						<?php esc_html_e( 'Import', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 14px; vertical-align: middle; margin-left: 2px;"></span>
 					</a>
 			<?php endif; ?>
@@ -110,9 +109,6 @@ $categories = array_merge(
 		<div class="layoutberg-filter-group" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
 			<div class="layoutberg-search-container">
 				<input type="text" id="template-search" name="s" value="<?php echo esc_attr( $search_term ); ?>" placeholder="<?php esc_attr_e( 'Search templates...', 'layoutberg' ); ?>" class="layoutberg-search">
-				<button type="button" class="button layoutberg-search-btn">
-					<span class="dashicons dashicons-search"></span>
-				</button>
 			</div>
 			<select name="category" id="filter-by-category">
 				<option value=""><?php esc_html_e( 'All Categories', 'layoutberg' ); ?></option>
@@ -663,6 +659,18 @@ $categories = array_merge(
 }
 
 .template-actions-footer .export-template-locked:hover {
+	opacity: 1;
+	color: #6366f1;
+	cursor: pointer;
+}
+
+.template-actions-footer .import-template-locked {
+	opacity: 0.7;
+	color: #9ca3af;
+	cursor: pointer;
+}
+
+.template-actions-footer .import-template-locked:hover {
 	opacity: 1;
 	color: #6366f1;
 	cursor: pointer;
@@ -1907,6 +1915,24 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (e.target.classList.contains('export-template-locked')) {
 			// Let the default action happen (navigate to upgrade/account URL)
 			return true;
+		}
+		
+		// Handle locked import links
+		if (e.target.classList.contains('import-template-locked')) {
+			e.preventDefault();
+			
+			// Trigger pricing modal with import feature context
+			if (window.LayoutBergAdmin && window.LayoutBergAdmin.openPricingModal) {
+				var $trigger = document.createElement('button');
+				$trigger.setAttribute('data-feature', 'Template Import');
+				$trigger.setAttribute('data-required-plan', 'professional');
+				
+				window.LayoutBergAdmin.openPricingModal({
+					currentTarget: $trigger,
+					preventDefault: function() {}
+				});
+			}
+			return false;
 		}
 	});
 	
