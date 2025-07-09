@@ -2451,3 +2451,92 @@ body.layoutberg-dark-theme .layoutberg-textarea {
         height: 28px;
     }
 }
+
+
+/* Locked feature improvements */
+.layoutberg-locked-feature {
+    transition: all 0.2s ease;
+    text-decoration: none \!important;
+}
+
+.layoutberg-locked-feature:hover {
+    opacity: 1 \!important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.layoutberg-locked-feature:hover .layoutberg-upgrade-hint {
+    opacity: 1 \!important;
+    bottom: -25px \!important;
+}
+
+.layoutberg-locked-feature .dashicons-lock {
+    transition: transform 0.2s ease;
+}
+
+.layoutberg-locked-feature:hover .dashicons-lock {
+    transform: scale(1.1);
+}
+
+/* Upgrade notices improvements */
+.layoutberg-upgrade-notice {
+    background: linear-gradient(135deg, #f8fafc 0%, #f3f4f6 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.layoutberg-upgrade-notice::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #6366f1;
+}
+
+.layoutberg-upgrade-notice p {
+    margin: 0 0 12px 0;
+    color: #374151;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.layoutberg-upgrade-notice .button-primary {
+    background: #6366f1;
+    border-color: #6366f1;
+    box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+    transition: all 0.2s ease;
+}
+
+.layoutberg-upgrade-notice .button-primary:hover {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Plan usage indicators */
+.layoutberg-plan-usage-bar {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.usage-progress {
+    position: relative;
+    background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(0, 0, 0, 0.02) 10px,
+        rgba(0, 0, 0, 0.02) 20px
+    );
+}
+EOF < /dev/null

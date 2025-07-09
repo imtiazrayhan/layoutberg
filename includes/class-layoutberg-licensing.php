@@ -302,12 +302,30 @@ class LayoutBerg_Licensing {
 		);
 
 		$plan_display = isset( $plan_names[ $required_plan ] ) ? $plan_names[ $required_plan ] : ucfirst( $required_plan );
+		
+		// Get feature-specific value propositions
+		$feature_benefits = array(
+			__( 'All AI Models', 'layoutberg' ) => __( 'Access GPT-4, Claude, and future models for superior content generation', 'layoutberg' ),
+			__( 'Unlimited Templates', 'layoutberg' ) => __( 'Save unlimited templates and build your design library', 'layoutberg' ),
+			__( 'Export Templates', 'layoutberg' ) => __( 'Export and share templates across sites and teams', 'layoutberg' ),
+			__( 'Advanced Settings', 'layoutberg' ) => __( 'Fine-tune AI parameters for perfect results', 'layoutberg' ),
+			__( 'Token Control', 'layoutberg' ) => __( 'Optimize costs with custom token limits', 'layoutberg' ),
+			__( 'Temperature Settings', 'layoutberg' ) => __( 'Control creativity levels for consistent outputs', 'layoutberg' ),
+			__( 'Debug Mode', 'layoutberg' ) => __( 'Access advanced debugging tools and logs', 'layoutberg' ),
+			__( 'CSV Export', 'layoutberg' ) => __( 'Export analytics data for reporting', 'layoutberg' ),
+			__( 'All Categories', 'layoutberg' ) => __( 'Access premium template categories', 'layoutberg' ),
+			__( 'Style Defaults', 'layoutberg' ) => __( 'Set brand-consistent default styles', 'layoutberg' ),
+			__( 'Prompt Templates', 'layoutberg' ) => __( 'Create reusable prompts for your team', 'layoutberg' ),
+		);
+		
+		$benefit = isset( $feature_benefits[ $feature_name ] ) ? ' ' . $feature_benefits[ $feature_name ] : '';
 
 		return sprintf(
-			/* translators: 1: feature name, 2: plan name */
-			__( '%1$s is available in the %2$s plan and above.', 'layoutberg' ),
+			/* translators: 1: feature name, 2: plan name, 3: benefit description */
+			__( '%1$s is available in the %2$s plan and above.%3$s', 'layoutberg' ),
 			$feature_name,
-			$plan_display
+			$plan_display,
+			$benefit
 		);
 	}
 
@@ -361,13 +379,28 @@ class LayoutBerg_Licensing {
 	 */
 	public static function get_locked_button( $button_text, $feature_name, $required_plan = 'professional' ) {
 		$message = self::get_upgrade_message( $feature_name, $required_plan );
+		$is_expired = self::is_expired_monthly();
+		$action_url = self::get_action_url();
+		
+		// Add inline styles for better visual feedback
+		$button_style = 'opacity: 0.7; cursor: pointer; position: relative; overflow: hidden;';
+		
+		// Determine button action text based on status
+		$action_text = $is_expired ? __( 'Renew', 'layoutberg' ) : __( 'Upgrade', 'layoutberg' );
 
 		return sprintf(
-			'<button class="button disabled layoutberg-pricing-trigger" data-feature="%s" data-required-plan="%s" title="%s">%s <span class="dashicons dashicons-lock"></span></button>',
+			'<a href="%s" class="button layoutberg-locked-feature" data-feature="%s" data-required-plan="%s" title="%s" style="%s">
+				%s 
+				<span class="dashicons dashicons-lock" style="font-size: 14px; margin-left: 4px; vertical-align: middle;"></span>
+				<span class="layoutberg-upgrade-hint" style="position: absolute; bottom: -20px; left: 50%%; transform: translateX(-50%%); font-size: 11px; white-space: nowrap; background: #333; color: #fff; padding: 2px 8px; border-radius: 3px; opacity: 0; transition: all 0.2s;">%s</span>
+			</a>',
+			esc_url( $action_url ),
 			esc_attr( $feature_name ),
 			esc_attr( $required_plan ),
 			esc_attr( $message ),
-			esc_html( $button_text )
+			esc_attr( $button_style ),
+			esc_html( $button_text ),
+			esc_html( $action_text )
 		);
 	}
 
