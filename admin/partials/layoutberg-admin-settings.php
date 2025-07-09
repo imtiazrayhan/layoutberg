@@ -511,20 +511,46 @@ document.addEventListener('DOMContentLoaded', function() {
 							</div>
 
 							<div class="layoutberg-grid layoutberg-grid-2">
+								<?php 
+								// Check if user can adjust advanced generation settings
+								$can_adjust_advanced = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_professional_plan() || 
+								                      \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan();
+								?>
+								
 								<div class="layoutberg-form-group">
 									<label for="layoutberg_max_tokens" class="layoutberg-label">
 										<?php esc_html_e( 'Max Tokens', 'layoutberg' ); ?>
+										<?php if ( ! $can_adjust_advanced ) : ?>
+											<span class="dashicons dashicons-lock" style="font-size: 14px; color: #9ca3af; margin-left: 4px;" title="<?php esc_attr_e( 'Professional plan required', 'layoutberg' ); ?>"></span>
+										<?php endif; ?>
 									</label>
-									<input 
-										type="number" 
-										id="layoutberg_max_tokens" 
-										name="layoutberg_options[max_tokens]" 
-										value="<?php echo esc_attr( $options['max_tokens'] ?? 2000 ); ?>" 
-										min="100" 
-										max="<?php echo esc_attr( $model_config ? $model_config['max_output'] : 4096 ); ?>" 
-										step="100"
-										class="layoutberg-input"
-									/>
+									<?php if ( $can_adjust_advanced ) : ?>
+										<input 
+											type="number" 
+											id="layoutberg_max_tokens" 
+											name="layoutberg_options[max_tokens]" 
+											value="<?php echo esc_attr( $options['max_tokens'] ?? 2000 ); ?>" 
+											min="100" 
+											max="<?php echo esc_attr( $model_config ? $model_config['max_output'] : 4096 ); ?>" 
+											step="100"
+											class="layoutberg-input"
+										/>
+									<?php else : ?>
+										<div class="layoutberg-locked-input-wrapper" style="position: relative;">
+											<input 
+												type="number" 
+												id="layoutberg_max_tokens_display" 
+												value="2000" 
+												min="100" 
+												max="4096" 
+												step="100"
+												class="layoutberg-input"
+												disabled
+												style="opacity: 0.6; cursor: not-allowed;"
+											/>
+											<input type="hidden" name="layoutberg_options[max_tokens]" value="2000" />
+										</div>
+									<?php endif; ?>
 									<p class="layoutberg-help-text">
 										<?php
 										if ( $model_config ) {
@@ -532,32 +558,83 @@ document.addEventListener('DOMContentLoaded', function() {
 										} else {
 											esc_html_e( 'Maximum completion tokens (output length). All models support up to 4096 completion tokens. Higher values = longer, more detailed layouts but higher cost.', 'layoutberg' );
 										}
+										
+										if ( ! $can_adjust_advanced ) {
+											echo ' <strong>' . esc_html__( 'Starter plans use optimized default settings.', 'layoutberg' ) . '</strong>';
+										}
 										?>
 									</p>
+									<?php if ( ! $can_adjust_advanced ) : ?>
+										<div class="layoutberg-upgrade-notice layoutberg-mt-2">
+											<?php
+											echo \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_locked_button(
+												__( 'Unlock Advanced Settings', 'layoutberg' ),
+												__( 'Token Control', 'layoutberg' ),
+												'professional'
+											);
+											?>
+										</div>
+									<?php endif; ?>
 								</div>
 
 								<div class="layoutberg-form-group">
 									<label for="layoutberg_temperature" class="layoutberg-label">
 										<?php esc_html_e( 'Creativity Level', 'layoutberg' ); ?>
+										<?php if ( ! $can_adjust_advanced ) : ?>
+											<span class="dashicons dashicons-lock" style="font-size: 14px; color: #9ca3af; margin-left: 4px;" title="<?php esc_attr_e( 'Professional plan required', 'layoutberg' ); ?>"></span>
+										<?php endif; ?>
 									</label>
-									<input 
-										type="range" 
-										id="layoutberg_temperature" 
-										name="layoutberg_options[temperature]" 
-										value="<?php echo esc_attr( $options['temperature'] ?? 0.7 ); ?>" 
-										min="0" 
-										max="2" 
-										step="0.1"
-										class="layoutberg-input"
-									/>
+									<?php if ( $can_adjust_advanced ) : ?>
+										<input 
+											type="range" 
+											id="layoutberg_temperature" 
+											name="layoutberg_options[temperature]" 
+											value="<?php echo esc_attr( $options['temperature'] ?? 0.7 ); ?>" 
+											min="0" 
+											max="2" 
+											step="0.1"
+											class="layoutberg-input"
+										/>
+									<?php else : ?>
+										<div class="layoutberg-locked-input-wrapper" style="position: relative;">
+											<input 
+												type="range" 
+												id="layoutberg_temperature_display" 
+												value="0.7" 
+												min="0" 
+												max="2" 
+												step="0.1"
+												class="layoutberg-input"
+												disabled
+												style="opacity: 0.6; cursor: not-allowed;"
+											/>
+											<input type="hidden" name="layoutberg_options[temperature]" value="0.7" />
+										</div>
+									<?php endif; ?>
 									<div class="layoutberg-flex layoutberg-justify-between layoutberg-mt-1" style="font-size: 0.75rem; color: var(--lberg-gray-600);">
 										<span><?php esc_html_e( 'Focused', 'layoutberg' ); ?></span>
-										<span id="temperature-value"><?php echo esc_attr( $options['temperature'] ?? 0.7 ); ?></span>
+										<span id="temperature-value"><?php echo $can_adjust_advanced ? esc_attr( $options['temperature'] ?? 0.7 ) : '0.7'; ?></span>
 										<span><?php esc_html_e( 'Creative', 'layoutberg' ); ?></span>
 									</div>
 									<p class="layoutberg-help-text">
-										<?php esc_html_e( 'Controls randomness in generation. Lower = more focused, Higher = more creative.', 'layoutberg' ); ?>
+										<?php 
+										esc_html_e( 'Controls randomness in generation. Lower = more focused, Higher = more creative.', 'layoutberg' );
+										if ( ! $can_adjust_advanced ) {
+											echo ' <strong>' . esc_html__( 'Starter plans use balanced creativity settings.', 'layoutberg' ) . '</strong>';
+										}
+										?>
 									</p>
+									<?php if ( ! $can_adjust_advanced ) : ?>
+										<div class="layoutberg-upgrade-notice layoutberg-mt-2">
+											<?php
+											echo \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_locked_button(
+												__( 'Unlock Creativity Control', 'layoutberg' ),
+												__( 'Temperature Settings', 'layoutberg' ),
+												'professional'
+											);
+											?>
+										</div>
+									<?php endif; ?>
 								</div>
 							</div>
 						</div>
@@ -1214,6 +1291,29 @@ document.addEventListener('DOMContentLoaded', function() {
 .layoutberg-color-input:placeholder-shown {
 	font-family: inherit;
 }
+
+/* Upgrade notice styling */
+.layoutberg-upgrade-notice {
+	padding: 12px;
+	background: #f3f4f6;
+	border-radius: 6px;
+	border: 1px solid #e5e7eb;
+}
+
+.layoutberg-locked-input-wrapper {
+	position: relative;
+}
+
+.layoutberg-locked-input-wrapper::after {
+	content: '\f160'; /* Dashicon lock */
+	font-family: dashicons;
+	position: absolute;
+	right: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #9ca3af;
+	pointer-events: none;
+}
 </style>
 
 <script>
@@ -1236,9 +1336,16 @@ jQuery(document).ready(function($) {
 		console.log('Tab switched to:', target);
 	});
 
-	// Temperature slider update
+	// Temperature slider update - only for users who can adjust it
 	$('#layoutberg_temperature').on('input', function() {
 		$('#temperature-value').text($(this).val());
+	});
+	
+	// Also handle the disabled display slider for visual feedback
+	$('#layoutberg_temperature_display').on('input', function(e) {
+		e.preventDefault();
+		// Reset to default value since it's disabled
+		$(this).val(0.7);
 	});
 	
 	// Model selection debugging
