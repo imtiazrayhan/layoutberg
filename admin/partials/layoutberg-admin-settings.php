@@ -17,35 +17,35 @@ $options = get_option( 'layoutberg_options', array() );
 
 // Handle OpenAI API key display.
 $openai_key_display = '';
-$openai_key_status = '';
+$openai_key_status  = '';
 if ( ! empty( $options['openai_api_key'] ) ) {
-	$security = new \DotCamp\LayoutBerg\Security_Manager();
+	$security  = new \DotCamp\LayoutBerg\Security_Manager();
 	$decrypted = $security->decrypt_api_key( $options['openai_api_key'] );
 	if ( $decrypted ) {
 		// Mask the API key for display.
 		$openai_key_display = substr( $decrypted, 0, 7 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
-		$openai_key_status = 'valid';
+		$openai_key_status  = 'valid';
 	}
 } elseif ( ! empty( $options['api_key'] ) ) {
 	// Backward compatibility - migrate old api_key to openai_api_key
-	$security = new \DotCamp\LayoutBerg\Security_Manager();
+	$security  = new \DotCamp\LayoutBerg\Security_Manager();
 	$decrypted = $security->decrypt_api_key( $options['api_key'] );
 	if ( $decrypted ) {
 		$openai_key_display = substr( $decrypted, 0, 7 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
-		$openai_key_status = 'valid';
+		$openai_key_status  = 'valid';
 	}
 }
 
 // Handle Claude API key display.
 $claude_key_display = '';
-$claude_key_status = '';
+$claude_key_status  = '';
 if ( ! empty( $options['claude_api_key'] ) ) {
-	$security = new \DotCamp\LayoutBerg\Security_Manager();
+	$security  = new \DotCamp\LayoutBerg\Security_Manager();
 	$decrypted = $security->decrypt_api_key( $options['claude_api_key'] );
 	if ( $decrypted ) {
 		// Mask the API key for display.
 		$claude_key_display = substr( $decrypted, 0, 5 ) . str_repeat( '*', 20 ) . substr( $decrypted, -4 );
-		$claude_key_status = 'valid';
+		$claude_key_status  = 'valid';
 	}
 }
 ?>
@@ -150,12 +150,12 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 									<?php endif; ?>
 								</div>
 								<p class="layoutberg-help-text">
-									<?php 
+									<?php
 									printf(
 										/* translators: %s: OpenAI platform URL */
 										esc_html__( 'Enter your OpenAI API key. Get one from %s', 'layoutberg' ),
 										'<a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>'
-									); 
+									);
 									?>
 								</p>
 								<div class="layoutberg-flex layoutberg-gap-2 layoutberg-mt-2">
@@ -207,12 +207,12 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 									<?php endif; ?>
 								</div>
 								<p class="layoutberg-help-text">
-									<?php 
+									<?php
 									printf(
 										/* translators: %s: Anthropic console URL */
 										esc_html__( 'Enter your Claude API key. Get one from %s', 'layoutberg' ),
 										'<a href="https://console.anthropic.com/api-keys" target="_blank">console.anthropic.com</a>'
-									); 
+									);
 									?>
 								</p>
 								<div class="layoutberg-flex layoutberg-gap-2 layoutberg-mt-2">
@@ -239,119 +239,143 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 									<?php esc_html_e( 'Default AI Model', 'layoutberg' ); ?>
 								</label>
 								<select id="layoutberg_model" name="layoutberg_options[model]" class="layoutberg-select">
-																	<?php 
-								// Ensure Model Config class is loaded
-								if ( ! class_exists( '\DotCamp\LayoutBerg\Model_Config' ) ) {
-									require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-model-config.php';
-								}
-								
-								// Use Model Config for consistent model information
-								try {
-									$models = \DotCamp\LayoutBerg\Model_Config::get_all_models();
-									$current_model = $options['model'] ?? 'gpt-3.5-turbo';
-									
-									// Group models by provider
-									$openai_models = array();
-									$claude_models = array();
-									
-									foreach ( $models as $model_id => $config ) {
-										if ( $config['provider'] === 'openai' ) {
-											$openai_models[ $model_id ] = $config;
-										} elseif ( $config['provider'] === 'claude' ) {
-											$claude_models[ $model_id ] = $config;
-										}
-									}
-								} catch ( Exception $e ) {
-									// Fallback to hardcoded models if Model Config fails
-									$models = array();
-									$current_model = $options['model'] ?? 'gpt-3.5-turbo';
-									$openai_models = array();
-									$claude_models = array();
-									
-									// Fallback models with full configuration
-									if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) {
-										$openai_models = array(
-											'gpt-3.5-turbo' => array( 
-												'name' => 'GPT-3.5 Turbo', 
-												'description' => 'Fast and affordable',
-												'context_window' => 16385,
-												'max_output' => 4096,
-												'cost_per_1k_input' => 0.0005,
-												'cost_per_1k_output' => 0.0015
-											),
-											'gpt-4' => array( 
-												'name' => 'GPT-4', 
-												'description' => 'Most capable model',
-												'context_window' => 8192,
-												'max_output' => 4096,
-												'cost_per_1k_input' => 0.03,
-												'cost_per_1k_output' => 0.06
-											),
-											'gpt-4-turbo' => array( 
-												'name' => 'GPT-4 Turbo', 
-												'description' => 'Fast and capable',
-												'context_window' => 128000,
-												'max_output' => 4096,
-												'cost_per_1k_input' => 0.01,
-												'cost_per_1k_output' => 0.03
-											),
-										);
-									}
-									
-									if ( $claude_key_status === 'valid' ) {
-										$claude_models = array(
-											'claude-3-opus-20240229' => array( 
-												'name' => 'Claude 3 Opus', 
-												'description' => 'Most powerful Claude model',
-												'context_window' => 200000,
-												'max_output' => 4096,
-												'cost_per_1k_input' => 0.015,
-												'cost_per_1k_output' => 0.075
-											),
-											'claude-3-5-sonnet-20241022' => array( 
-												'name' => 'Claude 3.5 Sonnet', 
-												'description' => 'Latest balanced Claude model',
-												'context_window' => 200000,
-												'max_output' => 8192,
-												'cost_per_1k_input' => 0.003,
-												'cost_per_1k_output' => 0.015
-											),
-											'claude-3-haiku-20240307' => array( 
-												'name' => 'Claude 3 Haiku', 
-												'description' => 'Fast and affordable Claude model',
-												'context_window' => 200000,
-												'max_output' => 4096,
-												'cost_per_1k_input' => 0.00025,
-												'cost_per_1k_output' => 0.00125
-											),
-										);
-									}
-								}
-									
-									// Show OpenAI models if API key is configured
-									if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) : ?>
+																	<?php
+																	// Ensure Model Config class is loaded
+																	if ( ! class_exists( '\DotCamp\LayoutBerg\Model_Config' ) ) {
+																		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-model-config.php';
+																	}
+
+																	// Use Model Config for consistent model information
+																	try {
+																		$models        = \DotCamp\LayoutBerg\Model_Config::get_all_models();
+																		$current_model = $options['model'] ?? 'gpt-3.5-turbo';
+
+																		// Group models by provider
+																		$openai_models = array();
+																		$claude_models = array();
+
+																		foreach ( $models as $model_id => $config ) {
+																			if ( $config['provider'] === 'openai' ) {
+																				$openai_models[ $model_id ] = $config;
+																			} elseif ( $config['provider'] === 'claude' ) {
+																				$claude_models[ $model_id ] = $config;
+																			}
+																		}
+																	} catch ( Exception $e ) {
+																		// Fallback to hardcoded models if Model Config fails
+																		$models        = array();
+																		$current_model = $options['model'] ?? 'gpt-3.5-turbo';
+																		$openai_models = array();
+																		$claude_models = array();
+
+																		// Fallback models with full configuration
+																		if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) {
+																			$openai_models = array(
+																				'gpt-3.5-turbo' => array(
+																					'name' => 'GPT-3.5 Turbo',
+																					'description' => 'Fast and affordable',
+																					'context_window' => 16385,
+																					'max_output' => 4096,
+																					'cost_per_1k_input' => 0.0005,
+																					'cost_per_1k_output' => 0.0015,
+																				),
+																				'gpt-4'       => array(
+																					'name' => 'GPT-4',
+																					'description' => 'Most capable model',
+																					'context_window' => 8192,
+																					'max_output' => 4096,
+																					'cost_per_1k_input' => 0.03,
+																					'cost_per_1k_output' => 0.06,
+																				),
+																				'gpt-4-turbo' => array(
+																					'name' => 'GPT-4 Turbo',
+																					'description' => 'Fast and capable',
+																					'context_window' => 128000,
+																					'max_output' => 4096,
+																					'cost_per_1k_input' => 0.01,
+																					'cost_per_1k_output' => 0.03,
+																				),
+																			);
+																		}
+
+																		if ( $claude_key_status === 'valid' ) {
+																			$claude_models = array(
+																				'claude-3-opus-20240229' => array(
+																					'name' => 'Claude 3 Opus',
+																					'description' => 'Most powerful Claude model',
+																					'context_window' => 200000,
+																					'max_output' => 4096,
+																					'cost_per_1k_input' => 0.015,
+																					'cost_per_1k_output' => 0.075,
+																				),
+																				'claude-3-5-sonnet-20241022' => array(
+																					'name' => 'Claude 3.5 Sonnet',
+																					'description' => 'Latest balanced Claude model',
+																					'context_window' => 200000,
+																					'max_output' => 8192,
+																					'cost_per_1k_input' => 0.003,
+																					'cost_per_1k_output' => 0.015,
+																				),
+																				'claude-3-haiku-20240307' => array(
+																					'name' => 'Claude 3 Haiku',
+																					'description' => 'Fast and affordable Claude model',
+																					'context_window' => 200000,
+																					'max_output' => 4096,
+																					'cost_per_1k_input' => 0.00025,
+																					'cost_per_1k_output' => 0.00125,
+																				),
+																			);
+																		}
+																	}
+
+																	// Check if user can use all models
+																	$can_use_all_models = \DotCamp\LayoutBerg\LayoutBerg_Licensing::can_use_all_models();
+
+																	// Show OpenAI models if API key is configured
+																	if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) :
+																		?>
 										<optgroup label="<?php esc_attr_e( 'OpenAI Models', 'layoutberg' ); ?>">
-											<?php foreach ( $openai_models as $model_id => $config ) : ?>
-												<option value="<?php echo esc_attr( $model_id ); ?>" <?php selected( $current_model, $model_id ); ?>>
-													<?php echo esc_html( $config['name'] . ' - ' . $config['description'] ); ?>
-													<?php if ( isset( $config['context_window'] ) && $config['context_window'] > 100000 ) : ?>
-														<?php esc_html_e( ' (Long context)', 'layoutberg' ); ?>
-													<?php endif; ?>
-												</option>
-											<?php endforeach; ?>
+																			<?php
+																			foreach ( $openai_models as $model_id => $config ) :
+																				// GPT-3.5 Turbo is available to all plans
+																				$is_restricted = ( $model_id !== 'gpt-3.5-turbo' && ! $can_use_all_models );
+																				?>
+																				<?php if ( ! $is_restricted ) : ?>
+													<option value="<?php echo esc_attr( $model_id ); ?>" <?php selected( $current_model, $model_id ); ?>>
+																					<?php echo esc_html( $config['name'] . ' - ' . $config['description'] ); ?>
+																					<?php if ( isset( $config['context_window'] ) && $config['context_window'] > 100000 ) : ?>
+																						<?php esc_html_e( ' (Long context)', 'layoutberg' ); ?>
+														<?php endif; ?>
+													</option>
+												<?php else : ?>
+													<option value="<?php echo esc_attr( $model_id ); ?>" disabled>
+														<?php echo esc_html( $config['name'] . ' - ' . $config['description'] ); ?> 
+														<?php esc_html_e( ' (Professional plan required)', 'layoutberg' ); ?>
+													</option>
+												<?php endif; ?>
+																			<?php endforeach; ?>
 										</optgroup>
-									<?php endif; ?>
+																	<?php endif; ?>
 									
-									<?php // Show Claude models if API key is configured
-									if ( $claude_key_status === 'valid' ) : ?>
+									<?php
+									// Show Claude models if API key is configured
+									if ( $claude_key_status === 'valid' ) :
+										?>
 										<optgroup label="<?php esc_attr_e( 'Claude Models', 'layoutberg' ); ?>">
 											<?php foreach ( $claude_models as $model_id => $config ) : ?>
-												<option value="<?php echo esc_attr( $model_id ); ?>" <?php selected( $current_model, $model_id ); ?>>
-													<?php echo esc_html( $config['name'] . ' - ' . $config['description'] ); ?>
-													<?php if ( isset( $config['context_window'] ) && $config['context_window'] > 100000 ) : ?>
-														<?php esc_html_e( ' (Long context)', 'layoutberg' ); ?>
-													<?php endif; ?>
-												</option>
+												<?php if ( $can_use_all_models ) : ?>
+													<option value="<?php echo esc_attr( $model_id ); ?>" <?php selected( $current_model, $model_id ); ?>>
+														<?php echo esc_html( $config['name'] . ' - ' . $config['description'] ); ?>
+														<?php if ( isset( $config['context_window'] ) && $config['context_window'] > 100000 ) : ?>
+															<?php esc_html_e( ' (Long context)', 'layoutberg' ); ?>
+														<?php endif; ?>
+													</option>
+												<?php else : ?>
+													<option value="<?php echo esc_attr( $model_id ); ?>" disabled>
+														<?php echo esc_html( $config['name'] . ' - ' . $config['description'] ); ?> 
+														<?php esc_html_e( ' (Professional plan required)', 'layoutberg' ); ?>
+													</option>
+												<?php endif; ?>
 											<?php endforeach; ?>
 										</optgroup>
 									<?php endif; ?>
@@ -360,40 +384,51 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 									<?php esc_html_e( 'Select the default AI model to use for layout generation. Only models with configured API keys are shown.', 'layoutberg' ); ?>
 								</p>
 								
+								<?php if ( ! $can_use_all_models ) : ?>
+									<div class="layoutberg-upgrade-notice layoutberg-mt-3">
+										<p><?php esc_html_e( 'Upgrade to Professional plan to unlock all AI models including GPT-4 and Claude.', 'layoutberg' ); ?></p>
+										<?php
+										echo \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_locked_button(
+											__( 'Unlock All Models', 'layoutberg' ),
+											__( 'All AI Models', 'layoutberg' ),
+											'professional'
+										);
+										?>
+									</div>
+								<?php endif; ?>
+								
 								<script>
-window.layoutbergModels = <?php echo json_encode($models); ?>;
+window.layoutbergModels = <?php echo json_encode( $models ); ?>;
 </script>
 
-<?php 
+<?php
 // Debug: Check what models are available
 error_log( 'LayoutBerg Debug: Models array keys: ' . print_r( array_keys( $models ), true ) );
 error_log( 'LayoutBerg Debug: Current model: ' . $current_model );
 error_log( 'LayoutBerg Debug: Models array: ' . print_r( $models, true ) );
-								
+
 								// Show model information if a model is selected
 								$model_config = null;
-								if ( ! empty( $current_model ) ) {
-									// Check Model Config first
-									if ( isset( $models[ $current_model ] ) && isset( $models[ $current_model ]['context_window'] ) ) {
-										$model_config = $models[ $current_model ];
-										error_log( 'LayoutBerg Debug: Using Model Config for ' . $current_model );
-									}
-									// Check fallback models if not found in Model Config
-									elseif ( isset( $openai_models[ $current_model ] ) && isset( $openai_models[ $current_model ]['context_window'] ) ) {
-										$model_config = $openai_models[ $current_model ];
-										error_log( 'LayoutBerg Debug: Using fallback OpenAI model for ' . $current_model );
-									}
-									elseif ( isset( $claude_models[ $current_model ] ) && isset( $claude_models[ $current_model ]['context_window'] ) ) {
-										$model_config = $claude_models[ $current_model ];
-										error_log( 'LayoutBerg Debug: Using fallback Claude model for ' . $current_model );
-									}
-									else {
-										error_log( 'LayoutBerg Debug: No model config found for ' . $current_model );
-									}
-								}
-								
-								if ( $model_config ) :
-								?>
+if ( ! empty( $current_model ) ) {
+	// Check Model Config first
+	if ( isset( $models[ $current_model ] ) && isset( $models[ $current_model ]['context_window'] ) ) {
+		$model_config = $models[ $current_model ];
+		error_log( 'LayoutBerg Debug: Using Model Config for ' . $current_model );
+	}
+	// Check fallback models if not found in Model Config
+	elseif ( isset( $openai_models[ $current_model ] ) && isset( $openai_models[ $current_model ]['context_window'] ) ) {
+		$model_config = $openai_models[ $current_model ];
+		error_log( 'LayoutBerg Debug: Using fallback OpenAI model for ' . $current_model );
+	} elseif ( isset( $claude_models[ $current_model ] ) && isset( $claude_models[ $current_model ]['context_window'] ) ) {
+		$model_config = $claude_models[ $current_model ];
+		error_log( 'LayoutBerg Debug: Using fallback Claude model for ' . $current_model );
+	} else {
+		error_log( 'LayoutBerg Debug: No model config found for ' . $current_model );
+	}
+}
+
+if ( $model_config ) :
+	?>
 								<div class="layoutberg-model-info layoutberg-mt-3">
 									<div class="layoutberg-grid layoutberg-grid-3">
 										<div>
@@ -419,40 +454,40 @@ error_log( 'LayoutBerg Debug: Models array: ' . print_r( $models, true ) );
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var modelSelect = document.getElementById('layoutberg_model');
-    if (!modelSelect || !window.layoutbergModels) return;
-    
-    modelSelect.addEventListener('change', function() {
-        var modelId = this.value;
-        var info = window.layoutbergModels[modelId];
-        if (!info) return;
-        
-        var context = document.getElementById('layoutberg-context-window');
-        var maxOut = document.getElementById('layoutberg-max-output');
-        var costIn = document.getElementById('layoutberg-cost-input');
-        var costOut = document.getElementById('layoutberg-cost-output');
-        var maxTokensInput = document.getElementById('layoutberg_max_tokens');
-        var helpText = maxTokensInput ? maxTokensInput.parentNode.querySelector('.layoutberg-help-text') : null;
-        
-        if (context) context.textContent = info.context_window.toLocaleString();
-        if (maxOut) maxOut.textContent = info.max_output.toLocaleString();
-        if (costIn) costIn.textContent = info.cost_per_1k_input;
-        if (costOut) costOut.textContent = info.cost_per_1k_output;
-        
-        // Update max tokens input
-        if (maxTokensInput) {
-            maxTokensInput.max = info.max_output;
-            // If current value exceeds new limit, adjust it
-            if (parseInt(maxTokensInput.value) > info.max_output) {
-                maxTokensInput.value = info.max_output;
-            }
-        }
-        
-        // Update help text
-        if (helpText) {
-            helpText.textContent = 'Maximum completion tokens (output length). This model supports up to ' + info.max_output.toLocaleString() + ' completion tokens. Higher values = longer, more detailed layouts but higher cost.';
-        }
-    });
+	var modelSelect = document.getElementById('layoutberg_model');
+	if (!modelSelect || !window.layoutbergModels) return;
+	
+	modelSelect.addEventListener('change', function() {
+		var modelId = this.value;
+		var info = window.layoutbergModels[modelId];
+		if (!info) return;
+		
+		var context = document.getElementById('layoutberg-context-window');
+		var maxOut = document.getElementById('layoutberg-max-output');
+		var costIn = document.getElementById('layoutberg-cost-input');
+		var costOut = document.getElementById('layoutberg-cost-output');
+		var maxTokensInput = document.getElementById('layoutberg_max_tokens');
+		var helpText = maxTokensInput ? maxTokensInput.parentNode.querySelector('.layoutberg-help-text') : null;
+		
+		if (context) context.textContent = info.context_window.toLocaleString();
+		if (maxOut) maxOut.textContent = info.max_output.toLocaleString();
+		if (costIn) costIn.textContent = info.cost_per_1k_input;
+		if (costOut) costOut.textContent = info.cost_per_1k_output;
+		
+		// Update max tokens input
+		if (maxTokensInput) {
+			maxTokensInput.max = info.max_output;
+			// If current value exceeds new limit, adjust it
+			if (parseInt(maxTokensInput.value) > info.max_output) {
+				maxTokensInput.value = info.max_output;
+			}
+		}
+		
+		// Update help text
+		if (helpText) {
+			helpText.textContent = 'Maximum completion tokens (output length). This model supports up to ' + info.max_output.toLocaleString() + ' completion tokens. Higher values = longer, more detailed layouts but higher cost.';
+		}
+	});
 });
 </script>
 							</div>
@@ -479,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function() {
 										class="layoutberg-input"
 									/>
 									<p class="layoutberg-help-text">
-										<?php 
+										<?php
 										if ( $model_config ) {
 											printf( esc_html__( 'Maximum completion tokens (output length). This model supports up to %d completion tokens. Higher values = longer, more detailed layouts but higher cost.', 'layoutberg' ), $model_config['max_output'] );
 										} else {

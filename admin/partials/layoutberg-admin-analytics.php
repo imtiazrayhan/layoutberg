@@ -14,17 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Get current user data.
 $current_user = wp_get_current_user();
-$user_id = get_current_user_id();
+$user_id      = get_current_user_id();
 
 // Get date ranges
-$today = current_time( 'Y-m-d' );
+$today      = current_time( 'Y-m-d' );
 $this_month = current_time( 'Y-m' );
 $last_month = date( 'Y-m', strtotime( '-1 month' ) );
-$this_year = current_time( 'Y' );
+$this_year  = current_time( 'Y' );
 
 // Database tables
 global $wpdb;
-$table_usage = $wpdb->prefix . 'layoutberg_usage';
+$table_usage       = $wpdb->prefix . 'layoutberg_usage';
 $table_generations = $wpdb->prefix . 'layoutberg_generations';
 
 // Get period from query string (default to month)
@@ -33,38 +33,38 @@ $period = isset( $_GET['period'] ) ? sanitize_text_field( $_GET['period'] ) : 'm
 // Calculate date ranges based on period
 switch ( $period ) {
 	case 'today':
-		$start_date = $today;
-		$end_date = $today;
+		$start_date   = $today;
+		$end_date     = $today;
 		$period_label = __( 'Today', 'layoutberg' );
 		break;
 	case 'week':
-		$start_date = date( 'Y-m-d', strtotime( '-6 days' ) );
-		$end_date = $today;
+		$start_date   = date( 'Y-m-d', strtotime( '-6 days' ) );
+		$end_date     = $today;
 		$period_label = __( 'Last 7 Days', 'layoutberg' );
 		break;
 	case 'month':
-		$start_date = date( 'Y-m-01' );
-		$end_date = date( 'Y-m-t' );
+		$start_date   = date( 'Y-m-01' );
+		$end_date     = date( 'Y-m-t' );
 		$period_label = __( 'This Month', 'layoutberg' );
 		break;
 	case 'last_month':
-		$start_date = date( 'Y-m-01', strtotime( '-1 month' ) );
-		$end_date = date( 'Y-m-t', strtotime( '-1 month' ) );
+		$start_date   = date( 'Y-m-01', strtotime( '-1 month' ) );
+		$end_date     = date( 'Y-m-t', strtotime( '-1 month' ) );
 		$period_label = __( 'Last Month', 'layoutberg' );
 		break;
 	case 'year':
-		$start_date = date( 'Y-01-01' );
-		$end_date = date( 'Y-12-31' );
+		$start_date   = date( 'Y-01-01' );
+		$end_date     = date( 'Y-12-31' );
 		$period_label = __( 'This Year', 'layoutberg' );
 		break;
 	case 'all':
-		$start_date = '2000-01-01';
-		$end_date = $today;
+		$start_date   = '2000-01-01';
+		$end_date     = $today;
 		$period_label = __( 'All Time', 'layoutberg' );
 		break;
 	default:
-		$start_date = date( 'Y-m-01' );
-		$end_date = date( 'Y-m-t' );
+		$start_date   = date( 'Y-m-01' );
+		$end_date     = date( 'Y-m-t' );
 		$period_label = __( 'This Month', 'layoutberg' );
 }
 
@@ -148,31 +148,31 @@ $hourly_stats = $wpdb->get_results(
 );
 
 // Calculate some derived stats
-$avg_daily_generations = $total_stats->total_generations ? 
+$avg_daily_generations     = $total_stats->total_generations ?
 	round( $total_stats->total_generations / max( 1, count( $daily_usage ) ) ) : 0;
-$avg_tokens_per_generation = $total_stats->total_generations && $total_stats->total_tokens ? 
+$avg_tokens_per_generation = $total_stats->total_generations && $total_stats->total_tokens ?
 	round( $total_stats->total_tokens / $total_stats->total_generations ) : 0;
-$avg_cost_per_generation = $total_stats->total_generations && $total_stats->total_cost ? 
+$avg_cost_per_generation   = $total_stats->total_generations && $total_stats->total_cost ?
 	$total_stats->total_cost / $total_stats->total_generations : 0;
 
 // Prepare chart data
-$chart_labels = array();
+$chart_labels      = array();
 $chart_generations = array();
-$chart_tokens = array();
-$chart_costs = array();
+$chart_tokens      = array();
+$chart_costs       = array();
 
 foreach ( $daily_usage as $day ) {
-	$chart_labels[] = date( 'M j', strtotime( $day->date ) );
+	$chart_labels[]      = date( 'M j', strtotime( $day->date ) );
 	$chart_generations[] = (int) $day->generations_count;
-	$chart_tokens[] = (int) $day->tokens_used;
-	$chart_costs[] = (float) $day->cost;
+	$chart_tokens[]      = (int) $day->tokens_used;
+	$chart_costs[]       = (float) $day->cost;
 }
 
 // Prepare hourly chart data
 $hourly_labels = array();
 $hourly_counts = array();
 for ( $i = 0; $i < 24; $i++ ) {
-	$hourly_labels[] = sprintf( '%02d:00', $i );
+	$hourly_labels[]     = sprintf( '%02d:00', $i );
 	$hourly_counts[ $i ] = 0;
 }
 foreach ( $hourly_stats as $hour ) {
@@ -382,10 +382,20 @@ foreach ( $hourly_stats as $hour ) {
 				<h3 class="layoutberg-card-title"><?php esc_html_e( 'Export Data', 'layoutberg' ); ?></h3>
 			</div>
 			<div class="layoutberg-flex layoutberg-gap-3">
-				<button class="layoutberg-btn layoutberg-btn-secondary" id="export-csv">
-					<span class="dashicons dashicons-download"></span>
-					<?php esc_html_e( 'Export as CSV', 'layoutberg' ); ?>
-				</button>
+				<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::can_export_csv() ) : ?>
+					<button class="layoutberg-btn layoutberg-btn-secondary" id="export-csv">
+						<span class="dashicons dashicons-download"></span>
+						<?php esc_html_e( 'Export as CSV', 'layoutberg' ); ?>
+					</button>
+				<?php else : ?>
+					<?php
+					echo \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_locked_button(
+						__( 'Export as CSV', 'layoutberg' ),
+						__( 'CSV Export', 'layoutberg' ),
+						'agency'
+					);
+					?>
+				<?php endif; ?>
 				<button class="layoutberg-btn layoutberg-btn-secondary" id="print-report">
 					<span class="dashicons dashicons-printer"></span>
 					<?php esc_html_e( 'Print Report', 'layoutberg' ); ?>
@@ -456,15 +466,22 @@ jQuery(document).ready(function($) {
 
 	// Model Usage Chart
 	const modelCtx = document.getElementById('model-usage-chart').getContext('2d');
-	const modelData = <?php 
-		$model_names = array();
+	const modelData = 
+	<?php
+		$model_names  = array();
 		$model_counts = array();
-		foreach ( $model_stats as $model ) {
-			$model_names[] = $model->model;
-			$model_counts[] = $model->count;
-		}
-		echo json_encode( array( 'labels' => $model_names, 'data' => $model_counts ) );
-	?>;
+	foreach ( $model_stats as $model ) {
+		$model_names[]  = $model->model;
+		$model_counts[] = $model->count;
+	}
+		echo json_encode(
+			array(
+				'labels' => $model_names,
+				'data'   => $model_counts,
+			)
+		);
+		?>
+	;
 	
 	new Chart(modelCtx, {
 		type: 'doughnut',
