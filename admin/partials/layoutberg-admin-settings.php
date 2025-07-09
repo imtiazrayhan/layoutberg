@@ -107,19 +107,7 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 							<?php esc_html_e( 'Style Defaults', 'layoutberg' ); ?>
 						</a>
 					<?php endif; ?>
-					<?php 
-					// Debug: Check licensing status
-					$is_agency = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan();
-					$can_use_premium = \DotCamp\LayoutBerg\LayoutBerg_Licensing::can_use_premium_code();
-					error_log( 'LayoutBerg Debug: Is Agency Plan? ' . ( $is_agency ? 'Yes' : 'No' ) );
-					error_log( 'LayoutBerg Debug: Can Use Premium Code? ' . ( $can_use_premium ? 'Yes' : 'No' ) );
-					if ( layoutberg_fs() && layoutberg_fs()->get_plan() ) {
-						error_log( 'LayoutBerg Debug: Current Plan Name: ' . layoutberg_fs()->get_plan()->name );
-					}
-					
-					// Temporarily show agency features for debugging
-					// Remove this after testing: || true
-					if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() || true ) : ?>
+					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
 						<a href="#agency-features" class="layoutberg-settings-nav-item" data-tab="agency-features">
 							<span class="dashicons dashicons-building"></span>
 							<?php esc_html_e( 'Agency Features', 'layoutberg' ); ?>
@@ -956,10 +944,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					</div>
 					<?php endif; ?>
 
-					<?php 
-					// Temporarily show agency features for debugging
-					// Remove this after testing: || true
-					if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() || true ) : ?>
+					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
 					<!-- Agency Features Tab -->
 					<div id="agency-features" class="layoutberg-settings-tab">
 						<!-- Prompt Templates -->
