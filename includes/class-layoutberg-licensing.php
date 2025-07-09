@@ -191,6 +191,17 @@ class LayoutBerg_Licensing {
 	}
 
 	/**
+	 * Check if user can use pattern and block variations.
+	 *
+	 * @since 1.0.0
+	 * @return bool True if user can use variations.
+	 */
+	public static function can_use_variations() {
+		return self::can_use_premium_code() &&
+				( self::is_professional_plan() || self::is_agency_plan() );
+	}
+
+	/**
 	 * Get template limit for current plan.
 	 *
 	 * @since 1.0.0

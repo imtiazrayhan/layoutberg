@@ -256,62 +256,114 @@ class Container {
 	 */
 	private function register_core_services() {
 		// Register the loader as a singleton
-		$this->singleton( 'DotCamp\LayoutBerg\Loader', function() {
-			return new Loader();
-		});
+		$this->singleton(
+			'DotCamp\LayoutBerg\Loader',
+			function () {
+				return new Loader();
+			}
+		);
 
 		// Register API client as singleton
-		$this->singleton( 'DotCamp\LayoutBerg\API_Client', function() {
-			return new API_Client();
-		});
+		$this->singleton(
+			'DotCamp\LayoutBerg\API_Client',
+			function () {
+				return new API_Client();
+			}
+		);
 
 		// Register cache manager as singleton
-		$this->singleton( 'DotCamp\LayoutBerg\Cache_Manager', function() {
-			return new Cache_Manager();
-		});
+		$this->singleton(
+			'DotCamp\LayoutBerg\Cache_Manager',
+			function () {
+				return new Cache_Manager();
+			}
+		);
 
 		// Register template manager as singleton
-		$this->singleton( 'DotCamp\LayoutBerg\Template_Manager', function() {
-			return new Template_Manager();
-		});
+		$this->singleton(
+			'DotCamp\LayoutBerg\Template_Manager',
+			function () {
+				return new Template_Manager();
+			}
+		);
 
 		// Register block generator
-		$this->bind( 'DotCamp\LayoutBerg\Block_Generator', function( $container ) {
-			return new Block_Generator(
-				$container->make( 'DotCamp\LayoutBerg\API_Client' ),
-				$container->make( 'DotCamp\LayoutBerg\Cache_Manager' )
-			);
-		});
+		$this->bind(
+			'DotCamp\LayoutBerg\Block_Generator',
+			function ( $container ) {
+				return new Block_Generator(
+					$container->make( 'DotCamp\LayoutBerg\API_Client' ),
+					$container->make( 'DotCamp\LayoutBerg\Cache_Manager' ),
+					$container->make( 'DotCamp\LayoutBerg\Pattern_Variations' ),
+					$container->make( 'DotCamp\LayoutBerg\Block_Variations' ),
+					$container->make( 'DotCamp\LayoutBerg\Content_Randomizer' )
+				);
+			}
+		);
 
 		// Register security manager as singleton
-		$this->singleton( 'DotCamp\LayoutBerg\Security_Manager', function() {
-			return new Security_Manager();
-		});
+		$this->singleton(
+			'DotCamp\LayoutBerg\Security_Manager',
+			function () {
+				return new Security_Manager();
+			}
+		);
 
 		// Register admin class
-		$this->bind( 'DotCamp\LayoutBerg\Admin', function( $container ) {
-			$plugin_name = defined( 'LAYOUTBERG_PLUGIN_NAME' ) ? LAYOUTBERG_PLUGIN_NAME : 'layoutberg';
-			$version     = defined( 'LAYOUTBERG_VERSION' ) ? LAYOUTBERG_VERSION : '1.0.0';
-			
-			return new Admin( $plugin_name, $version );
-		});
+		$this->bind(
+			'DotCamp\LayoutBerg\Admin',
+			function ( $container ) {
+				$plugin_name = defined( 'LAYOUTBERG_PLUGIN_NAME' ) ? LAYOUTBERG_PLUGIN_NAME : 'layoutberg';
+				$version     = defined( 'LAYOUTBERG_VERSION' ) ? LAYOUTBERG_VERSION : '1.0.0';
+
+				return new Admin( $plugin_name, $version );
+			}
+		);
 
 		// Register public class
-		$this->bind( 'DotCamp\LayoutBerg\PublicFacing', function( $container ) {
-			$plugin_name = defined( 'LAYOUTBERG_PLUGIN_NAME' ) ? LAYOUTBERG_PLUGIN_NAME : 'layoutberg';
-			$version     = defined( 'LAYOUTBERG_VERSION' ) ? LAYOUTBERG_VERSION : '1.0.0';
-			
-			return new PublicFacing( $plugin_name, $version );
-		});
+		$this->bind(
+			'DotCamp\LayoutBerg\PublicFacing',
+			function ( $container ) {
+				$plugin_name = defined( 'LAYOUTBERG_PLUGIN_NAME' ) ? LAYOUTBERG_PLUGIN_NAME : 'layoutberg';
+				$version     = defined( 'LAYOUTBERG_VERSION' ) ? LAYOUTBERG_VERSION : '1.0.0';
+
+				return new PublicFacing( $plugin_name, $version );
+			}
+		);
 
 		// Register API handler
-		$this->bind( 'DotCamp\LayoutBerg\API_Handler', function( $container ) {
-			return new API_Handler(
-				$container->make( 'DotCamp\LayoutBerg\Block_Generator' ),
-				$container->make( 'DotCamp\LayoutBerg\Template_Manager' ),
-				$container->make( 'DotCamp\LayoutBerg\Security_Manager' )
-			);
-		});
+		$this->bind(
+			'DotCamp\LayoutBerg\API_Handler',
+			function ( $container ) {
+				return new API_Handler(
+					$container->make( 'DotCamp\LayoutBerg\Block_Generator' ),
+					$container->make( 'DotCamp\LayoutBerg\Template_Manager' ),
+					$container->make( 'DotCamp\LayoutBerg\Security_Manager' )
+				);
+			}
+		);
+
+		// Register variation classes as singletons
+		$this->singleton(
+			'DotCamp\LayoutBerg\Pattern_Variations',
+			function () {
+				return new Pattern_Variations();
+			}
+		);
+
+		$this->singleton(
+			'DotCamp\LayoutBerg\Block_Variations',
+			function () {
+				return new Block_Variations();
+			}
+		);
+
+		$this->singleton(
+			'DotCamp\LayoutBerg\Content_Randomizer',
+			function () {
+				return new Content_Randomizer();
+			}
+		);
 	}
 
 	/**
