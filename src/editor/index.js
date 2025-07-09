@@ -49,6 +49,7 @@ import {
 
 // Import styles
 import './editor.css';
+import './variations.css';
 
 // Import our components
 import LayoutBergModal from './modal';
@@ -115,7 +116,7 @@ const LayoutBergEditor = () => {
 	/**
 	 * Handle layout generation
 	 */
-	const handleGenerate = async () => {
+	const handleGenerate = async ( variationOptions = null ) => {
 		if ( ! prompt.trim() ) {
 			dispatch( {
 				type: GENERATION_ACTIONS.ERROR,
@@ -158,14 +159,25 @@ const LayoutBergEditor = () => {
 				payload: 'generating',
 			} );
 
+			// Prepare request data
+			const requestData = {
+				prompt: prompt.trim(),
+				settings: settings,
+				replace_selected: hasSelectedBlocks,
+			};
+
+			// Add variation options if provided
+			if ( variationOptions ) {
+				requestData.settings = {
+					...settings,
+					...variationOptions
+				};
+			}
+
 			const response = await apiFetch( {
 				path: '/layoutberg/v1/generate',
 				method: 'POST',
-				data: {
-					prompt: prompt.trim(),
-					settings: settings,
-					replace_selected: hasSelectedBlocks,
-				},
+				data: requestData,
 			} );
 
 			// Debug logging to verify response

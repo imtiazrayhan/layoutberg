@@ -281,6 +281,14 @@ class Admin {
 				'settings'     => $this->get_default_settings(),
 				'models'       => $this->get_available_models(),
 				'categories'   => $categories,
+				'licensing'    => array(
+					'canUsePremiumCode' => LayoutBerg_Licensing::can_use_premium_code(),
+					'canUseVariations'  => LayoutBerg_Licensing::can_use_variations(),
+					'isProfessional'    => LayoutBerg_Licensing::is_professional_plan(),
+					'isAgency'          => LayoutBerg_Licensing::is_agency_plan(),
+					'planName'          => LayoutBerg_Licensing::get_plan_name(),
+				),
+				'predefinedTemplates' => $this->get_predefined_templates_for_variations(),
 				'strings'      => array(
 					'generating'     => __( 'Generating layout...', 'layoutberg' ),
 					'generated'      => __( 'Layout generated successfully!', 'layoutberg' ),
@@ -288,6 +296,9 @@ class Admin {
 					'promptRequired' => __( 'Please enter a prompt to generate a layout.', 'layoutberg' ),
 					'replaceMode'    => __( 'Replace selected blocks', 'layoutberg' ),
 					'insertMode'     => __( 'Insert new layout', 'layoutberg' ),
+					'variations'     => __( 'Layout Variations', 'layoutberg' ),
+					'selectVariation' => __( 'Select a variation style', 'layoutberg' ),
+					'regenerate'     => __( 'Regenerate with variations', 'layoutberg' ),
 				),
 			)
 		);
@@ -312,6 +323,40 @@ class Admin {
 			'style'       => $options['style_defaults']['style'] ?? 'modern',
 			'layout'      => $options['style_defaults']['layout'] ?? 'single-column',
 		);
+	}
+
+	/**
+	 * Get predefined templates that support variations.
+	 *
+	 * @since 1.0.0
+	 * @return array Templates that support variations.
+	 */
+	private function get_predefined_templates_for_variations() {
+		// Only return templates if user can use variations
+		if ( ! LayoutBerg_Licensing::can_use_variations() ) {
+			return array();
+		}
+
+		// Get container instance and block generator
+		$container = Container::get_instance();
+		$block_generator = $container->make( 'DotCamp\LayoutBerg\Block_Generator' );
+		
+		// Get all predefined templates
+		$templates = $block_generator->get_predefined_templates();
+		
+		// Filter only templates that support variations
+		$variation_templates = array();
+		foreach ( $templates as $key => $template ) {
+			if ( isset( $template['variations'] ) && $template['variations'] === true ) {
+				$variation_templates[ $key ] = array(
+					'name'        => $template['name'],
+					'description' => $template['description'],
+					'prompt'      => $template['prompt'],
+				);
+			}
+		}
+		
+		return $variation_templates;
 	}
 
 	/**

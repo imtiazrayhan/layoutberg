@@ -30,6 +30,7 @@ import {
 	__experimentalHStack as HStack,
 	TabPanel,
 } from '@wordpress/components';
+import React from 'react';
 import { layout, starFilled, cog } from '@wordpress/icons';
 
 /**
@@ -52,6 +53,8 @@ const LayoutBergModal = ( {
 } ) => {
 	const [ showAdvanced, setShowAdvanced ] = useState( false );
 	const [ showPrompts, setShowPrompts ] = useState( false );
+	const [ selectedVariation, setSelectedVariation ] = useState( 'default' );
+	const [ matchedTemplate, setMatchedTemplate ] = useState( null );
 
 	// Get max tokens limit based on selected model
 	const getMaxTokensLimit = () => {
@@ -88,6 +91,33 @@ const LayoutBergModal = ( {
 			updateSetting( 'maxTokens', currentMaxLimit );
 		}
 	}, [ settings.model ] );
+
+	// Check if prompt matches a predefined template
+	useEffect( () => {
+		if ( ! window.layoutbergEditor?.predefinedTemplates || ! window.layoutbergEditor?.licensing?.canUseVariations ) {
+			setMatchedTemplate( null );
+			return;
+		}
+
+		const normalizedPrompt = prompt.toLowerCase().trim();
+		const templates = window.layoutbergEditor.predefinedTemplates;
+		
+		// Check each template for a match
+		for ( const [ key, template ] of Object.entries( templates ) ) {
+			const templatePrompt = template.prompt.toLowerCase();
+			const templateName = template.name.toLowerCase();
+			
+			if ( normalizedPrompt === templatePrompt ||
+				 normalizedPrompt.includes( templatePrompt ) ||
+				 normalizedPrompt.includes( key ) ||
+				 normalizedPrompt.includes( templateName ) ) {
+				setMatchedTemplate( { key, ...template } );
+				return;
+			}
+		}
+		
+		setMatchedTemplate( null );
+	}, [ prompt ] );
 
 	const quickPrompts = [
 		{
@@ -573,6 +603,121 @@ const LayoutBergModal = ( {
 						</CardBody>
 					</Card>
 
+					{ /* Variations Section - Only show for Professional/Agency users when template is matched */ }
+					{ matchedTemplate && window.layoutbergEditor?.licensing?.canUseVariations && (
+						<Card className="layoutberg-variations-card">
+							<CardHeader>
+								<HStack>
+									<FlexBlock>
+										<strong>
+											{ __( 'Layout Variations', 'layoutberg' ) }
+										</strong>
+										<span className="layoutberg-pro-badge">
+											{ __( 'Pro Feature', 'layoutberg' ) }
+										</span>
+									</FlexBlock>
+								</HStack>
+							</CardHeader>
+							<CardBody>
+								<Notice
+									status="info"
+									isDismissible={ false }
+									className="layoutberg-variations-notice"
+								>
+									{ sprintf(
+										__( 'We detected you want to create a "%s". Select a variation style below for different layouts.', 'layoutberg' ),
+										matchedTemplate.name
+									) }
+								</Notice>
+								
+								<div className="layoutberg-variations-grid">
+									<label className="layoutberg-variation-option">
+										<input
+											type="radio"
+											name="variation"
+											value="default"
+											checked={ selectedVariation === 'default' || ! selectedVariation }
+											onChange={ () => setSelectedVariation( 'default' ) }
+										/>
+										<div className="layoutberg-variation-preview">
+											<div className="variation-icon">🎨</div>
+											<div className="variation-name">
+												{ __( 'Random Style', 'layoutberg' ) }
+											</div>
+											<div className="variation-description">
+												{ __( 'Let AI choose the best variation', 'layoutberg' ) }
+											</div>
+										</div>
+									</label>
+									
+									<label className="layoutberg-variation-option">
+										<input
+											type="radio"
+											name="variation"
+											value="modern"
+											checked={ selectedVariation === 'modern' }
+											onChange={ () => setSelectedVariation( 'modern' ) }
+										/>
+										<div className="layoutberg-variation-preview">
+											<div className="variation-icon">✨</div>
+											<div className="variation-name">
+												{ __( 'Modern', 'layoutberg' ) }
+											</div>
+											<div className="variation-description">
+												{ __( 'Clean lines, bold typography', 'layoutberg' ) }
+											</div>
+										</div>
+									</label>
+									
+									<label className="layoutberg-variation-option">
+										<input
+											type="radio"
+											name="variation"
+											value="classic"
+											checked={ selectedVariation === 'classic' }
+											onChange={ () => setSelectedVariation( 'classic' ) }
+										/>
+										<div className="layoutberg-variation-preview">
+											<div className="variation-icon">📜</div>
+											<div className="variation-name">
+												{ __( 'Classic', 'layoutberg' ) }
+											</div>
+											<div className="variation-description">
+												{ __( 'Traditional, timeless design', 'layoutberg' ) }
+											</div>
+										</div>
+									</label>
+									
+									<label className="layoutberg-variation-option">
+										<input
+											type="radio"
+											name="variation"
+											value="minimal"
+											checked={ selectedVariation === 'minimal' }
+											onChange={ () => setSelectedVariation( 'minimal' ) }
+										/>
+										<div className="layoutberg-variation-preview">
+											<div className="variation-icon">⚡</div>
+											<div className="variation-name">
+												{ __( 'Minimal', 'layoutberg' ) }
+											</div>
+											<div className="variation-description">
+												{ __( 'Simple, focused on content', 'layoutberg' ) }
+											</div>
+										</div>
+									</label>
+								</div>
+								
+								<ToggleControl
+									label={ __( 'Use variations for faster generation', 'layoutberg' ) }
+									help={ __( 'Generate layouts instantly without API calls using our pre-built variations', 'layoutberg' ) }
+									checked={ settings.useVariations !== false }
+									onChange={ ( value ) => updateSetting( 'useVariations', value ) }
+								/>
+							</CardBody>
+						</Card>
+					) }
+
 					{ /* Advanced Settings */ }
 					<Card>
 						<CardHeader>
@@ -840,7 +985,18 @@ const LayoutBergModal = ( {
 
 						<Button
 							variant="primary"
-							onClick={ onGenerate }
+							onClick={ () => {
+								// Pass variation data if available and variations are enabled
+								if ( matchedTemplate && settings.useVariations !== false && selectedVariation ) {
+									onGenerate({
+										useVariations: true,
+										variationStyle: selectedVariation,
+										templateKey: matchedTemplate.key
+									});
+								} else {
+									onGenerate();
+								}
+							} }
 							disabled={ isGenerating || ! prompt.trim() }
 							icon={ isGenerating ? undefined : starFilled }
 						>

@@ -1,0 +1,187 @@
+/* Variations Card */
+.layoutberg-variations-card {
+    background: #f0f9ff;
+    border: 2px solid #3b82f6;
+}
+
+.layoutberg-variations-card .components-card__header {
+    background: #e0f2fe;
+    border-bottom: 1px solid #bfdbfe;
+}
+
+.layoutberg-pro-badge {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+    padding: 2px 8px;
+    text-transform: uppercase;
+}
+
+.layoutberg-variations-notice {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    margin-bottom: 20px;
+}
+
+/* Variations Grid */
+.layoutberg-variations-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin-bottom: 20px;
+}
+
+/* Variation Option */
+.layoutberg-variation-option {
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    display: block;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.layoutberg-variation-option:hover {
+    border-color: #6366f1;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Radio Input */
+.layoutberg-variation-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.layoutberg-variation-option input[type="radio"]:checked + .layoutberg-variation-preview {
+    background: #f0f9ff;
+    border-color: #6366f1;
+}
+
+.layoutberg-variation-option input[type="radio"]:checked + .layoutberg-variation-preview::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #6366f1;
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Variation Preview */
+.layoutberg-variation-preview {
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.variation-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    line-height: 1;
+}
+
+.variation-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.variation-description {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+/* Toggle Control in Variations */
+.layoutberg-variations-card .components-toggle-control {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .layoutberg-variations-card {
+        background: #1e293b;
+        border-color: #475569;
+    }
+    
+    .layoutberg-variations-card .components-card__header {
+        background: #1e293b;
+        border-bottom-color: #475569;
+    }
+    
+    .layoutberg-variations-notice {
+        background: #1e293b;
+        border-left-color: #6366f1;
+    }
+    
+    .layoutberg-variation-option {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .layoutberg-variation-option:hover {
+        border-color: #8b5cf6;
+    }
+    
+    .layoutberg-variation-option input[type="radio"]:checked + .layoutberg-variation-preview {
+        background: #1e293b;
+        border-color: #8b5cf6;
+    }
+    
+    .variation-name {
+        color: #f3f4f6;
+    }
+    
+    .variation-description {
+        color: #9ca3af;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .layoutberg-variations-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .layoutberg-variation-preview {
+        padding: 16px;
+    }
+    
+    .variation-icon {
+        font-size: 36px;
+        margin-bottom: 8px;
+    }
+    
+    .variation-name {
+        font-size: 14px;
+    }
+    
+    .variation-description {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .layoutberg-variations-grid {
+        grid-template-columns: 1fr;
+    }
+}
