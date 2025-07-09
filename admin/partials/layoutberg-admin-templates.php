@@ -1288,6 +1288,11 @@ $categories = array_merge(
 	font-weight: 500;
 }
 
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
 .template-visual-preview iframe {
 	width: 100%;
 	border: none;
@@ -1478,13 +1483,18 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	
 	function updateTemplatesGridAJAX() {
+		console.log('updateTemplatesGridAJAX called');
 		const params = getFilterParams();
+		console.log('Filter params:', params);
+		
 		const url = new URL(typeof ajaxurl !== 'undefined' ? ajaxurl : '<?php echo admin_url( 'admin-ajax.php' ); ?>', window.location.origin);
 		url.searchParams.set('action', 'layoutberg_render_templates_grid');
 		Object.entries(params).forEach(([key, value]) => {
 			if (value) url.searchParams.set(key, value);
 			else url.searchParams.delete(key);
 		});
+		
+		console.log('AJAX URL:', url.toString());
 
 		const gridContainer = document.querySelector('.layoutberg-templates-grid') || document.querySelector('.layoutberg-templates-empty');
 		const searchContainer = document.querySelector('.layoutberg-search-container');
@@ -1503,8 +1513,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		fetch(url.toString(), { credentials: 'same-origin' })
-			.then(res => res.json())
+			.then(res => {
+				console.log('AJAX response status:', res.status);
+				if (!res.ok) {
+					throw new Error('HTTP error! status: ' + res.status);
+				}
+				return res.json();
+			})
 			.then(data => {
+				console.log('AJAX response data:', data);
 				if (data.success && data.data && data.data.html) {
 					const grid = document.querySelector('.layoutberg-templates-grid') || document.querySelector('.layoutberg-templates-empty');
 					if (grid) {
@@ -1512,10 +1529,16 @@ document.addEventListener('DOMContentLoaded', function() {
 						wrapper.innerHTML = data.data.html;
 						grid.replaceWith(wrapper.firstElementChild);
 					}
+				} else {
+					console.error('AJAX error:', data.data || 'Unknown error');
+					if (data.data) {
+						alert('Error: ' + data.data);
+					}
 				}
 			})
-			.catch(() => {
-				window.location.reload(); // fallback
+			.catch((error) => {
+				console.error('AJAX fetch error:', error);
+				alert('Error loading templates: ' + error.message);
 			})
 			.finally(() => {
 				const loading = document.querySelector('.layoutberg-loading-overlay');
@@ -1525,6 +1548,11 @@ document.addEventListener('DOMContentLoaded', function() {
 				const searchContainer = document.querySelector('.layoutberg-search-container');
 				if (searchContainer) {
 					searchContainer.classList.remove('searching');
+				}
+				
+				// Reset grid opacity
+				if (gridContainer) {
+					gridContainer.style.opacity = '1';
 				}
 				
 				// Keep focus on search input for better UX
@@ -1563,8 +1591,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	const debouncedUpdate = debounce(updateTemplatesGridAJAX, 300);
 	
 	if (searchInput) {
+		console.log('Search input element found:', searchInput);
+		
 		// Live search as you type
 		searchInput.addEventListener('input', function(e) {
+			console.log('Search input event fired, value:', e.target.value);
 			// Show instant feedback
 			if (e.target.value.trim()) {
 				searchInput.setAttribute('data-searching', 'true');
@@ -1576,14 +1607,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Also handle Enter key for immediate search
 		searchInput.addEventListener('keypress', function(e) {
+			console.log('Keypress event fired, key:', e.key);
 			if (e.key === 'Enter') {
 				e.preventDefault();
+				console.log('Enter key pressed, triggering immediate search');
 				// Cancel any pending debounced calls
 				clearTimeout(debouncedUpdate.timeout);
 				// Execute search immediately
 				updateTemplatesGridAJAX();
 			}
 		});
+	} else {
+		console.error('Search input element not found! Looking for #template-search');
 	}
 	if (searchBtn) {
 		searchBtn.addEventListener('click', function(e) {

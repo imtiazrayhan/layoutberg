@@ -31,6 +31,17 @@ $search_term = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
 $where_conditions = array( 'user_id = %d' );
 $query_params = array( $user_id );
 
+// Check history days limit for Starter plans
+$history_days = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_history_days();
+$is_limited = ( $history_days !== PHP_INT_MAX );
+
+if ( $is_limited ) {
+	// Add date restriction for Starter plans - show only last 30 days
+	$date_limit = date( 'Y-m-d H:i:s', strtotime( '-' . $history_days . ' days' ) );
+	$where_conditions[] = 'created_at >= %s';
+	$query_params[] = $date_limit;
+}
+
 if ( ! empty( $search_term ) ) {
 	$where_conditions[] = '(prompt LIKE %s OR status LIKE %s)';
 	$search_like = '%' . $wpdb->esc_like( $search_term ) . '%';
@@ -44,6 +55,13 @@ $where_clause = implode( ' AND ', $where_conditions );
 $total_query = "SELECT COUNT(*) FROM {$table_generations} WHERE {$where_clause}";
 $total_items = $wpdb->get_var( $wpdb->prepare( $total_query, $query_params ) );
 $total_pages = ceil( $total_items / $per_page );
+
+// If limited, also get total count without date restriction to show what they're missing
+$total_all_time = 0;
+if ( $is_limited ) {
+	$total_all_query = "SELECT COUNT(*) FROM {$table_generations} WHERE user_id = %d";
+	$total_all_time = $wpdb->get_var( $wpdb->prepare( $total_all_query, $user_id ) );
+}
 
 // Get generations with pagination.
 $query_params[] = $per_page;
@@ -65,6 +83,30 @@ $generations = $wpdb->get_results( $wpdb->prepare( $generations_query, $query_pa
 	</h1>
 	
 	<hr class="wp-header-end">
+	
+	<?php if ( $is_limited ) : ?>
+		<div class="notice notice-info inline">
+			<p>
+				<strong><?php esc_html_e( 'Showing last 30 days of history.', 'layoutberg' ); ?></strong>
+				<?php
+				$hidden_count = $total_all_time - $total_items;
+				if ( $hidden_count > 0 ) {
+					printf(
+						/* translators: %d: number of hidden generations */
+						esc_html__( 'You have %d older generations that are currently hidden.', 'layoutberg' ),
+						$hidden_count
+					);
+					echo ' ';
+				}
+				printf(
+					/* translators: %s: upgrade URL */
+					esc_html__( 'Upgrade to Professional or Agency plan to see your complete generation history. %s', 'layoutberg' ),
+					'<a href="' . esc_url( \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url() ) . '">' . esc_html__( 'Upgrade Now', 'layoutberg' ) . '</a>'
+				);
+				?>
+			</p>
+		</div>
+	<?php endif; ?>
 	
 	<!-- Search and Filters -->
 	<div class="tablenav top">
