@@ -194,6 +194,7 @@ class LayoutBerg {
 		$this->loader->add_action( 'wp_ajax_layoutberg_export_template', $admin, 'ajax_export_template' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_get_generation_result', $admin, 'ajax_get_generation_result' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_clear_cache', $admin, 'ajax_clear_cache' );
+		$this->loader->add_action( 'wp_ajax_layoutberg_export_csv', $admin, 'ajax_export_csv' );
 
 		// Settings save.
 		$this->loader->add_action( 'admin_init', $admin, 'register_settings' );

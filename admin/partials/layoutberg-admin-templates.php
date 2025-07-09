@@ -1110,16 +1110,7 @@ if ( $is_starter ) {
 	padding: 20px;
 }
 
-.layoutberg-modal[style*="display: none"] {
-	display: none !important;
-}
-
-.layoutberg-modal[style*="display: block"],
-.layoutberg-modal.show {
-	display: flex !important;
-	visibility: visible !important;
-	opacity: 1 !important;
-}
+/* Remove conflicting CSS rules - let JavaScript handle the display */
 
 .layoutberg-modal-content {
 	background: white;
@@ -1416,6 +1407,8 @@ if (typeof ajaxurl === 'undefined') {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+	console.log('DOMContentLoaded fired - initializing LayoutBerg templates page');
+	
 	// Helper function to make AJAX requests
 	function makeAjaxRequest(url, options) {
 		return new Promise((resolve, reject) => {
@@ -1483,11 +1476,22 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Helper function to show modal
 	function showModal(modalId) {
 		console.log('Attempting to show modal:', modalId);
+		
+		// First, close any currently open modals
+		const openModals = document.querySelectorAll('.layoutberg-modal');
+		openModals.forEach(openModal => {
+			if (openModal.style.display === 'flex' || openModal.classList.contains('show')) {
+				console.log('Closing previously open modal:', openModal.id);
+				hideModal(openModal);
+			}
+		});
+		
 		const modal = document.getElementById(modalId);
 		console.log('Modal element found:', modal);
 		
 		if (modal) {
 			console.log('Modal initial display:', getComputedStyle(modal).display);
+			console.log('Modal initial style attribute:', modal.getAttribute('style'));
 			console.log('Modal computed styles:', {
 				position: getComputedStyle(modal).position,
 				zIndex: getComputedStyle(modal).zIndex,
@@ -1495,18 +1499,33 @@ document.addEventListener('DOMContentLoaded', function() {
 				opacity: getComputedStyle(modal).opacity
 			});
 			
+			// Remove all inline styles first to ensure clean state
+			modal.removeAttribute('style');
+			
+			// Then set the new styles
 			modal.style.display = 'flex';
 			modal.style.zIndex = '999999999';
 			modal.style.visibility = 'visible';
 			modal.style.opacity = '1';
 			modal.classList.add('show');
 			
+			// Prevent body scrolling when modal is open
+			document.body.style.overflow = 'hidden';
+			
+			console.log('Modal style after show:', modal.getAttribute('style'));
 			console.log('Modal display after show:', getComputedStyle(modal).display);
 			console.log('Modal is visible:', modal.offsetWidth > 0 && modal.offsetHeight > 0);
+			console.log('Modal dimensions:', {
+				width: modal.offsetWidth,
+				height: modal.offsetHeight,
+				clientWidth: modal.clientWidth,
+				clientHeight: modal.clientHeight
+			});
 			
 			return modal;
 		} else {
 			console.error('Modal not found:', modalId);
+			console.error('Available elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
 			return null;
 		}
 	}
@@ -1514,10 +1533,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Helper function to hide modal
 	function hideModal(modal) {
 		if (modal) {
+			console.log('Hiding modal:', modal.id);
+			// Remove all inline styles to ensure clean state
+			modal.removeAttribute('style');
+			// Re-apply display none
 			modal.style.display = 'none';
-			modal.style.visibility = 'hidden';
-			modal.style.opacity = '0';
+			// Remove show class
 			modal.classList.remove('show');
+			// Ensure body scroll is restored
+			document.body.style.overflow = '';
+			console.log('Modal hidden, body overflow restored');
 		}
 	}
 	
@@ -1880,12 +1905,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// Import template
 	const importBtn = document.querySelector('.layoutberg-import-template');
+	console.log('Import button found:', importBtn);
 	if (importBtn) {
 		importBtn.addEventListener('click', function(e) {
 			e.preventDefault();
+			console.log('Import button clicked');
+			console.log('Button classes:', this.classList);
 			
 			// Check if import is locked
 			if (this.classList.contains('disabled')) {
+				console.log('Import is disabled/locked');
 				// Open pricing modal instead
 				if (window.layoutbergAdmin && window.layoutbergAdmin.openPricingModal) {
 					window.layoutbergAdmin.openPricingModal({
@@ -1894,9 +1923,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					});
 				}
 			} else {
-				showModal('layoutberg-template-import-modal');
+				console.log('Attempting to show import modal');
+				const modal = showModal('layoutberg-template-import-modal');
+				console.log('Modal shown:', modal);
 			}
 		});
+	} else {
+		console.error('Import button not found with selector .layoutberg-import-template');
 	}
 	
 	const importSubmitBtn = document.getElementById('import-template');
@@ -1936,9 +1969,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			const templateId = useButton.getAttribute('data-template-id');
 			console.log('Template ID:', templateId);
 			
-			// Close any open modals
+			// Close any open modals properly
 			const modals = document.querySelectorAll('.layoutberg-modal');
-			modals.forEach(modal => hideModal(modal));
+			modals.forEach(modal => {
+				if (modal.style.display === 'flex' || modal.classList.contains('show')) {
+					console.log('Closing modal before redirect:', modal.id);
+					hideModal(modal);
+				}
+			});
 			
 			// Increment usage count before redirecting to editor
 			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
@@ -2007,8 +2045,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		
 		// Handle locked import links
-		if (e.target.classList.contains('import-template-locked')) {
+		const lockedImportLink = e.target.closest('.import-template-locked');
+		if (lockedImportLink) {
 			e.preventDefault();
+			console.log('Locked import button clicked');
 			
 			// Trigger pricing modal with import feature context
 			if (window.LayoutBergAdmin && window.LayoutBergAdmin.openPricingModal) {
@@ -2020,6 +2060,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					currentTarget: $trigger,
 					preventDefault: function() {}
 				});
+			} else {
+				console.log('LayoutBergAdmin.openPricingModal not available');
+				// Fallback: redirect to licensing action URL
+				const actionUrl = '<?php echo esc_url( \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url() ); ?>';
+				if (actionUrl) {
+					window.location.href = actionUrl;
+				}
 			}
 			return false;
 		}
@@ -2033,6 +2080,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			console.log('Closing modal via close button');
 			const modal = closeButton.closest('.layoutberg-modal');
 			hideModal(modal);
+			e.preventDefault();
+			e.stopPropagation();
 			return;
 		}
 		
@@ -2040,6 +2089,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (e.target.classList.contains('layoutberg-modal')) {
 			console.log('Closing modal via background click');
 			hideModal(e.target);
+			e.preventDefault();
+			e.stopPropagation();
+		}
+	});
+	
+	// Also handle ESC key to close modals
+	document.addEventListener('keydown', function(e) {
+		if (e.key === 'Escape') {
+			const openModals = document.querySelectorAll('.layoutberg-modal[style*="display: flex"]');
+			openModals.forEach(modal => {
+				console.log('Closing modal via ESC key:', modal.id);
+				hideModal(modal);
+			});
 		}
 	});
 });

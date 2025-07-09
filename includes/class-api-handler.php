@@ -257,6 +257,31 @@ class API_Handler {
 				error_log( 'LayoutBerg API Handler: Options extracted: ' . print_r( $options, true ) );
 			}
 			
+			// Validate model access based on user's plan
+			$requested_model = $options['model'] ?? 'gpt-3.5-turbo';
+			
+			// Check if user can access the requested model
+			if ( ! $this->validate_model_access( $requested_model ) ) {
+				return new WP_Error(
+					'invalid_model_access',
+					__( 'You do not have access to this model. Please upgrade your plan to use premium models.', 'layoutberg' ),
+					array( 'status' => 403 )
+				);
+			}
+			
+			// Validate advanced options access
+			if ( ! LayoutBerg_Licensing::can_use_advanced_options() ) {
+				// Reset advanced options to defaults for Starter/Expired plans
+				$options['temperature'] = 0.7;
+				$options['max_tokens'] = 2000;
+				
+				// Log if user tried to use advanced options without access
+				if ( ( isset( $settings['temperature'] ) && $settings['temperature'] != 0.7 ) ||
+				     ( isset( $settings['maxTokens'] ) && $settings['maxTokens'] != 2000 ) ) {
+					error_log( 'LayoutBerg: User attempted to use advanced options without proper plan access.' );
+				}
+			}
+			
 			// Get stored user preferences from onboarding
 			$stored_options = get_option( 'layoutberg_options', array() );
 			
@@ -598,6 +623,43 @@ class API_Handler {
 	 */
 	public function check_agency_permission() {
 		return current_user_can( 'layoutberg_configure' ) && LayoutBerg_Licensing::is_agency_plan();
+	}
+
+	/**
+	 * Validate if user has access to the requested model.
+	 *
+	 * @since 1.0.0
+	 * @param string $model Model ID to validate.
+	 * @return bool True if user can access the model.
+	 */
+	private function validate_model_access( $model ) {
+		// List of models that require Professional or Agency plan
+		$premium_models = array(
+			'gpt-4',
+			'gpt-4-turbo-preview',
+			'gpt-4-1106-preview',
+			'gpt-4-0125-preview',
+			'claude-3-opus-20240229',
+			'claude-3-sonnet-20240229',
+			'claude-3-haiku-20240307',
+		);
+
+		// Check if the requested model is a premium model
+		$is_premium_model = false;
+		foreach ( $premium_models as $premium_model ) {
+			if ( strpos( $model, $premium_model ) !== false ) {
+				$is_premium_model = true;
+				break;
+			}
+		}
+
+		// If it's a premium model, check if user has access
+		if ( $is_premium_model ) {
+			return LayoutBerg_Licensing::can_use_all_models();
+		}
+
+		// Non-premium models (like gpt-3.5-turbo) are available to all plans
+		return true;
 	}
 
 	/**

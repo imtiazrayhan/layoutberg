@@ -27,8 +27,20 @@ global $wpdb;
 $table_usage       = $wpdb->prefix . 'layoutberg_usage';
 $table_generations = $wpdb->prefix . 'layoutberg_generations';
 
+// Get history days limit based on plan
+$history_days_limit = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_history_days();
+$is_limited_plan = $history_days_limit !== PHP_INT_MAX;
+
 // Get period from query string (default to month)
 $period = isset( $_GET['period'] ) ? sanitize_text_field( $_GET['period'] ) : 'month';
+
+// If on limited plan, restrict available periods
+if ( $is_limited_plan ) {
+	// For limited plans, only allow periods within the 30-day limit
+	if ( in_array( $period, array( 'year', 'all' ), true ) ) {
+		$period = 'month'; // Default to month if trying to access restricted periods
+	}
+}
 
 // Calculate date ranges based on period
 switch ( $period ) {
@@ -51,6 +63,14 @@ switch ( $period ) {
 		$start_date   = date( 'Y-m-01', strtotime( '-1 month' ) );
 		$end_date     = date( 'Y-m-t', strtotime( '-1 month' ) );
 		$period_label = __( 'Last Month', 'layoutberg' );
+		// Check if last month is within the 30-day limit
+		if ( $is_limited_plan ) {
+			$days_ago = ( strtotime( $today ) - strtotime( $start_date ) ) / ( 60 * 60 * 24 );
+			if ( $days_ago > $history_days_limit ) {
+				// Adjust start date to be within the limit
+				$start_date = date( 'Y-m-d', strtotime( '-' . $history_days_limit . ' days' ) );
+			}
+		}
 		break;
 	case 'year':
 		$start_date   = date( 'Y-01-01' );
@@ -66,6 +86,14 @@ switch ( $period ) {
 		$start_date   = date( 'Y-m-01' );
 		$end_date     = date( 'Y-m-t' );
 		$period_label = __( 'This Month', 'layoutberg' );
+}
+
+// Enforce history limit for limited plans
+if ( $is_limited_plan ) {
+	$max_start_date = date( 'Y-m-d', strtotime( '-' . $history_days_limit . ' days' ) );
+	if ( strtotime( $start_date ) < strtotime( $max_start_date ) ) {
+		$start_date = $max_start_date;
+	}
 }
 
 // Get overall statistics
@@ -199,8 +227,17 @@ foreach ( $hourly_stats as $hour ) {
 					<option value="week" <?php selected( $period, 'week' ); ?>><?php esc_html_e( 'Last 7 Days', 'layoutberg' ); ?></option>
 					<option value="month" <?php selected( $period, 'month' ); ?>><?php esc_html_e( 'This Month', 'layoutberg' ); ?></option>
 					<option value="last_month" <?php selected( $period, 'last_month' ); ?>><?php esc_html_e( 'Last Month', 'layoutberg' ); ?></option>
-					<option value="year" <?php selected( $period, 'year' ); ?>><?php esc_html_e( 'This Year', 'layoutberg' ); ?></option>
-					<option value="all" <?php selected( $period, 'all' ); ?>><?php esc_html_e( 'All Time', 'layoutberg' ); ?></option>
+					<?php if ( ! $is_limited_plan ) : ?>
+						<option value="year" <?php selected( $period, 'year' ); ?>><?php esc_html_e( 'This Year', 'layoutberg' ); ?></option>
+						<option value="all" <?php selected( $period, 'all' ); ?>><?php esc_html_e( 'All Time', 'layoutberg' ); ?></option>
+					<?php else : ?>
+						<option value="year" disabled title="<?php esc_attr_e( 'Upgrade to Professional or Agency plan for yearly analytics', 'layoutberg' ); ?>">
+							<?php esc_html_e( 'This Year', 'layoutberg' ); ?> 🔒
+						</option>
+						<option value="all" disabled title="<?php esc_attr_e( 'Upgrade to Professional or Agency plan for all-time analytics', 'layoutberg' ); ?>">
+							<?php esc_html_e( 'All Time', 'layoutberg' ); ?> 🔒
+						</option>
+					<?php endif; ?>
 				</select>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg' ) ); ?>" class="layoutberg-btn layoutberg-btn-secondary">
 					<span class="dashicons dashicons-arrow-left-alt"></span>
@@ -212,6 +249,29 @@ foreach ( $hourly_stats as $hour ) {
 
 	<!-- Main Content -->
 	<div class="layoutberg-container">
+		<!-- Plan Limitation Notice -->
+		<?php if ( $is_limited_plan ) : ?>
+			<div class="layoutberg-alert layoutberg-alert-warning layoutberg-mb-4">
+				<span class="dashicons dashicons-warning"></span>
+				<div>
+					<strong><?php esc_html_e( 'Limited Analytics History', 'layoutberg' ); ?></strong>
+					<p>
+						<?php 
+						printf(
+							/* translators: %1$s: plan name, %2$d: days limit */
+							esc_html__( 'Your %1$s plan includes analytics for the last %2$d days. Upgrade to Professional or Agency plan for unlimited analytics history.', 'layoutberg' ),
+							esc_html( \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_plan_name() ),
+							$history_days_limit
+						);
+						?>
+					</p>
+					<a href="<?php echo esc_url( \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url() ); ?>" class="layoutberg-btn layoutberg-btn-sm layoutberg-btn-primary layoutberg-mt-2">
+						<?php esc_html_e( 'Upgrade Plan', 'layoutberg' ); ?>
+					</a>
+				</div>
+			</div>
+		<?php endif; ?>
+		
 		<!-- Data Accuracy Notice -->
 		<div class="layoutberg-alert layoutberg-alert-info layoutberg-mb-4">
 			<span class="dashicons dashicons-info"></span>
@@ -413,6 +473,25 @@ jQuery(document).ready(function($) {
 	// Period selector
 	$('#period-selector').on('change', function() {
 		var selectedPeriod = $(this).val();
+		var selectedOption = $(this).find('option:selected');
+		
+		// Check if the selected option is disabled
+		if (selectedOption.prop('disabled')) {
+			// Reset to the previous value
+			var urlParams = new URLSearchParams(window.location.search);
+			var currentPeriod = urlParams.get('period') || 'month';
+			$(this).val(currentPeriod);
+			
+			// Show upgrade notice
+			alert('<?php echo esc_js( __( 'This feature requires Professional or Agency plan. Please upgrade to access full analytics history.', 'layoutberg' ) ); ?>');
+			
+			// Optionally redirect to upgrade page
+			if (confirm('<?php echo esc_js( __( 'Would you like to upgrade your plan now?', 'layoutberg' ) ); ?>')) {
+				window.location.href = '<?php echo esc_url( \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url() ); ?>';
+			}
+			return;
+		}
+		
 		var currentUrl = new URL(window.location.href);
 		currentUrl.searchParams.set('period', selectedPeriod);
 		window.location.href = currentUrl.toString();
@@ -549,19 +628,51 @@ jQuery(document).ready(function($) {
 
 	// Export CSV
 	$('#export-csv').on('click', function() {
-		// Create CSV data
-		let csv = 'Date,Generations,Tokens,Cost\n';
-		<?php foreach ( $daily_usage as $day ) : ?>
-		csv += '<?php echo esc_js( $day->date ); ?>,<?php echo esc_js( $day->generations_count ); ?>,<?php echo esc_js( $day->tokens_used ); ?>,<?php echo esc_js( $day->cost ); ?>\n';
-		<?php endforeach; ?>
+		var $button = $(this);
+		var originalText = $button.html();
 		
-		// Download CSV
-		const blob = new Blob([csv], { type: 'text/csv' });
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'layoutberg-analytics-<?php echo esc_js( $period ); ?>.csv';
-		a.click();
+		// Show loading state
+		$button.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> <?php esc_html_e( 'Exporting...', 'layoutberg' ); ?>');
+		
+		// Make AJAX request to server
+		$.ajax({
+			url: ajaxurl,
+			type: 'POST',
+			data: {
+				action: 'layoutberg_export_csv',
+				_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>',
+				period: '<?php echo esc_js( $period ); ?>',
+				format: 'daily' // Can be 'daily' or 'detailed'
+			},
+			success: function(response) {
+				if (response.success && response.data) {
+					// Create and download the CSV file
+					const blob = new Blob([response.data.content], { type: response.data.mimeType });
+					const url = window.URL.createObjectURL(blob);
+					const a = document.createElement('a');
+					a.href = url;
+					a.download = response.data.filename;
+					document.body.appendChild(a);
+					a.click();
+					document.body.removeChild(a);
+					window.URL.revokeObjectURL(url);
+					
+					// Show success message
+					$button.html('<span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Exported!', 'layoutberg' ); ?>');
+					setTimeout(function() {
+						$button.prop('disabled', false).html(originalText);
+					}, 2000);
+				} else {
+					// Show error message
+					alert(response.data || '<?php esc_html_e( 'Export failed. Please try again.', 'layoutberg' ); ?>');
+					$button.prop('disabled', false).html(originalText);
+				}
+			},
+			error: function() {
+				alert('<?php esc_html_e( 'Export failed. Please check your connection and try again.', 'layoutberg' ); ?>');
+				$button.prop('disabled', false).html(originalText);
+			}
+		});
 	});
 
 	// Print Report
@@ -601,10 +712,37 @@ jQuery(document).ready(function($) {
 	color: var(--lberg-gray-500);
 }
 
+/* Style for disabled select options */
+#period-selector option:disabled {
+	color: #9ca3af;
+	font-style: italic;
+}
+
+.layoutberg-alert-warning {
+	background-color: #fef3c7;
+	border-color: #f59e0b;
+	color: #92400e;
+}
+
+.layoutberg-alert-warning .dashicons-warning {
+	color: #f59e0b;
+}
+
+/* Spinning animation for loading states */
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+.dashicons.spin {
+	animation: spin 1s linear infinite;
+}
+
 @media print {
 	.layoutberg-header-actions,
 	#export-csv,
-	#print-report {
+	#print-report,
+	.layoutberg-alert-warning {
 		display: none;
 	}
 	

@@ -150,7 +150,26 @@ $health_score = count( $health_checks ) / count( $system_status ) * 100;
 					<img src="<?php echo esc_url( LAYOUTBERG_PLUGIN_URL . 'assets/images/layoutberg-logo.png' ); ?>" alt="<?php esc_attr_e( 'LayoutBerg Logo', 'layoutberg' ); ?>" />
 				</div>
 				<div>
-					<h1><?php esc_html_e( 'LayoutBerg Dashboard', 'layoutberg' ); ?></h1>
+					<h1>
+						<?php esc_html_e( 'LayoutBerg Dashboard', 'layoutberg' ); ?>
+						<?php 
+						// Display current plan badge
+						$plan_name = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_plan_name();
+						$badge_color = 'secondary';
+						if ( strpos( strtolower( $plan_name ), 'agency' ) !== false ) {
+							$badge_color = 'primary';
+						} elseif ( strpos( strtolower( $plan_name ), 'professional' ) !== false ) {
+							$badge_color = 'success';
+						} elseif ( strpos( strtolower( $plan_name ), 'starter' ) !== false ) {
+							$badge_color = 'info';
+						} elseif ( strpos( strtolower( $plan_name ), 'expired' ) !== false ) {
+							$badge_color = 'warning';
+						}
+						?>
+						<span class="layoutberg-badge layoutberg-badge-<?php echo esc_attr( $badge_color ); ?>" style="font-size: 14px; margin-left: 12px; vertical-align: middle;">
+							<?php echo esc_html( $plan_name ); ?>
+						</span>
+					</h1>
 					<p><?php esc_html_e( 'AI-powered layout designer for WordPress', 'layoutberg' ); ?></p>
 				</div>
 			</div>
