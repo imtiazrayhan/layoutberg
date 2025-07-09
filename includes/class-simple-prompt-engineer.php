@@ -41,11 +41,12 @@ class Simple_Prompt_Engineer {
 			$color_info .= "Use these colors when appropriate.\n";
 		}
 		
-		// Get user's style defaults
+		// Get user's style defaults (only for Professional/Agency plans)
 		$user_options = get_option( 'layoutberg_options', array() );
 		$style_defaults = '';
 		
-		if ( ! empty( $user_options['use_style_defaults'] ) ) {
+		if ( ! empty( $user_options['use_style_defaults'] ) && 
+			( LayoutBerg_Licensing::is_professional_plan() || LayoutBerg_Licensing::is_agency_plan() ) ) {
 			$defaults = array();
 			
 			// Typography defaults
@@ -185,7 +186,15 @@ class Simple_Prompt_Engineer {
 	 * @return string Enhanced prompt.
 	 */
 	public function enhance_user_prompt( $prompt, $options = array() ) {
-		// Just return the original prompt - no enhancement needed
+		// Apply agency user prompt template if provided
+		if ( ! empty( $options['prompt_template_id'] ) && LayoutBerg_Licensing::is_agency_plan() ) {
+			$template_prompt = $this->apply_user_prompt_template( $prompt, $options['prompt_template_id'] );
+			if ( $template_prompt ) {
+				return $template_prompt;
+			}
+		}
+		
+		// Just return the original prompt - no other enhancement needed
 		return $prompt;
 	}
 	
@@ -212,5 +221,55 @@ class Simple_Prompt_Engineer {
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Apply user-defined prompt template.
+	 *
+	 * @since 1.0.0
+	 * @param string $user_prompt Original user prompt.
+	 * @param string $template_id Template ID.
+	 * @return string|false Modified prompt or false if template not found.
+	 */
+	private function apply_user_prompt_template( $user_prompt, $template_id ) {
+		$user_id = get_current_user_id();
+		$templates = get_user_meta( $user_id, 'layoutberg_prompt_templates', true );
+		
+		if ( ! is_array( $templates ) ) {
+			return false;
+		}
+		
+		// Find the template
+		$template = null;
+		foreach ( $templates as $t ) {
+			if ( $t['id'] === $template_id ) {
+				$template = $t;
+				break;
+			}
+		}
+		
+		if ( ! $template ) {
+			return false;
+		}
+		
+		// Apply template
+		$final_prompt = $template['prompt'];
+		
+		// Replace variables if any
+		if ( ! empty( $template['variables'] ) && is_array( $template['variables'] ) ) {
+			// For now, we'll use the user prompt as the main content variable
+			$final_prompt = str_replace( '{content}', $user_prompt, $final_prompt );
+			$final_prompt = str_replace( '{prompt}', $user_prompt, $final_prompt );
+			
+			// Replace other variables with their default values
+			foreach ( $template['variables'] as $var_name => $var_value ) {
+				$final_prompt = str_replace( '{' . $var_name . '}', $var_value, $final_prompt );
+			}
+		} else {
+			// If no variables, append user prompt to template
+			$final_prompt = $template['prompt'] . "\n\n" . $user_prompt;
+		}
+		
+		return $final_prompt;
 	}
 }

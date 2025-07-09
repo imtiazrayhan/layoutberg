@@ -101,10 +101,18 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 						<span class="dashicons dashicons-admin-generic"></span>
 						<?php esc_html_e( 'Advanced', 'layoutberg' ); ?>
 					</a>
-					<a href="#style-defaults" class="layoutberg-settings-nav-item" data-tab="style-defaults">
-						<span class="dashicons dashicons-art"></span>
-						<?php esc_html_e( 'Style Defaults', 'layoutberg' ); ?>
-					</a>
+					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_professional_plan() || \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
+						<a href="#style-defaults" class="layoutberg-settings-nav-item" data-tab="style-defaults">
+							<span class="dashicons dashicons-art"></span>
+							<?php esc_html_e( 'Style Defaults', 'layoutberg' ); ?>
+						</a>
+					<?php endif; ?>
+					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
+						<a href="#agency-features" class="layoutberg-settings-nav-item" data-tab="agency-features">
+							<span class="dashicons dashicons-building"></span>
+							<?php esc_html_e( 'Agency Features', 'layoutberg' ); ?>
+						</a>
+					<?php endif; ?>
 				</nav>
 			</div>
 
@@ -637,6 +645,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						</div>
 					</div>
 
+					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_professional_plan() || \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
 					<!-- Style Defaults Tab -->
 					<div id="style-defaults" class="layoutberg-settings-tab">
 						<div class="layoutberg-card">
@@ -933,6 +942,219 @@ document.addEventListener('DOMContentLoaded', function() {
 							</div>
 						</div>
 					</div>
+					<?php endif; ?>
+
+					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
+					<!-- Agency Features Tab -->
+					<div id="agency-features" class="layoutberg-settings-tab">
+						<!-- Prompt Templates -->
+						<div class="layoutberg-card">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Prompt Engineering Templates', 'layoutberg' ); ?></h3>
+							</div>
+							
+							<div class="layoutberg-card-body">
+								<p class="layoutberg-text-muted layoutberg-mb-4">
+									<?php esc_html_e( 'Create and manage reusable prompt templates for consistent layout generation across your team.', 'layoutberg' ); ?>
+								</p>
+								
+								<div class="layoutberg-prompt-templates">
+									<div class="layoutberg-flex layoutberg-justify-between layoutberg-items-center layoutberg-mb-3">
+										<h4 class="layoutberg-font-semibold"><?php esc_html_e( 'Saved Templates', 'layoutberg' ); ?></h4>
+										<button type="button" class="layoutberg-btn layoutberg-btn-secondary" id="add-prompt-template">
+											<span class="dashicons dashicons-plus-alt2"></span>
+											<?php esc_html_e( 'Add Template', 'layoutberg' ); ?>
+										</button>
+									</div>
+									
+									<div id="prompt-templates-list" class="layoutberg-space-y-2">
+										<!-- Templates will be loaded here dynamically -->
+										<p class="layoutberg-text-muted layoutberg-text-sm">
+											<?php esc_html_e( 'No prompt templates saved yet. Click "Add Template" to create your first template.', 'layoutberg' ); ?>
+										</p>
+									</div>
+								</div>
+								
+								<!-- Prompt Template Modal -->
+								<div id="prompt-template-modal" class="layoutberg-modal" style="display: none;">
+									<div class="layoutberg-modal-content">
+										<div class="layoutberg-modal-header">
+											<h3 class="layoutberg-modal-title"><?php esc_html_e( 'Add Prompt Template', 'layoutberg' ); ?></h3>
+											<button type="button" class="layoutberg-modal-close" data-close-modal>&times;</button>
+										</div>
+										<div class="layoutberg-modal-body">
+											<div class="layoutberg-form-group">
+												<label for="template-name" class="layoutberg-label"><?php esc_html_e( 'Template Name', 'layoutberg' ); ?></label>
+												<input type="text" id="template-name" class="layoutberg-input" placeholder="<?php esc_attr_e( 'e.g., Hero Section with CTA', 'layoutberg' ); ?>" />
+											</div>
+											<div class="layoutberg-form-group">
+												<label for="template-category" class="layoutberg-label"><?php esc_html_e( 'Category', 'layoutberg' ); ?></label>
+												<select id="template-category" class="layoutberg-select">
+													<option value="hero"><?php esc_html_e( 'Hero Sections', 'layoutberg' ); ?></option>
+													<option value="features"><?php esc_html_e( 'Features', 'layoutberg' ); ?></option>
+													<option value="testimonials"><?php esc_html_e( 'Testimonials', 'layoutberg' ); ?></option>
+													<option value="cta"><?php esc_html_e( 'Call to Action', 'layoutberg' ); ?></option>
+													<option value="pricing"><?php esc_html_e( 'Pricing', 'layoutberg' ); ?></option>
+													<option value="about"><?php esc_html_e( 'About', 'layoutberg' ); ?></option>
+													<option value="contact"><?php esc_html_e( 'Contact', 'layoutberg' ); ?></option>
+													<option value="other"><?php esc_html_e( 'Other', 'layoutberg' ); ?></option>
+												</select>
+											</div>
+											<div class="layoutberg-form-group">
+												<label for="template-prompt" class="layoutberg-label"><?php esc_html_e( 'Prompt Template', 'layoutberg' ); ?></label>
+												<textarea id="template-prompt" class="layoutberg-textarea" rows="6" placeholder="<?php esc_attr_e( 'Create a hero section with {heading}, {subheading}, and a {cta_text} button...', 'layoutberg' ); ?>"></textarea>
+												<p class="layoutberg-help-text">
+													<?php esc_html_e( 'Use {variable_name} for dynamic parts that can be filled in when using the template.', 'layoutberg' ); ?>
+												</p>
+											</div>
+											<div class="layoutberg-form-group">
+												<label for="template-variables" class="layoutberg-label"><?php esc_html_e( 'Variables (optional)', 'layoutberg' ); ?></label>
+												<textarea id="template-variables" class="layoutberg-textarea" rows="3" placeholder="<?php esc_attr_e( 'heading: Main headline text&#10;subheading: Supporting text&#10;cta_text: Button text', 'layoutberg' ); ?>"></textarea>
+												<p class="layoutberg-help-text">
+													<?php esc_html_e( 'Define default values for variables. Format: variable_name: description or default value', 'layoutberg' ); ?>
+												</p>
+											</div>
+										</div>
+										<div class="layoutberg-modal-footer">
+											<button type="button" class="layoutberg-btn layoutberg-btn-secondary" data-close-modal><?php esc_html_e( 'Cancel', 'layoutberg' ); ?></button>
+											<button type="button" class="layoutberg-btn layoutberg-btn-primary" id="save-prompt-template">
+												<span class="dashicons dashicons-saved"></span>
+												<?php esc_html_e( 'Save Template', 'layoutberg' ); ?>
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<!-- Debug Mode -->
+						<div class="layoutberg-card">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Debug Mode', 'layoutberg' ); ?></h3>
+							</div>
+							
+							<div class="layoutberg-card-body">
+								<div class="layoutberg-form-group">
+									<label class="layoutberg-flex layoutberg-items-start layoutberg-gap-3">
+										<div class="layoutberg-toggle">
+											<input 
+												type="checkbox" 
+												name="layoutberg_options[debug_mode]" 
+												value="1" 
+												<?php checked( ! empty( $options['debug_mode'] ) ); ?>
+											/>
+											<span class="layoutberg-toggle-slider"></span>
+										</div>
+										<div>
+											<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Enable Debug Mode', 'layoutberg' ); ?></span>
+											<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
+												<?php esc_html_e( 'When enabled, API requests and responses will be logged for debugging purposes. Logs can be viewed in the Debug page.', 'layoutberg' ); ?>
+											</p>
+										</div>
+									</label>
+								</div>
+								
+								<div class="layoutberg-form-group">
+									<label class="layoutberg-flex layoutberg-items-start layoutberg-gap-3">
+										<div class="layoutberg-toggle">
+											<input 
+												type="checkbox" 
+												name="layoutberg_options[verbose_logging]" 
+												value="1" 
+												<?php checked( ! empty( $options['verbose_logging'] ) ); ?>
+											/>
+											<span class="layoutberg-toggle-slider"></span>
+										</div>
+										<div>
+											<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Verbose Logging', 'layoutberg' ); ?></span>
+											<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
+												<?php esc_html_e( 'Include additional details in debug logs such as token usage, processing time, and intermediate steps.', 'layoutberg' ); ?>
+											</p>
+										</div>
+									</label>
+								</div>
+								
+								<?php if ( ! empty( $options['debug_mode'] ) ) : ?>
+									<div class="layoutberg-mt-3">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg-debug' ) ); ?>" class="layoutberg-btn layoutberg-btn-secondary">
+											<span class="dashicons dashicons-visibility"></span>
+											<?php esc_html_e( 'View Debug Logs', 'layoutberg' ); ?>
+										</a>
+									</div>
+								<?php endif; ?>
+							</div>
+						</div>
+						
+						<!-- Advanced Multisite Settings -->
+						<?php if ( is_multisite() ) : ?>
+						<div class="layoutberg-card">
+							<div class="layoutberg-card-header">
+								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Multisite Network Settings', 'layoutberg' ); ?></h3>
+							</div>
+							
+							<div class="layoutberg-card-body">
+								<div class="layoutberg-form-group">
+									<label class="layoutberg-flex layoutberg-items-start layoutberg-gap-3">
+										<div class="layoutberg-toggle">
+											<input 
+												type="checkbox" 
+												name="layoutberg_options[network_template_sharing]" 
+												value="1" 
+												<?php checked( ! empty( $options['network_template_sharing'] ) ); ?>
+											/>
+											<span class="layoutberg-toggle-slider"></span>
+										</div>
+										<div>
+											<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Enable Network-wide Template Sharing', 'layoutberg' ); ?></span>
+											<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
+												<?php esc_html_e( 'Allow templates to be shared across all sites in the network. Network admins can manage shared templates.', 'layoutberg' ); ?>
+											</p>
+										</div>
+									</label>
+								</div>
+								
+								<div class="layoutberg-form-group">
+									<label class="layoutberg-flex layoutberg-items-start layoutberg-gap-3">
+										<div class="layoutberg-toggle">
+											<input 
+												type="checkbox" 
+												name="layoutberg_options[network_settings_sync]" 
+												value="1" 
+												<?php checked( ! empty( $options['network_settings_sync'] ) ); ?>
+											/>
+											<span class="layoutberg-toggle-slider"></span>
+										</div>
+										<div>
+											<span class="layoutberg-label" style="margin-bottom: 0;"><?php esc_html_e( 'Sync Settings Across Network', 'layoutberg' ); ?></span>
+											<p class="layoutberg-help-text" style="margin-top: 0.25rem;">
+												<?php esc_html_e( 'Synchronize plugin settings across all sites in the network. Individual sites can still override specific settings.', 'layoutberg' ); ?>
+											</p>
+										</div>
+									</label>
+								</div>
+								
+								<div class="layoutberg-form-group">
+									<label for="network_api_limit" class="layoutberg-label">
+										<?php esc_html_e( 'Network API Request Limit', 'layoutberg' ); ?>
+									</label>
+									<input 
+										type="number" 
+										id="network_api_limit" 
+										name="layoutberg_options[network_api_limit]" 
+										value="<?php echo esc_attr( $options['network_api_limit'] ?? '1000' ); ?>" 
+										class="layoutberg-input layoutberg-w-32"
+										min="100"
+										step="100"
+									/>
+									<p class="layoutberg-help-text">
+										<?php esc_html_e( 'Maximum API requests per month across all network sites. Set to 0 for unlimited.', 'layoutberg' ); ?>
+									</p>
+								</div>
+							</div>
+						</div>
+						<?php endif; ?>
+					</div>
+					<?php endif; ?>
 
 					<!-- Save Button -->
 					<div class="layoutberg-mt-4">
@@ -977,60 +1199,6 @@ document.addEventListener('DOMContentLoaded', function() {
 #temperature-value {
 	font-weight: 600;
 	color: var(--lberg-primary);
-}
-
-/* Fix toggle switch appearance */
-.layoutberg-toggle input[type="checkbox"] {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	position: absolute;
-	opacity: 0;
-	width: 0;
-	height: 0;
-}
-
-.layoutberg-toggle {
-	position: relative;
-	display: inline-block;
-	width: 48px;
-	height: 24px;
-}
-
-.layoutberg-toggle-slider {
-	position: absolute;
-	cursor: pointer;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: var(--lberg-gray-300);
-	transition: .4s;
-	border-radius: 24px;
-}
-
-.layoutberg-toggle-slider:before {
-	position: absolute;
-	content: "";
-	height: 16px;
-	width: 16px;
-	left: 4px;
-	bottom: 4px;
-	background-color: white;
-	transition: .4s;
-	border-radius: 50%;
-}
-
-.layoutberg-toggle input:checked + .layoutberg-toggle-slider {
-	background-color: var(--lberg-primary);
-}
-
-.layoutberg-toggle input:checked + .layoutberg-toggle-slider:before {
-	transform: translateX(0);
-	-webkit-transform: translateX(0);
-	-ms-transform: translateX(0);
-	right: 4px;
-	left: auto;
 }
 
 /* Remove any browser default styling */
@@ -1194,6 +1362,186 @@ jQuery(document).ready(function($) {
 		setTimeout(function() {
 			// Form will submit
 		}, 500);
+	});
+	
+	// Prompt Templates functionality
+	var promptTemplates = [];
+	var editingTemplateId = null;
+	
+	// Load saved prompt templates
+	function loadPromptTemplates() {
+		wp.apiRequest({
+			path: '/layoutberg/v1/prompt-templates',
+			method: 'GET'
+		}).done(function(response) {
+			promptTemplates = response.templates || [];
+			renderPromptTemplates();
+		}).fail(function() {
+			console.error('Failed to load prompt templates');
+		});
+	}
+	
+	// Render prompt templates list
+	function renderPromptTemplates() {
+		var $list = $('#prompt-templates-list');
+		$list.empty();
+		
+		if (promptTemplates.length === 0) {
+			$list.html('<p class="layoutberg-text-muted layoutberg-text-sm"><?php esc_html_e( 'No prompt templates saved yet. Click "Add Template" to create your first template.', 'layoutberg' ); ?></p>');
+			return;
+		}
+		
+		promptTemplates.forEach(function(template) {
+			var $item = $('<div class="layoutberg-prompt-template-item layoutberg-card layoutberg-mb-2" />');
+			$item.html(`
+				<div class="layoutberg-flex layoutberg-justify-between layoutberg-items-start">
+					<div class="layoutberg-flex-1">
+						<h5 class="layoutberg-font-semibold layoutberg-mb-1">${template.name}</h5>
+						<p class="layoutberg-text-sm layoutberg-text-muted layoutberg-mb-1">
+							<span class="layoutberg-badge layoutberg-badge-secondary">${template.category}</span>
+							${template.variables ? '<span class="layoutberg-ml-2">' + Object.keys(template.variables).length + ' variables</span>' : ''}
+						</p>
+						<p class="layoutberg-text-sm layoutberg-text-muted">${template.prompt.substring(0, 100)}${template.prompt.length > 100 ? '...' : ''}</p>
+					</div>
+					<div class="layoutberg-flex layoutberg-gap-2">
+						<button type="button" class="layoutberg-btn layoutberg-btn-sm layoutberg-btn-secondary edit-template" data-id="${template.id}">
+							<span class="dashicons dashicons-edit"></span>
+						</button>
+						<button type="button" class="layoutberg-btn layoutberg-btn-sm layoutberg-btn-danger delete-template" data-id="${template.id}">
+							<span class="dashicons dashicons-trash"></span>
+						</button>
+					</div>
+				</div>
+			`);
+			$list.append($item);
+		});
+	}
+	
+	// Show prompt template modal
+	$('#add-prompt-template').on('click', function() {
+		editingTemplateId = null;
+		$('#prompt-template-modal').find('.layoutberg-modal-title').text('<?php esc_html_e( 'Add Prompt Template', 'layoutberg' ); ?>');
+		$('#template-name').val('');
+		$('#template-category').val('hero');
+		$('#template-prompt').val('');
+		$('#template-variables').val('');
+		$('#prompt-template-modal').show();
+	});
+	
+	// Edit template
+	$(document).on('click', '.edit-template', function() {
+		var templateId = $(this).data('id');
+		var template = promptTemplates.find(t => t.id === templateId);
+		if (!template) return;
+		
+		editingTemplateId = templateId;
+		$('#prompt-template-modal').find('.layoutberg-modal-title').text('<?php esc_html_e( 'Edit Prompt Template', 'layoutberg' ); ?>');
+		$('#template-name').val(template.name);
+		$('#template-category').val(template.category);
+		$('#template-prompt').val(template.prompt);
+		
+		// Format variables for display
+		if (template.variables) {
+			var variablesText = Object.entries(template.variables)
+				.map(([key, value]) => `${key}: ${value}`)
+				.join('\n');
+			$('#template-variables').val(variablesText);
+		} else {
+			$('#template-variables').val('');
+		}
+		
+		$('#prompt-template-modal').show();
+	});
+	
+	// Delete template
+	$(document).on('click', '.delete-template', function() {
+		if (!confirm('<?php esc_html_e( 'Are you sure you want to delete this template?', 'layoutberg' ); ?>')) {
+			return;
+		}
+		
+		var templateId = $(this).data('id');
+		
+		wp.apiRequest({
+			path: '/layoutberg/v1/prompt-templates/' + templateId,
+			method: 'DELETE'
+		}).done(function() {
+			loadPromptTemplates();
+		}).fail(function() {
+			alert('<?php esc_html_e( 'Failed to delete template', 'layoutberg' ); ?>');
+		});
+	});
+	
+	// Save prompt template
+	$('#save-prompt-template').on('click', function() {
+		var name = $('#template-name').val().trim();
+		var category = $('#template-category').val();
+		var prompt = $('#template-prompt').val().trim();
+		var variablesText = $('#template-variables').val().trim();
+		
+		if (!name || !prompt) {
+			alert('<?php esc_html_e( 'Please fill in all required fields', 'layoutberg' ); ?>');
+			return;
+		}
+		
+		// Parse variables
+		var variables = {};
+		if (variablesText) {
+			variablesText.split('\n').forEach(function(line) {
+				var parts = line.split(':');
+				if (parts.length >= 2) {
+					var key = parts[0].trim();
+					var value = parts.slice(1).join(':').trim();
+					if (key) {
+						variables[key] = value;
+					}
+				}
+			});
+		}
+		
+		var data = {
+			name: name,
+			category: category,
+			prompt: prompt,
+			variables: Object.keys(variables).length > 0 ? variables : null
+		};
+		
+		var method = editingTemplateId ? 'PUT' : 'POST';
+		var path = editingTemplateId 
+			? '/layoutberg/v1/prompt-templates/' + editingTemplateId 
+			: '/layoutberg/v1/prompt-templates';
+		
+		wp.apiRequest({
+			path: path,
+			method: method,
+			data: data
+		}).done(function() {
+			$('#prompt-template-modal').hide();
+			loadPromptTemplates();
+		}).fail(function() {
+			alert('<?php esc_html_e( 'Failed to save template', 'layoutberg' ); ?>');
+		});
+	});
+	
+	// Close modal
+	$('[data-close-modal]').on('click', function() {
+		$(this).closest('.layoutberg-modal').hide();
+	});
+	
+	// Close modal on background click
+	$('.layoutberg-modal').on('click', function(e) {
+		if ($(e.target).hasClass('layoutberg-modal')) {
+			$(this).hide();
+		}
+	});
+	
+	// Load templates if on agency features tab
+	if (window.location.hash === '#agency-features') {
+		loadPromptTemplates();
+	}
+	
+	// Load templates when switching to agency features tab
+	$('.layoutberg-settings-nav-item[data-tab="agency-features"]').on('click', function() {
+		loadPromptTemplates();
 	});
 });
 </script>

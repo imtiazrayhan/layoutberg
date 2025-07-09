@@ -487,6 +487,7 @@ class API_Client {
 	private function make_api_request_with_retry( $request_body ) {
 		$attempt = 0;
 		$last_error = null;
+		$start_time = microtime( true );
 
 		while ( $attempt < $this->max_retries ) {
 			$attempt++;
@@ -547,6 +548,23 @@ class API_Client {
 			// Handle rate limiting (429) and server errors (5xx).
 			if ( in_array( $response_code, array( 429, 500, 502, 503, 504 ), true ) ) {
 				$error_message = $this->get_error_message_from_response( $data, $response_code );
+				
+				// Log error to debug logger
+				if ( class_exists( '\DotCamp\LayoutBerg\Debug_Logger' ) ) {
+					Debug_Logger::log_api_request( array(
+						'provider'        => $this->provider,
+						'model'           => $this->model,
+						'request_data'    => $request_body,
+						'response_data'   => $data,
+						'error_message'   => $error_message,
+						'processing_time' => microtime( true ) - $start_time,
+						'log_level'       => 'error',
+						'metadata'        => array(
+							'response_code' => $response_code,
+							'attempt'       => $attempt,
+						),
+					) );
+				}
 				$last_error = new \WP_Error( 'api_error_' . $response_code, $error_message );
 				
 				$this->security->log_security_event( 'api_rate_limit_or_server_error', array(
@@ -612,11 +630,30 @@ class API_Client {
 					error_log( 'LayoutBerg Raw API Usage: ' . json_encode( $data['usage'] ) );
 				}
 				
-				return array(
+				$result = array(
 					'content' => $data['content'][0]['text'],
 					'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
 					'raw_response' => $data,
 				);
+				
+				// Log successful request
+				if ( class_exists( '\DotCamp\LayoutBerg\Debug_Logger' ) ) {
+					Debug_Logger::log_api_request( array(
+						'provider'        => $this->provider,
+						'model'           => $this->model,
+						'request_data'    => $request_body,
+						'response_data'   => Debug_Logger::is_verbose() ? $data : array( 'usage' => $data['usage'] ?? null ),
+						'tokens_used'     => isset( $data['usage']['total_tokens'] ) ? $data['usage']['total_tokens'] : 0,
+						'processing_time' => microtime( true ) - $start_time,
+						'log_level'       => 'info',
+						'metadata'        => array(
+							'response_code' => $response_code,
+							'attempt'       => $attempt,
+						),
+					) );
+				}
+				
+				return $result;
 			} else {
 				// OpenAI response format
 				if ( ! isset( $data['choices'][0]['message']['content'] ) ) {
@@ -628,11 +665,30 @@ class API_Client {
 					error_log( 'LayoutBerg Raw API Usage: ' . json_encode( $data['usage'] ) );
 				}
 				
-				return array(
+				$result = array(
 					'content' => $data['choices'][0]['message']['content'],
 					'usage'   => isset( $data['usage'] ) ? $data['usage'] : array(),
 					'raw_response' => $data,
 				);
+				
+				// Log successful request
+				if ( class_exists( '\DotCamp\LayoutBerg\Debug_Logger' ) ) {
+					Debug_Logger::log_api_request( array(
+						'provider'        => $this->provider,
+						'model'           => $this->model,
+						'request_data'    => $request_body,
+						'response_data'   => Debug_Logger::is_verbose() ? $data : array( 'usage' => $data['usage'] ?? null ),
+						'tokens_used'     => isset( $data['usage']['total_tokens'] ) ? $data['usage']['total_tokens'] : 0,
+						'processing_time' => microtime( true ) - $start_time,
+						'log_level'       => 'info',
+						'metadata'        => array(
+							'response_code' => $response_code,
+							'attempt'       => $attempt,
+						),
+					) );
+				}
+				
+				return $result;
 			}
 		}
 

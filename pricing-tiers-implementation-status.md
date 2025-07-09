@@ -21,21 +21,21 @@ _Perfect for individual bloggers and content creators_
 
 _Ideal for agencies and professional developers_
 
-| Feature                                                                                                            | Backend | UI  | Status                      |
-| ------------------------------------------------------------------------------------------------------------------ | ------- | --- | --------------------------- |
-| Everything in Starter                                                                                              | ✅      | ✅  | **Fully Implemented**       |
-| Access to all AI models (OpenAI: GPT-3.5, GPT-4, GPT-4 Turbo, GPT-4o \| Claude: Opus, Sonnet, Haiku)               | ✅      | ✅  | **Fully Implemented**       |
-| Unlimited template saving                                                                                          | ✅      | ✅  | **Fully Implemented**       |
-| All template categories (General, Business, Creative, E-commerce, Blog/Magazine, Portfolio, Landing Pages, Custom) | ✅      | ✅  | **Fully Implemented**       |
-| Template import (JSON format)                                                                                      | ✅      | ✅  | **Fully Implemented**       |
-| Template export (JSON format)                                                                                      | ✅      | ✅  | **Fully Implemented**       |
-| Advanced generation options (temperature control, max tokens adjustment)                                           | ✅      | ✅  | **Fully Implemented**       |
-| Pattern variations support                                                                                         | ✅      | ✅  | **Fully Implemented**       |
-| Block variations support                                                                                           | ✅      | ✅  | **Fully Implemented**       |
-| Full generation history (unlimited)                                                                                | ✅      | ✅  | **Fully Implemented**       |
-| Detailed usage analytics with cost tracking                                                                        | ✅      | ✅  | **Fully Implemented**       |
-| Cache management controls                                                                                          | ✅      | ✅  | **Fully Implemented**       |
-| Priority email support                                                                                             | N/A     | N/A | **Business Process**        |
+| Feature                                                                                                            | Backend | UI  | Status                |
+| ------------------------------------------------------------------------------------------------------------------ | ------- | --- | --------------------- |
+| Everything in Starter                                                                                              | ✅      | ✅  | **Fully Implemented** |
+| Access to all AI models (OpenAI: GPT-3.5, GPT-4, GPT-4 Turbo, GPT-4o \| Claude: Opus, Sonnet, Haiku)               | ✅      | ✅  | **Fully Implemented** |
+| Unlimited template saving                                                                                          | ✅      | ✅  | **Fully Implemented** |
+| All template categories (General, Business, Creative, E-commerce, Blog/Magazine, Portfolio, Landing Pages, Custom) | ✅      | ✅  | **Fully Implemented** |
+| Template import (JSON format)                                                                                      | ✅      | ✅  | **Fully Implemented** |
+| Template export (JSON format)                                                                                      | ✅      | ✅  | **Fully Implemented** |
+| Advanced generation options (temperature control, max tokens adjustment)                                           | ✅      | ✅  | **Fully Implemented** |
+| Pattern variations support                                                                                         | ✅      | ✅  | **Fully Implemented** |
+| Block variations support                                                                                           | ✅      | ✅  | **Fully Implemented** |
+| Full generation history (unlimited)                                                                                | ✅      | ✅  | **Fully Implemented** |
+| Detailed usage analytics with cost tracking                                                                        | ✅      | ✅  | **Fully Implemented** |
+| Cache management controls                                                                                          | ✅      | ✅  | **Fully Implemented** |
+| Priority email support                                                                                             | N/A     | N/A | **Business Process**  |
 
 ## **Agency Plan - $49/month or $389/year**
 
@@ -133,20 +133,6 @@ _For teams managing multiple client sites_
     - Implementation: Add network admin pages
     - Create network-wide settings management
     - **Status**: Basic compatibility only, no network-specific features
-
-### Low Priority (Future Enhancement) - TODO
-
-1. **Advanced Block Customization**
-
-    - New feature development required
-    - Would need custom block attribute controls
-    - **Status**: Not implemented at all
-
-2. **Template Sharing Between Sites**
-    - Requires significant architecture changes
-    - Would need central template repository
-    - API for cross-site communication
-    - **Status**: Not implemented at all
 
 ## Freemius Feature Gatekeeping Implementation
 
@@ -542,6 +528,7 @@ This separation ensures that:
     - Falls back to actual Freemius plan name if no match found
 
 3. **Debug Tools**
+
     - Debug page available at `LayoutBerg > Debug` when `WP_DEBUG` is enabled
     - Shows comprehensive Freemius status and licensing information
     - Helps troubleshoot plan detection and feature access issues
@@ -552,9 +539,9 @@ This separation ensures that:
     - Backend: Checks both licensing AND user preference
     - Toggle control allows users to opt-in to variations
     - Variations only used when all conditions are met:
-      - User has Professional/Agency license
-      - User enables the toggle
-      - Prompt matches a predefined template
+        - User has Professional/Agency license
+        - User enables the toggle
+        - Prompt matches a predefined template
 
 ## Notes
 

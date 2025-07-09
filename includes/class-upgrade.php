@@ -39,7 +39,7 @@ class Upgrade {
 	 * @access   private
 	 * @var      string    $current_db_version    Current database version.
 	 */
-	private $current_db_version = '1.2.0';
+	private $current_db_version = '1.3.0';
 
 	/**
 	 * Run upgrade routines.
@@ -92,6 +92,7 @@ class Upgrade {
 		return array(
 			'1.1.0' => 'upgrade_1_1_0',
 			'1.2.0' => 'upgrade_1_2_0',
+			'1.3.0' => 'upgrade_1_3_0',
 		);
 	}
 
@@ -165,6 +166,47 @@ class Upgrade {
 		// Add metadata column if it doesn't exist
 		if ( ! $this->column_exists( 'layoutberg_templates', 'metadata' ) ) {
 			$wpdb->query( "ALTER TABLE $table_name ADD COLUMN metadata longtext NULL AFTER thumbnail_url" );
+		}
+	}
+
+	/**
+	 * Upgrade to version 1.3.0.
+	 * 
+	 * Adds debug logs table for agency users.
+	 *
+	 * @since    1.3.0
+	 */
+	private function upgrade_1_3_0() {
+		global $wpdb;
+
+		// Create debug logs table if it doesn't exist
+		if ( ! $this->table_exists( 'layoutberg_debug_logs' ) ) {
+			$charset_collate = $wpdb->get_charset_collate();
+			$table_name = $wpdb->prefix . 'layoutberg_debug_logs';
+			
+			$sql = "CREATE TABLE $table_name (
+				id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+				user_id bigint(20) UNSIGNED NOT NULL,
+				log_type varchar(50) NOT NULL DEFAULT 'api_request',
+				log_level varchar(20) NOT NULL DEFAULT 'info',
+				provider varchar(50) NULL,
+				model varchar(100) NULL,
+				request_data longtext NULL,
+				response_data longtext NULL,
+				error_message text NULL,
+				tokens_used int UNSIGNED DEFAULT 0,
+				processing_time float DEFAULT 0,
+				metadata longtext NULL,
+				created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				PRIMARY KEY (id),
+				KEY user_id (user_id),
+				KEY log_type (log_type),
+				KEY log_level (log_level),
+				KEY created_at (created_at)
+			) $charset_collate;";
+			
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql );
 		}
 	}
 
@@ -303,6 +345,29 @@ class Upgrade {
 			KEY date (date)
 		) $charset_collate;";
 
+		// Debug logs table
+		$table_name = $wpdb->prefix . 'layoutberg_debug_logs';
+		$sql .= "CREATE TABLE $table_name (
+			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) UNSIGNED NOT NULL,
+			log_type varchar(50) NOT NULL DEFAULT 'api_request',
+			log_level varchar(20) NOT NULL DEFAULT 'info',
+			provider varchar(50) NULL,
+			model varchar(100) NULL,
+			request_data longtext NULL,
+			response_data longtext NULL,
+			error_message text NULL,
+			tokens_used int UNSIGNED DEFAULT 0,
+			processing_time float DEFAULT 0,
+			metadata longtext NULL,
+			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY user_id (user_id),
+			KEY log_type (log_type),
+			KEY log_level (log_level),
+			KEY created_at (created_at)
+		) $charset_collate;";
+
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
@@ -325,6 +390,7 @@ class Upgrade {
 			'layoutberg_templates',
 			'layoutberg_settings',
 			'layoutberg_usage',
+			'layoutberg_debug_logs',
 		);
 
 		foreach ( $tables as $table ) {

@@ -663,12 +663,12 @@ class Admin {
 			array( $this, 'display_analytics_page' )
 		);
 
-		// Debug submenu (temporary - remove in production).
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		// Debug submenu - Only for Agency plan users.
+		if ( LayoutBerg_Licensing::is_agency_plan() ) {
 			add_submenu_page(
 				'layoutberg',
-				__( 'Debug', 'layoutberg' ),
-				__( 'Debug', 'layoutberg' ),
+				__( 'Debug Logs', 'layoutberg' ),
+				__( 'Debug Logs', 'layoutberg' ),
 				'manage_options',
 				'layoutberg-debug',
 				array( $this, 'display_debug_page' )
@@ -972,7 +972,7 @@ class Admin {
 			$sanitized['cache_duration'] = absint( $input['cache_duration'] );
 		}
 
-		// Style defaults.
+		// Style defaults (legacy format).
 		if ( isset( $input['style_defaults'] ) && is_array( $input['style_defaults'] ) ) {
 			$sanitized['style_defaults'] = array(
 				'style'   => sanitize_text_field( $input['style_defaults']['style'] ?? 'modern' ),
@@ -981,12 +981,74 @@ class Admin {
 				'density' => sanitize_text_field( $input['style_defaults']['density'] ?? 'balanced' ),
 			);
 		}
+		
+		// New style defaults fields (individual settings).
+		// Typography defaults.
+		if ( isset( $input['default_heading_size'] ) ) {
+			$sanitized['default_heading_size'] = sanitize_text_field( $input['default_heading_size'] );
+		}
+		if ( isset( $input['default_text_size'] ) ) {
+			$sanitized['default_text_size'] = sanitize_text_field( $input['default_text_size'] );
+		}
+		if ( isset( $input['default_font_weight'] ) ) {
+			$sanitized['default_font_weight'] = sanitize_text_field( $input['default_font_weight'] );
+		}
+		if ( isset( $input['default_text_align'] ) ) {
+			$sanitized['default_text_align'] = sanitize_text_field( $input['default_text_align'] );
+		}
+		
+		// Color defaults.
+		if ( isset( $input['default_text_color'] ) ) {
+			$sanitized['default_text_color'] = sanitize_text_field( $input['default_text_color'] );
+		}
+		if ( isset( $input['default_background_color'] ) ) {
+			$sanitized['default_background_color'] = sanitize_text_field( $input['default_background_color'] );
+		}
+		if ( isset( $input['default_button_color'] ) ) {
+			$sanitized['default_button_color'] = sanitize_text_field( $input['default_button_color'] );
+		}
+		if ( isset( $input['default_button_text_color'] ) ) {
+			$sanitized['default_button_text_color'] = sanitize_text_field( $input['default_button_text_color'] );
+		}
+		
+		// Layout defaults.
+		if ( isset( $input['default_content_width'] ) ) {
+			$sanitized['default_content_width'] = sanitize_text_field( $input['default_content_width'] );
+		}
+		if ( isset( $input['default_spacing'] ) ) {
+			$sanitized['default_spacing'] = sanitize_text_field( $input['default_spacing'] );
+		}
+		
+		// Style presets.
+		$sanitized['use_style_defaults'] = isset( $input['use_style_defaults'] ) && $input['use_style_defaults'] == '1';
+		if ( isset( $input['preferred_style'] ) ) {
+			$sanitized['preferred_style'] = sanitize_text_field( $input['preferred_style'] );
+		}
 
 		// Advanced settings.
 		$sanitized['allow_custom_blocks']       = isset( $input['allow_custom_blocks'] ) && $input['allow_custom_blocks'] == '1';
 		$sanitized['analytics_enabled']         = isset( $input['analytics_enabled'] ) && $input['analytics_enabled'] == '1';
 		$sanitized['debug_mode']                = isset( $input['debug_mode'] ) && $input['debug_mode'] == '1';
+		$sanitized['verbose_logging']           = isset( $input['verbose_logging'] ) && $input['verbose_logging'] == '1';
 		$sanitized['use_simplified_generation'] = isset( $input['use_simplified_generation'] ) && $input['use_simplified_generation'] == '1';
+		
+		// Multisite settings (Agency plan only).
+		if ( LayoutBerg_Licensing::is_agency_plan() ) {
+			$sanitized['network_template_sharing'] = isset( $input['network_template_sharing'] ) && $input['network_template_sharing'] == '1';
+			$sanitized['network_settings_sync']    = isset( $input['network_settings_sync'] ) && $input['network_settings_sync'] == '1';
+			if ( isset( $input['network_api_limit'] ) ) {
+				$sanitized['network_api_limit'] = absint( $input['network_api_limit'] );
+			}
+		}
+		
+		// If debug mode is being enabled, ensure the debug logs table exists
+		if ( $sanitized['debug_mode'] && ( ! isset( $options['debug_mode'] ) || ! $options['debug_mode'] ) ) {
+			require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-upgrade.php';
+			$upgrade = new Upgrade();
+			if ( ! $upgrade->table_exists( 'layoutberg_debug_logs' ) ) {
+				$upgrade->create_tables();
+			}
+		}
 
 		// Merge with existing options.
 		$options = get_option( 'layoutberg_options', array() );

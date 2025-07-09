@@ -2276,3 +2276,169 @@ body.layoutberg-dark-theme .layoutberg-textarea {
         animation: none;
     }
 }
+
+/* Prompt Templates Styles */
+.layoutberg-prompt-templates {
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+
+.layoutberg-prompt-template-item {
+    background: white;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+}
+
+.layoutberg-prompt-template-item:hover {
+    border-color: var(--lberg-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.layoutberg-prompt-template-item h5 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #1f2937;
+}
+
+.layoutberg-prompt-template-item .layoutberg-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 0.25rem;
+}
+
+.layoutberg-prompt-template-item .layoutberg-badge-secondary {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+#prompt-template-modal .layoutberg-modal-content {
+    max-width: 600px;
+}
+
+#prompt-template-modal .layoutberg-form-group {
+    margin-bottom: 1.25rem;
+}
+
+#prompt-template-modal .layoutberg-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+#prompt-template-modal .layoutberg-input,
+#prompt-template-modal .layoutberg-select,
+#prompt-template-modal .layoutberg-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: border-color 0.15s;
+}
+
+#prompt-template-modal .layoutberg-input:focus,
+#prompt-template-modal .layoutberg-select:focus,
+#prompt-template-modal .layoutberg-textarea:focus {
+    outline: none;
+    border-color: var(--lberg-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+#prompt-template-modal .layoutberg-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+#prompt-template-modal .layoutberg-help-text {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.layoutberg-btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.813rem;
+}
+
+.layoutberg-btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.layoutberg-btn-danger:hover {
+    background: #dc2626;
+}
+
+.edit-template,
+.delete-template {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-template .dashicons,
+.delete-template .dashicons {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+}
+
+/* Agency Features Tab Specific */
+.layoutberg-w-32 {
+    width: 8rem;
+}
+
+.layoutberg-space-y-2 > * + * {
+    margin-top: 0.5rem;
+}
+
+.layoutberg-gap-2 {
+    gap: 0.5rem;
+}
+
+.layoutberg-items-start {
+    align-items: flex-start;
+}
+
+.layoutberg-flex-1 {
+    flex: 1;
+}
+
+/* Mobile responsiveness for prompt templates */
+@media (max-width: 768px) {
+    #prompt-template-modal .layoutberg-modal-content {
+        width: 95%;
+        max-width: none;
+    }
+    
+    .layoutberg-prompt-template-item {
+        padding: 0.75rem;
+    }
+    
+    .layoutberg-prompt-template-item h5 {
+        font-size: 0.875rem;
+    }
+    
+    .layoutberg-prompt-template-item .layoutberg-flex {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .layoutberg-prompt-template-item .layoutberg-flex-1 {
+        width: 100%;
+    }
+    
+    .edit-template,
+    .delete-template {
+        width: 28px;
+        height: 28px;
+    }
+}

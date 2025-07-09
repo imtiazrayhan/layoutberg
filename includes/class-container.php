@@ -279,6 +279,14 @@ class Container {
 			}
 		);
 
+		// Register debug logger as singleton
+		$this->singleton(
+			'DotCamp\LayoutBerg\Debug_Logger',
+			function () {
+				return new Debug_Logger();
+			}
+		);
+
 		// Register template manager as singleton
 		$this->singleton(
 			'DotCamp\LayoutBerg\Template_Manager',

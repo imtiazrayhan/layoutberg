@@ -154,6 +154,71 @@ class API_Handler {
 				),
 			)
 		);
+
+		// Prompt templates endpoints (Agency plan only).
+		// Get all prompt templates.
+		register_rest_route(
+			$this->namespace,
+			'/prompt-templates',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_prompt_templates' ),
+				'permission_callback' => array( $this, 'check_agency_permission' ),
+			)
+		);
+
+		// Create new prompt template.
+		register_rest_route(
+			$this->namespace,
+			'/prompt-templates',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'create_prompt_template' ),
+				'permission_callback' => array( $this, 'check_agency_permission' ),
+				'args'                => $this->get_prompt_template_args(),
+			)
+		);
+
+		// Update prompt template.
+		register_rest_route(
+			$this->namespace,
+			'/prompt-templates/(?P<id>\d+)',
+			array(
+				'methods'             => 'PUT',
+				'callback'            => array( $this, 'update_prompt_template' ),
+				'permission_callback' => array( $this, 'check_agency_permission' ),
+				'args'                => array_merge(
+					array(
+						'id' => array(
+							'required'          => true,
+							'validate_callback' => function( $param ) {
+								return is_numeric( $param );
+							},
+						),
+					),
+					$this->get_prompt_template_args()
+				),
+			)
+		);
+
+		// Delete prompt template.
+		register_rest_route(
+			$this->namespace,
+			'/prompt-templates/(?P<id>\d+)',
+			array(
+				'methods'             => 'DELETE',
+				'callback'            => array( $this, 'delete_prompt_template' ),
+				'permission_callback' => array( $this, 'check_agency_permission' ),
+				'args'                => array(
+					'id' => array(
+						'required'          => true,
+						'validate_callback' => function( $param ) {
+							return is_numeric( $param );
+						},
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -526,6 +591,16 @@ class API_Handler {
 	}
 
 	/**
+	 * Check permission for agency-only endpoints.
+	 *
+	 * @since 1.0.0
+	 * @return bool True if user has permission.
+	 */
+	public function check_agency_permission() {
+		return current_user_can( 'layoutberg_configure' ) && LayoutBerg_Licensing::is_agency_plan();
+	}
+
+	/**
 	 * Get arguments for generate endpoint.
 	 *
 	 * @since 1.0.0
@@ -640,5 +715,189 @@ class API_Handler {
 				'default'  => false,
 			),
 		);
+	}
+
+	/**
+	 * Get arguments for prompt template endpoints.
+	 *
+	 * @since 1.0.0
+	 * @return array Endpoint arguments.
+	 */
+	private function get_prompt_template_args() {
+		return array(
+			'name' => array(
+				'required'          => true,
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function( $param ) {
+					return ! empty( $param ) && strlen( $param ) <= 100;
+				},
+			),
+			'category' => array(
+				'required'          => true,
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function( $param ) {
+					return in_array( $param, array( 'hero', 'features', 'testimonials', 'cta', 'pricing', 'about', 'contact', 'other' ), true );
+				},
+			),
+			'prompt' => array(
+				'required'          => true,
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_textarea_field',
+				'validate_callback' => function( $param ) {
+					return ! empty( $param );
+				},
+			),
+			'variables' => array(
+				'required' => false,
+				'type'     => 'object',
+				'default'  => null,
+			),
+		);
+	}
+
+	/**
+	 * Get all prompt templates.
+	 *
+	 * @since 1.0.0
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response Response object.
+	 */
+	public function get_prompt_templates( $request ) {
+		$user_id = get_current_user_id();
+		
+		// Get templates from user meta
+		$templates = get_user_meta( $user_id, 'layoutberg_prompt_templates', true );
+		if ( ! is_array( $templates ) ) {
+			$templates = array();
+		}
+
+		return rest_ensure_response( array(
+			'templates' => $templates,
+			'count'     => count( $templates ),
+		) );
+	}
+
+	/**
+	 * Create a new prompt template.
+	 *
+	 * @since 1.0.0
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error Response object.
+	 */
+	public function create_prompt_template( $request ) {
+		$user_id = get_current_user_id();
+		
+		// Get existing templates
+		$templates = get_user_meta( $user_id, 'layoutberg_prompt_templates', true );
+		if ( ! is_array( $templates ) ) {
+			$templates = array();
+		}
+
+		// Create new template
+		$template = array(
+			'id'        => uniqid( 'pt_' ),
+			'name'      => $request->get_param( 'name' ),
+			'category'  => $request->get_param( 'category' ),
+			'prompt'    => $request->get_param( 'prompt' ),
+			'variables' => $request->get_param( 'variables' ),
+			'created'   => current_time( 'mysql' ),
+			'updated'   => current_time( 'mysql' ),
+		);
+
+		// Add to templates array
+		$templates[] = $template;
+
+		// Save back to user meta
+		update_user_meta( $user_id, 'layoutberg_prompt_templates', $templates );
+
+		return rest_ensure_response( array(
+			'success'  => true,
+			'template' => $template,
+		) );
+	}
+
+	/**
+	 * Update an existing prompt template.
+	 *
+	 * @since 1.0.0
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error Response object.
+	 */
+	public function update_prompt_template( $request ) {
+		$user_id     = get_current_user_id();
+		$template_id = $request->get_param( 'id' );
+		
+		// Get existing templates
+		$templates = get_user_meta( $user_id, 'layoutberg_prompt_templates', true );
+		if ( ! is_array( $templates ) ) {
+			return new WP_Error( 'template_not_found', __( 'Template not found', 'layoutberg' ), array( 'status' => 404 ) );
+		}
+
+		// Find and update the template
+		$found = false;
+		foreach ( $templates as &$template ) {
+			if ( $template['id'] === $template_id ) {
+				$template['name']      = $request->get_param( 'name' );
+				$template['category']  = $request->get_param( 'category' );
+				$template['prompt']    = $request->get_param( 'prompt' );
+				$template['variables'] = $request->get_param( 'variables' );
+				$template['updated']   = current_time( 'mysql' );
+				$found = true;
+				break;
+			}
+		}
+
+		if ( ! $found ) {
+			return new WP_Error( 'template_not_found', __( 'Template not found', 'layoutberg' ), array( 'status' => 404 ) );
+		}
+
+		// Save back to user meta
+		update_user_meta( $user_id, 'layoutberg_prompt_templates', $templates );
+
+		return rest_ensure_response( array(
+			'success' => true,
+			'message' => __( 'Template updated successfully', 'layoutberg' ),
+		) );
+	}
+
+	/**
+	 * Delete a prompt template.
+	 *
+	 * @since 1.0.0
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error Response object.
+	 */
+	public function delete_prompt_template( $request ) {
+		$user_id     = get_current_user_id();
+		$template_id = $request->get_param( 'id' );
+		
+		// Get existing templates
+		$templates = get_user_meta( $user_id, 'layoutberg_prompt_templates', true );
+		if ( ! is_array( $templates ) ) {
+			return new WP_Error( 'template_not_found', __( 'Template not found', 'layoutberg' ), array( 'status' => 404 ) );
+		}
+
+		// Filter out the template to delete
+		$filtered_templates = array_filter( $templates, function( $template ) use ( $template_id ) {
+			return $template['id'] !== $template_id;
+		} );
+
+		// Check if template was actually deleted
+		if ( count( $filtered_templates ) === count( $templates ) ) {
+			return new WP_Error( 'template_not_found', __( 'Template not found', 'layoutberg' ), array( 'status' => 404 ) );
+		}
+
+		// Re-index array
+		$filtered_templates = array_values( $filtered_templates );
+
+		// Save back to user meta
+		update_user_meta( $user_id, 'layoutberg_prompt_templates', $filtered_templates );
+
+		return rest_ensure_response( array(
+			'success' => true,
+			'message' => __( 'Template deleted successfully', 'layoutberg' ),
+		) );
 	}
 }
