@@ -47,41 +47,31 @@ Always prioritize:
 
 ## Task Management
 
-### CRITICAL: Always Update TASKS.md
+### Working with GitHub Issues
 
-When working on any tasks:
+We use GitHub issues to track work and tasks. When working on any features or fixes:
 
 1. **Before starting work:**
+    - Read the relevant GitHub issue (or create one if needed)
+    - Comment on the issue to indicate you're starting work
+    - Tag issues with "by-claude" when creating them
 
-    - Check TASKS.md to see current task status
-    - Identify which tasks you'll be working on
+2. **During development:**
+    - Reference the issue number in your commits (e.g., "Fix #123: Add feature")
+    - Update the issue with progress comments if working on complex features
+    - Ask for clarification in the issue if requirements are unclear
 
-2. **After completing tasks:**
+3. **After completing work:**
+    - Ensure your PR description includes "Fixes #[issue-number]"
+    - The issue will be automatically closed when the PR is merged
 
-    - IMMEDIATELY update TASKS.md to mark tasks as completed with [x]
-    - Update the progress counts at the bottom of the file
-    - Calculate new percentages accurately
+### Task Tracking Best Practices
 
-3. **Commit task updates:**
-
-    - Create a separate commit for TASKS.md updates
-    - Use commit message format: "docs: Update TASKS.md progress - [brief description]"
-    - This helps track when tasks were completed
-
-4. **Example workflow:**
-    ```bash
-    # After completing prompt engineering tasks
-    git add TASKS.md
-    git commit -m "docs: Update TASKS.md progress - completed prompt engineering tasks"
-    ```
-
-### Task Tracking Rules
-
--   Mark tasks with [x] only when FULLY completed
--   If a task is partially done, leave it as [ ] and add a note
--   Update both individual task counts AND total progress
--   Use 🚧 for tasks currently in progress
--   Use ❌ for blocked tasks with a note explaining why
+-   Break down complex features into smaller, manageable tasks
+-   Use GitHub issue labels to categorize work (bug, feature, enhancement)
+-   Link related issues and PRs for better tracking
+-   Document any blockers or dependencies in issue comments
+-   Use milestones for grouping related issues
 
 ---
 
@@ -601,8 +591,8 @@ register_rest_route( 'layoutberg/v1', '/generate', array(
 3. **Test thoroughly** before marking tasks complete
 4. **Document** any deviations from these guidelines
 5. **Ask for clarification** when requirements are unclear
-6. **UPDATE TASKS.md** whenever you complete tasks - mark completed items with [x] and update progress counts
-7. **Create a commit** specifically for TASKS.md updates to track progress
+6. **Track progress** in GitHub issues with clear status updates
+7. **Reference issue numbers** in commits and PRs for better traceability
 
 ## Quick Reference Commands
 
@@ -628,4 +618,4 @@ composer install --no-dev
 
 Remember: Quality over speed. A well-tested, secure feature is better than a quickly implemented one.
 
-Last Updated: 2024-01-20
+Last Updated: 2025-01-08
