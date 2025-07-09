@@ -1332,11 +1332,10 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10002;
+    z-index: 100000;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
@@ -1345,6 +1344,17 @@
 .layoutberg-modal.active {
     opacity: 1;
     visibility: visible;
+}
+
+.layoutberg-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: -1;
 }
 
 .layoutberg-modal-content {
@@ -1363,10 +1373,80 @@
     transform: scale(1);
 }
 
+/* Animation for pricing plans */
+.layoutberg-modal.active .layoutberg-pricing-plan {
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.layoutberg-modal.active .layoutberg-pricing-plan:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.layoutberg-modal.active .layoutberg-pricing-plan:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.layoutberg-modal.active .layoutberg-pricing-plan:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.layoutberg-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: var(--lberg-gray-50);
+    border-bottom: 1px solid var(--lberg-border);
+}
+
+.layoutberg-modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--lberg-text-primary);
+}
+
+.layoutberg-modal-close {
+    background: white;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--lberg-text-secondary);
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.layoutberg-modal-close:hover {
+    background: var(--lberg-gray-100);
+    color: var(--lberg-text-primary);
+    transform: rotate(90deg);
+}
+
 /* Pricing modal needs more width */
 #layoutberg-pricing-modal .layoutberg-modal-content {
-    max-width: 1200px;
+    max-width: 1100px;
     width: 95%;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
 /* Charts */
@@ -1568,6 +1648,23 @@ body.layoutberg-dark-theme .layoutberg-textarea {
     }
 }
 
+/* Upsell/Lock Elements - Cursor Pointer */
+.layoutberg-pricing-trigger,
+.export-template-locked,
+.layoutberg-upgrade-button,
+.button.disabled.layoutberg-pricing-trigger,
+.layoutberg-locked-feature,
+[data-feature][data-required-plan] {
+    cursor: pointer !important;
+}
+
+/* Hover effect for locked buttons */
+.layoutberg-pricing-trigger:hover,
+.button.disabled.layoutberg-pricing-trigger:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
 /* Utility Classes */
 .layoutberg-text-center { text-align: center; }
 .layoutberg-text-right { text-align: right; }
@@ -1671,14 +1768,27 @@ body.layoutberg-dark-theme .layoutberg-textarea {
 
 /* Pricing Modal Styles */
 .layoutberg-pricing-modal-content {
-    max-width: 1200px;
+    max-width: 1100px;
     width: 95%;
+    padding: 0;
+    margin: 2rem auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.layoutberg-modal-body {
     padding: 2rem;
 }
 
 .layoutberg-pricing-intro {
     text-align: center;
     margin-bottom: 2rem;
+    display: none;
+}
+
+.layoutberg-pricing-intro:not(:empty) {
+    display: block;
 }
 
 .layoutberg-pricing-intro p {
@@ -1689,23 +1799,26 @@ body.layoutberg-dark-theme .layoutberg-textarea {
 
 .layoutberg-pricing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
     margin-bottom: 2rem;
 }
 
 .layoutberg-pricing-plan {
-    background: var(--lberg-bg-secondary);
-    border: 2px solid var(--lberg-border);
-    border-radius: var(--lberg-radius-lg);
-    padding: 1.5rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.25rem;
     position: relative;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 450px;
 }
 
 .layoutberg-pricing-plan:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: var(--lberg-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .layoutberg-pricing-popular {
@@ -1719,7 +1832,18 @@ body.layoutberg-dark-theme .layoutberg-textarea {
 
 .layoutberg-pricing-highlight {
     border-color: var(--lberg-primary);
-    background: rgba(0, 123, 186, 0.05);
+    background: #f8faff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    animation: highlightPulse 2s ease-in-out;
+}
+
+@keyframes highlightPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
 }
 
 .layoutberg-pricing-current {
@@ -1748,13 +1872,14 @@ body.layoutberg-dark-theme .layoutberg-textarea {
 .layoutberg-pricing-header {
     text-align: center;
     margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--lberg-border);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .layoutberg-pricing-header h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
     color: var(--lberg-text-primary);
 }
 
@@ -1766,9 +1891,9 @@ body.layoutberg-dark-theme .layoutberg-textarea {
 }
 
 .layoutberg-price-amount {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--lberg-primary);
+    font-size: 2rem;
+    font-weight: 600;
+    color: #111827;
 }
 
 .layoutberg-price-period {
@@ -1778,14 +1903,16 @@ body.layoutberg-dark-theme .layoutberg-textarea {
 
 .layoutberg-pricing-features {
     margin-bottom: 1.5rem;
+    flex-grow: 1;
 }
 
 .layoutberg-pricing-features h4 {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    color: var(--lberg-text-secondary);
-    margin-bottom: 0.75rem;
-    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 1rem;
+    font-weight: 500;
 }
 
 .layoutberg-pricing-features ul {
@@ -1796,44 +1923,88 @@ body.layoutberg-dark-theme .layoutberg-textarea {
 
 .layoutberg-pricing-features li {
     display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    color: #4b5563;
 }
 
 .layoutberg-pricing-features .dashicons {
     flex-shrink: 0;
-    margin-top: 2px;
+    font-size: 1rem;
+    width: 20px;
+    height: 20px;
+    background: #f0fdf4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.layoutberg-pricing-features .dashicons-yes {
-    color: var(--lberg-success);
+.layoutberg-pricing-features .dashicons-yes::before {
+    color: #16a34a;
+    font-size: 12px;
 }
 
 .layoutberg-pricing-limitations .dashicons-no {
-    color: var(--lberg-danger);
+    background: #fef2f2;
+}
+
+.layoutberg-pricing-limitations .dashicons-no::before {
+    color: #dc2626;
+    font-size: 12px;
 }
 
 .layoutberg-pricing-action {
     text-align: center;
+    margin-top: auto;
 }
 
 .layoutberg-pricing-action .button {
     width: 100%;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 6px;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.layoutberg-pricing-action .button-primary {
+    background: var(--lberg-primary);
+    color: white;
+}
+
+.layoutberg-pricing-action .button-primary:hover {
+    background: var(--lberg-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.layoutberg-pricing-action .button:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .layoutberg-pricing-footer {
     text-align: center;
     padding-top: 1.5rem;
-    border-top: 1px solid var(--lberg-border);
+    margin-top: 1.5rem;
+    border-top: 1px solid #f3f4f6;
 }
 
 .layoutberg-pricing-footer p {
     margin: 0.25rem 0;
-    color: var(--lberg-text-secondary);
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.layoutberg-pricing-footer small {
+    color: #9ca3af;
+    font-size: 0.75rem;
 }
 
 .layoutberg-pricing-feature-message {
@@ -1841,12 +2012,35 @@ body.layoutberg-dark-theme .layoutberg-textarea {
     text-align: center;
 }
 
+/* Tablet responsiveness for pricing modal */
+@media (max-width: 1024px) and (min-width: 769px) {
+    #layoutberg-pricing-modal .layoutberg-modal-content {
+        max-width: 95%;
+    }
+    
+    .layoutberg-pricing-plan {
+        padding: 1rem;
+    }
+    
+    .layoutberg-pricing-features li {
+        font-size: 0.813rem;
+    }
+}
+
 /* Mobile responsiveness for pricing modal */
 @media (max-width: 768px) {
-    .layoutberg-pricing-modal-content {
-        padding: 1rem;
+    #layoutberg-pricing-modal .layoutberg-modal-content {
+        width: 95%;
         max-height: 90vh;
-        overflow-y: auto;
+        margin: 1rem auto;
+    }
+    
+    .layoutberg-modal-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .layoutberg-modal-body {
+        padding: 1.5rem;
     }
     
     .layoutberg-pricing-grid {
@@ -1854,11 +2048,29 @@ body.layoutberg-dark-theme .layoutberg-textarea {
         gap: 1rem;
     }
     
-    .layoutberg-pricing-popular {
-        transform: none;
+    .layoutberg-pricing-plan {
+        padding: 1.25rem;
     }
     
-    .layoutberg-pricing-popular:hover {
-        transform: translateY(-4px);
+    .layoutberg-pricing-popular {
+        border-width: 1px;
+    }
+    
+    .layoutberg-pricing-header h3 {
+        font-size: 1rem;
+    }
+    
+    .layoutberg-price-amount {
+        font-size: 1.75rem;
+    }
+    
+    .layoutberg-pricing-features li {
+        font-size: 0.813rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Disable animations on mobile for better performance */
+    .layoutberg-modal.active .layoutberg-pricing-plan {
+        animation: none;
     }
 }

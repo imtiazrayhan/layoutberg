@@ -34,6 +34,7 @@ if ( 'delete' === $action && $template_id && isset( $_GET['_wpnonce'] ) && wp_ve
 $current_category = isset( $_GET['category'] ) ? sanitize_text_field( $_GET['category'] ) : '';
 $search_term = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
 $paged = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
+$orderby = isset( $_GET['orderby'] ) ? sanitize_text_field( $_GET['orderby'] ) : 'created_at';
 
 // Get templates
 $args = array(
@@ -41,6 +42,8 @@ $args = array(
 	'search'   => $search_term,
 	'page'     => $paged,
 	'per_page' => 20,
+	'orderby'  => $orderby,
+	'order'    => 'DESC',
 );
 
 // Add user filter for non-admins
@@ -68,29 +71,49 @@ $categories = array_merge(
 ?>
 
 <div class="wrap layoutberg-templates">
-	<h1 class="wp-heading-inline">
-		<?php echo esc_html( get_admin_page_title() ); ?>
-	</h1>
-	
-	<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=post&layoutberg_create_template=1' ) ); ?>" class="page-title-action layoutberg-new-template" title="<?php esc_attr_e( 'Create a new layout in the editor and save it as a template', 'layoutberg' ); ?>">
-		<?php esc_html_e( 'Add New Template', 'layoutberg' ); ?>
-	</a>
-	
-	<a href="#" class="page-title-action layoutberg-import-template">
-		<?php esc_html_e( 'Import', 'layoutberg' ); ?>
-	</a>
-	
-	<hr class="wp-header-end">
-	
-	<?php if ( isset( $_GET['new'] ) && $_GET['new'] === '1' ) : ?>
-		<div class="notice notice-info is-dismissible">
-			<p><?php esc_html_e( 'To create a new template: Use the LayoutBerg AI Layout block in the editor to generate a layout, then save it as a template using the "Save as Template" button.', 'layoutberg' ); ?></p>
+	<div class="layoutberg-header-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+		<h1 class="wp-heading-inline" style="margin-bottom: 0;">
+			<?php echo esc_html( get_admin_page_title() ); ?>
+		</h1>
+		<div class="layoutberg-header-actions" style="display: flex; gap: 12px;">
+			<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=post&layoutberg_create_template=1' ) ); ?>" class="page-title-action layoutberg-new-template" title="<?php esc_attr_e( 'Create a new layout in the editor and save it as a template', 'layoutberg' ); ?>">
+				<?php esc_html_e( 'Add New Template', 'layoutberg' ); ?>
+			</a>
+			<?php 
+			// Check if user can import templates (Professional or Agency plan)
+			// Using the same method as export since import/export are related features
+			$can_import = \DotCamp\LayoutBerg\LayoutBerg_Licensing::can_export_templates();
+			
+			if ( $can_import ) : 
+			?>
+				<a href="#" class="page-title-action layoutberg-import-template">
+					<?php esc_html_e( 'Import', 'layoutberg' ); ?>
+				</a>
+			<?php else : ?>
+				<?php 
+				// Show locked import option
+				$is_expired = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_expired_monthly();
+				$button_text = $is_expired 
+					? __( 'Renew to import', 'layoutberg' )
+					: __( 'Upgrade to import', 'layoutberg' );
+				$button_url = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url();
+				?>
+					<a href="<?php echo esc_url( $button_url ); ?>" class="page-title-action disabled" title="<?php echo esc_attr( $button_text ); ?>" style="opacity: 0.6; cursor: pointer;">
+						<?php esc_html_e( 'Import', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 14px; vertical-align: middle; margin-left: 2px;"></span>
+					</a>
+			<?php endif; ?>
 		</div>
-	<?php endif; ?>
-	
-	<!-- Filters -->
-	<div class="tablenav top">
-		<div class="alignleft actions">
+	</div>
+
+	<!-- Modern Filter Bar -->
+	<div class="layoutberg-filter-bar" style="background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 20px 24px; margin-bottom: 32px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; justify-content: space-between;">
+		<div class="layoutberg-filter-group" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+			<div class="layoutberg-search-container">
+				<input type="text" id="template-search" name="s" value="<?php echo esc_attr( $search_term ); ?>" placeholder="<?php esc_attr_e( 'Search templates...', 'layoutberg' ); ?>" class="layoutberg-search">
+				<button type="submit" class="button layoutberg-search-btn">
+					<span class="dashicons dashicons-search"></span>
+				</button>
+			</div>
 			<select name="category" id="filter-by-category">
 				<option value=""><?php esc_html_e( 'All Categories', 'layoutberg' ); ?></option>
 				<?php foreach ( $categories as $key => $label ) : ?>
@@ -100,65 +123,35 @@ $categories = array_merge(
 					</option>
 				<?php endforeach; ?>
 			</select>
-			<input type="submit" name="filter_action" id="post-query-submit" class="button" value="<?php esc_attr_e( 'Filter', 'layoutberg' ); ?>">
+			<select name="orderby" id="filter-by-order">
+				<option value="created_at" <?php selected( isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'created_at', 'created_at' ); ?>>
+					<?php esc_html_e( 'Date Created', 'layoutberg' ); ?>
+				</option>
+				<option value="name" <?php selected( isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'created_at', 'name' ); ?>>
+					<?php esc_html_e( 'Name', 'layoutberg' ); ?>
+				</option>
+				<option value="usage_count" <?php selected( isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'created_at', 'usage_count' ); ?>>
+					<?php esc_html_e( 'Most Used', 'layoutberg' ); ?>
+				</option>
+				<option value="updated_at" <?php selected( isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'created_at', 'updated_at' ); ?>>
+					<?php esc_html_e( 'Last Modified', 'layoutberg' ); ?>
+				</option>
+			</select>
 		</div>
-		
-		<div class="tablenav-pages">
-			<span class="displaying-num">
-				<?php
-				printf(
-					esc_html( _n( '%s template', '%s templates', $total_templates, 'layoutberg' ) ),
-					number_format_i18n( $total_templates )
-				);
-				?>
-			</span>
-			
-			<?php if ( $total_pages > 1 ) : ?>
-				<span class="pagination-links">
-					<?php
-					$base_url = add_query_arg( array(
-						'page' => 'layoutberg-templates',
-						'category' => $current_category,
-						's' => $search_term,
-					), admin_url( 'admin.php' ) );
-					
-					if ( $paged > 1 ) {
-						printf(
-							'<a class="prev-page button" href="%s"><span aria-hidden="true">&lsaquo;</span></a>',
-							esc_url( add_query_arg( 'paged', $paged - 1, $base_url ) )
-						);
-					} else {
-						echo '<span class="prev-page button disabled"><span aria-hidden="true">&lsaquo;</span></span>';
-					}
-					
-					printf(
-						'<span class="paging-input">%s</span>',
-						sprintf(
-							esc_html__( '%1$s of %2$s', 'layoutberg' ),
-							$paged,
-							$total_pages
-						)
-					);
-					
-					if ( $paged < $total_pages ) {
-						printf(
-							'<a class="next-page button" href="%s"><span aria-hidden="true">&rsaquo;</span></a>',
-							esc_url( add_query_arg( 'paged', $paged + 1, $base_url ) )
-						);
-					} else {
-						echo '<span class="next-page button disabled"><span aria-hidden="true">&rsaquo;</span></span>';
-					}
-					?>
-				</span>
-			<?php endif; ?>
+		<div class="layoutberg-template-stats" style="background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb; padding: 10px 24px; display: flex; align-items: center; gap: 8px; min-width: 120px; justify-content: center;">
+			<span class="stat-value" style="font-size: 22px; font-weight: 700; color: #111827; line-height: 1;"> <?php echo number_format_i18n( $total_templates ); ?> </span>
+			<span class="stat-label" style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;"> <?php esc_html_e( 'Total Templates', 'layoutberg' ); ?> </span>
 		</div>
-		
-		<br class="clear">
 	</div>
-	
+
+	<div style="height: 8px;"></div>
+
 	<!-- Templates Grid -->
 	<?php if ( empty( $templates ) ) : ?>
 		<div class="layoutberg-templates-empty">
+			<div class="empty-illustration">
+				<span class="dashicons dashicons-layout" style="font-size: 64px; color: #94a3b8; margin-bottom: 16px; display: block;"></span>
+			</div>
 			<h3><?php esc_html_e( 'No templates yet', 'layoutberg' ); ?></h3>
 			<p><?php esc_html_e( 'Templates let you save and reuse your AI-generated layouts.', 'layoutberg' ); ?></p>
 			<p><?php esc_html_e( 'To create your first template:', 'layoutberg' ); ?></p>
@@ -203,17 +196,32 @@ $categories = array_merge(
 						<?php endif; ?>
 						
 						<div class="template-meta">
-							<span class="template-category">
+							<span class="template-category <?php echo esc_attr( $template->category ); ?>">
 								<?php echo esc_html( $categories[ $template->category ] ?? $template->category ); ?>
 							</span>
 							
 							<?php if ( $template->usage_count > 0 ) : ?>
 								<span class="template-usage">
+									<span class="usage-icon">📊</span>
 									<?php
 									printf(
-										esc_html( _n( 'Used %s time', 'Used %s times', $template->usage_count, 'layoutberg' ) ),
+										esc_html( _n( '%s use', '%s uses', $template->usage_count, 'layoutberg' ) ),
 										number_format_i18n( $template->usage_count )
 									);
+									?>
+								</span>
+							<?php endif; ?>
+							
+							<?php if ( ! empty( $template->tags ) ) : ?>
+								<span class="template-tags">
+									<span class="tags-icon">🏷️</span>
+									<?php 
+									$tags = is_array( $template->tags ) ? $template->tags : explode( ',', $template->tags );
+									$tags = array_slice( $tags, 0, 2 ); // Show only first 2 tags
+									echo esc_html( implode( ', ', $tags ) );
+									if ( count( is_array( $template->tags ) ? $template->tags : explode( ',', $template->tags ) ) > 2 ) {
+										echo ' +' . ( count( is_array( $template->tags ) ? $template->tags : explode( ',', $template->tags ) ) - 2 );
+									}
 									?>
 								</span>
 							<?php endif; ?>
@@ -235,6 +243,10 @@ $categories = array_merge(
 										<?php esc_html_e( 'Edit', 'layoutberg' ); ?>
 									</a>
 									|
+									<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'delete', 'template_id' => $template->id ), admin_url( 'admin.php?page=layoutberg-templates' ) ), 'delete_template_' . $template->id ) ); ?>" class="delete-template" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete this template?', 'layoutberg' ); ?>');">
+										<?php esc_html_e( 'Delete', 'layoutberg' ); ?>
+									</a>
+									|
 									<?php 
 									// Check if user can export templates (Professional or Agency plan)
 									$can_export = false;
@@ -248,7 +260,6 @@ $categories = array_merge(
 										<a href="#" class="export-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
 											<?php esc_html_e( 'Export', 'layoutberg' ); ?>
 										</a>
-										|
 									<?php else : ?>
 										<?php 
 										// Show locked export option if Freemius is available
@@ -263,12 +274,8 @@ $categories = array_merge(
 											<a href="<?php echo esc_url( $button_url ); ?>" class="export-template-locked" title="<?php echo esc_attr( $button_text ); ?>">
 												<?php esc_html_e( 'Export', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 12px; vertical-align: middle;"></span>
 											</a>
-											|
 										<?php endif; ?>
 									<?php endif; ?>
-									<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'delete', 'template_id' => $template->id ), admin_url( 'admin.php?page=layoutberg-templates' ) ), 'delete_template_' . $template->id ) ); ?>" class="delete-template" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete this template?', 'layoutberg' ); ?>');">
-										<?php esc_html_e( 'Delete', 'layoutberg' ); ?>
-									</a>
 								</span>
 							<?php endif; ?>
 						</div>
@@ -378,31 +385,35 @@ $categories = array_merge(
 </div>
 
 <style>
-/* Templates Grid */
+/* Templates Grid - Enhanced Phase 1 Design */
 .layoutberg-templates-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-	gap: 20px;
-	margin-top: 20px;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 24px;
+	margin-top: 24px;
+	padding: 0;
 }
 
 .layoutberg-template-card {
-	background: #fff;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	background: white;
+	border: 1px solid #f3f4f6;
+	border-radius: 12px;
 	overflow: hidden;
-	transition: all 0.2s;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+	position: relative;
 }
 
 .layoutberg-template-card:hover {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	transform: translateY(-2px);
+	transform: translateY(-4px);
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+	border-color: #e5e7eb;
 }
 
 .template-preview {
 	position: relative;
 	padding-top: 60%;
-	background: #f5f5f5;
+	background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 	overflow: hidden;
 }
 
@@ -424,27 +435,30 @@ $categories = array_merge(
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .template-placeholder .dashicons {
 	font-size: 48px;
-	color: #ccc;
+	color: #94a3b8;
+	opacity: 0.7;
 }
 
 .template-actions {
 	position: absolute;
-	top: 10px;
-	right: 10px;
+	top: 12px;
+	right: 12px;
 	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(8px);
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: 5px;
+	gap: 6px;
 	padding: 8px;
-	border-radius: 4px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	opacity: 1;
-	transition: opacity 0.2s;
+	border-radius: 8px;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	opacity: 0;
+	transition: all 0.2s ease;
 	z-index: 10;
 }
 
@@ -455,48 +469,152 @@ $categories = array_merge(
 
 .template-actions .button {
 	font-size: 12px;
-	padding: 4px 8px;
+	padding: 6px 10px;
 	height: auto;
 	line-height: 1.2;
 	white-space: nowrap;
 	cursor: pointer;
+	border-radius: 6px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	border: 1px solid transparent;
+}
+
+.template-actions .button-primary {
+	background: #6366f1;
+	border-color: #6366f1;
+	color: white;
+}
+
+.template-actions .button-primary:hover {
+	background: #4f46e5;
+	border-color: #4f46e5;
+	transform: translateY(-1px);
+}
+
+.template-actions .button:not(.button-primary) {
+	background: white;
+	border-color: #d1d5db;
+	color: #374151;
+}
+
+.template-actions .button:not(.button-primary):hover {
+	background: #f9fafb;
+	border-color: #9ca3af;
+	transform: translateY(-1px);
 }
 
 /* Show actions on touch devices */
 @media (hover: none) and (pointer: coarse) {
 	.template-actions {
-		opacity: 0.8;
+		opacity: 0.9;
 	}
 }
 
 .template-details {
-	padding: 15px;
+	padding: 20px;
 }
 
 .template-name {
-	margin: 0 0 10px;
+	margin: 0 0 12px;
 	font-size: 16px;
 	font-weight: 600;
+	color: #111827;
+	line-height: 1.4;
 }
 
 .template-description {
-	margin: 0 0 10px;
-	color: #666;
-	font-size: 13px;
+	margin: 0 0 12px;
+	color: #6b7280;
+	font-size: 14px;
+	line-height: 1.5;
 }
 
 .template-meta {
 	display: flex;
-	gap: 15px;
-	margin-bottom: 10px;
+	gap: 12px;
+	margin-bottom: 12px;
 	font-size: 12px;
-	color: #999;
+	color: #9ca3af;
+	align-items: center;
 }
 
 .template-category {
-	background: #f0f0f0;
-	padding: 2px 8px;
-	border-radius: 3px;
+	background: #f3f4f6;
+	color: #374151;
+	padding: 4px 8px;
+	border-radius: 12px;
+	font-size: 11px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.template-category.business { 
+	background: #dbeafe; 
+	color: #1e40af; 
+}
+
+.template-category.creative { 
+	background: #fef3c7; 
+	color: #92400e; 
+}
+
+.template-category.ecommerce { 
+	background: #dcfce7; 
+	color: #166534; 
+}
+
+.template-category.portfolio { 
+	background: #f3e8ff; 
+	color: #7c3aed; 
+}
+
+.template-category.landing { 
+	background: #fef2f2; 
+	color: #dc2626; 
+}
+
+.template-category.blog { 
+	background: #ecfdf5; 
+	color: #059669; 
+}
+
+.template-category.general { 
+	background: #f1f5f9; 
+	color: #475569; 
+}
+
+.template-category.custom { 
+	background: #fef7cd; 
+	color: #a16207; 
+}
+
+.template-usage {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: #6b7280;
+	font-size: 11px;
+}
+
+.template-usage .usage-icon {
+	font-size: 10px;
+}
+
+.template-tags {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: #6b7280;
+	font-size: 11px;
+}
+
+.template-tags .tags-icon {
+	font-size: 10px;
 }
 
 .template-footer {
@@ -504,78 +622,415 @@ $categories = array_merge(
 	justify-content: space-between;
 	align-items: center;
 	font-size: 12px;
-	color: #999;
-	padding-top: 10px;
-	border-top: 1px solid #eee;
+	color: #9ca3af;
+	padding-top: 12px;
+	border-top: 1px solid #f3f4f6;
+}
+
+.template-date {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.template-date::before {
+	content: '🕒';
+	font-size: 10px;
+}
+
+.template-actions-footer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .template-actions-footer a {
-	color: #2271b1;
+	color: #6366f1;
 	text-decoration: none;
+	font-weight: 500;
+	transition: color 0.2s ease;
 }
 
 .template-actions-footer a:hover {
-	color: #135e96;
+	color: #4f46e5;
 	text-decoration: underline;
 }
 
 .template-actions-footer .export-template-locked {
 	opacity: 0.7;
+	color: #9ca3af;
+	cursor: pointer;
 }
 
 .template-actions-footer .export-template-locked:hover {
 	opacity: 1;
+	color: #6366f1;
+	cursor: pointer;
 }
 
+/* Enhanced Empty State */
 .layoutberg-templates-empty {
-	background: #fff;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	padding: 60px 40px;
+	background: white;
+	border: 2px dashed #e5e7eb;
+	border-radius: 16px;
+	padding: 80px 40px;
 	text-align: center;
-	margin-top: 20px;
+	margin-top: 24px;
 	max-width: 600px;
 	margin-left: auto;
 	margin-right: auto;
+	transition: all 0.3s ease;
+}
+
+.layoutberg-templates-empty:hover {
+	border-color: #d1d5db;
+	background: #fafafa;
 }
 
 .layoutberg-templates-empty h3 {
-	font-size: 24px;
-	margin: 0 0 20px;
-	color: #23282d;
+	font-size: 28px;
+	margin: 0 0 16px;
+	color: #111827;
+	font-weight: 700;
 }
 
 .layoutberg-templates-empty p {
 	font-size: 16px;
-	color: #666;
-	margin-bottom: 15px;
+	color: #6b7280;
+	margin-bottom: 16px;
+	line-height: 1.6;
 }
 
 .layoutberg-templates-empty ol {
 	text-align: left;
 	display: inline-block;
-	margin: 20px 0 30px;
+	margin: 24px 0 32px;
 	font-size: 14px;
+	color: #4b5563;
+	line-height: 1.8;
+}
+
+.layoutberg-templates-empty ol li {
+	margin-bottom: 8px;
 }
 
 .layoutberg-templates-empty .button-hero {
 	font-size: 16px;
-	padding: 12px 30px;
+	padding: 14px 32px;
 	height: auto;
+	border-radius: 8px;
+	font-weight: 600;
+	background: #6366f1;
+	border-color: #6366f1;
+	transition: all 0.2s ease;
 }
 
-/* Modals */
+.layoutberg-templates-empty .button-hero:hover {
+	background: #4f46e5;
+	border-color: #4f46e5;
+	transform: translateY(-2px);
+	box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+}
+
+/* Enhanced Filter Bar - Phase 2 */
+.tablenav.top {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 24px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.tablenav.top .alignleft {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+/* Enhanced Search Container */
+.layoutberg-search-container {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.layoutberg-search {
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	padding: 8px 40px 8px 12px;
+	font-size: 14px;
+	background: white;
+	transition: all 0.2s ease;
+	min-width: 200px;
+}
+
+.layoutberg-search:focus {
+	border-color: #6366f1;
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.layoutberg-search-btn {
+	position: absolute;
+	right: 4px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: none;
+	border: none;
+	color: #6b7280;
+	padding: 4px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.layoutberg-search-btn:hover {
+	color: #6366f1;
+	background: #f3f4f6;
+}
+
+/* Template Statistics */
+.layoutberg-template-stats {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	padding: 12px 16px;
+	background: #f8fafc;
+	border-radius: 6px;
+	border: 1px solid #e5e7eb;
+}
+
+.layoutberg-template-stats .stat-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.layoutberg-template-stats .stat-value {
+	font-size: 18px;
+	font-weight: 700;
+	color: #111827;
+	line-height: 1;
+}
+
+.layoutberg-template-stats .stat-label {
+	font-size: 11px;
+	color: #6b7280;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-weight: 500;
+}
+
+.tablenav.top select {
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	padding: 8px 12px;
+	font-size: 14px;
+	background: white;
+	transition: border-color 0.2s ease;
+}
+
+.tablenav.top select:focus {
+	border-color: #6366f1;
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.tablenav.top .button {
+	border-radius: 6px;
+	padding: 8px 16px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+}
+
+.tablenav.top .button:hover {
+	transform: translateY(-1px);
+}
+
+.tablenav-pages {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.displaying-num {
+	font-weight: 500;
+	color: #374151;
+}
+
+.pagination-links {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.pagination-links .button {
+	border-radius: 6px;
+	padding: 6px 12px;
+	min-width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+.pagination-links .button:hover:not(.disabled) {
+	transform: translateY(-1px);
+}
+
+.paging-input {
+	font-weight: 500;
+	color: #374151;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.layoutberg-templates-grid {
+		grid-template-columns: 1fr;
+		gap: 16px;
+		margin-top: 16px;
+	}
+	
+	.template-details {
+		padding: 16px;
+	}
+	
+	.template-name {
+		font-size: 15px;
+	}
+	
+	.template-description {
+		font-size: 13px;
+	}
+	
+	.template-meta {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+	
+	.template-footer {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+	
+	.template-actions-footer {
+		width: 100%;
+		justify-content: flex-start;
+	}
+	
+	.layoutberg-templates-empty {
+		padding: 60px 24px;
+		margin-top: 16px;
+	}
+	
+	.layoutberg-templates-empty h3 {
+		font-size: 24px;
+	}
+	
+	.layoutberg-templates-empty p {
+		font-size: 14px;
+	}
+	
+	/* Phase 2 Mobile Responsive */
+	.tablenav.top {
+		padding: 16px;
+		margin-bottom: 16px;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+	}
+	
+	.tablenav.top .alignleft {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 8px;
+	}
+	
+	.layoutberg-search-container {
+		width: 100%;
+	}
+	
+	.layoutberg-search {
+		width: 100%;
+		min-width: auto;
+	}
+	
+	.tablenav.top select,
+	.tablenav.top .button {
+		width: 100%;
+	}
+	
+	.layoutberg-template-stats {
+		flex-direction: column;
+		gap: 12px;
+		padding: 16px;
+	}
+	
+	.layoutberg-template-stats .stat-item {
+		flex-direction: row;
+		gap: 8px;
+	}
+	
+	.layoutberg-template-stats .stat-value {
+		font-size: 16px;
+	}
+	
+	.layoutberg-template-stats .stat-label {
+		font-size: 12px;
+	}
+}
+
+@media (max-width: 480px) {
+	.layoutberg-templates-grid {
+		gap: 12px;
+	}
+	
+	.template-details {
+		padding: 12px;
+	}
+	
+	.template-name {
+		font-size: 14px;
+	}
+	
+	.template-description {
+		font-size: 12px;
+	}
+	
+	.layoutberg-templates-empty {
+		padding: 40px 16px;
+	}
+	
+	.layoutberg-templates-empty h3 {
+		font-size: 20px;
+	}
+}
+
+/* Modals - Enhanced Design */
 .layoutberg-modal {
 	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
+	background: rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(4px);
 	z-index: 999999;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	padding: 20px;
 }
 
 .layoutberg-modal[style*="display: none"] {
@@ -590,27 +1045,31 @@ $categories = array_merge(
 }
 
 .layoutberg-modal-content {
-	background: #fff;
-	border-radius: 4px;
-	box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+	background: white;
+	border-radius: 12px;
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 	max-width: 1200px;
 	width: 95%;
 	max-height: 95vh;
 	display: flex;
 	flex-direction: column;
+	overflow: hidden;
 }
 
 .layoutberg-modal-header {
-	padding: 20px;
-	border-bottom: 1px solid #ddd;
+	padding: 24px;
+	border-bottom: 1px solid #e5e7eb;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	background: #fafafa;
 }
 
 .layoutberg-modal-header h2 {
 	margin: 0;
 	font-size: 20px;
+	font-weight: 600;
+	color: #111827;
 }
 
 .layoutberg-modal-close {
@@ -618,48 +1077,61 @@ $categories = array_merge(
 	border: none;
 	font-size: 20px;
 	cursor: pointer;
-	color: #666;
-	padding: 0;
-	width: 30px;
-	height: 30px;
+	color: #6b7280;
+	padding: 8px;
+	width: 36px;
+	height: 36px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	border-radius: 6px;
+	transition: all 0.2s ease;
 }
 
 .layoutberg-modal-close:hover {
-	color: #000;
+	color: #111827;
+	background: #f3f4f6;
 }
 
 .layoutberg-modal-body {
-	padding: 20px;
+	padding: 24px;
 	overflow-y: auto;
 	flex: 1;
 }
 
 .layoutberg-modal-footer {
-	padding: 20px;
-	border-top: 1px solid #ddd;
+	padding: 24px;
+	border-top: 1px solid #e5e7eb;
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
-	gap: 15px;
+	gap: 12px;
+	background: #fafafa;
 }
 
 .layoutberg-modal-footer .button {
 	margin: 0;
 	min-width: 100px;
+	border-radius: 6px;
+	font-weight: 500;
+	transition: all 0.2s ease;
 }
 
-/* Form Fields */
+.layoutberg-modal-footer .button:hover {
+	transform: translateY(-1px);
+}
+
+/* Form Fields - Enhanced */
 .form-field {
 	margin-bottom: 20px;
 }
 
 .form-field label {
 	display: block;
-	margin-bottom: 5px;
+	margin-bottom: 6px;
 	font-weight: 600;
+	color: #374151;
+	font-size: 14px;
 }
 
 .form-field input[type="text"],
@@ -667,18 +1139,31 @@ $categories = array_merge(
 .form-field textarea,
 .form-field select {
 	width: 100%;
-	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	padding: 10px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	font-size: 14px;
+	transition: all 0.2s ease;
+	background: white;
+}
+
+.form-field input[type="text"]:focus,
+.form-field input[type="file"]:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+	border-color: #6366f1;
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .form-field .description {
-	margin-top: 5px;
-	color: #666;
+	margin-top: 6px;
+	color: #6b7280;
 	font-size: 13px;
+	line-height: 1.4;
 }
 
-/* Template Preview */
+/* Template Preview - Enhanced */
 .template-preview-container {
 	height: 100%;
 	display: flex;
@@ -688,28 +1173,36 @@ $categories = array_merge(
 #layoutberg-gutenberg-preview-container {
 	flex: 1;
 	min-height: 500px;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	overflow: hidden;
 }
 
-
 .template-visual-preview {
-	padding: 20px;
-	background: #fff;
+	padding: 24px;
+	background: white;
 	min-height: 400px;
+	border-radius: 8px;
 }
 
 .template-code-preview {
-	background: #fff;
+	background: #f8fafc;
 	padding: 20px;
+	border-radius: 8px;
+	margin-top: 16px;
 }
 
 .template-code-preview pre {
-	background: #f5f5f5;
-	padding: 15px;
-	border-radius: 4px;
+	background: #1f2937;
+	color: #f9fafb;
+	padding: 16px;
+	border-radius: 6px;
 	overflow-x: auto;
 	max-height: 400px;
 	overflow-y: auto;
 	margin: 0;
+	font-size: 13px;
+	line-height: 1.5;
 }
 
 .template-loading {
@@ -717,20 +1210,20 @@ $categories = array_merge(
 	align-items: center;
 	justify-content: center;
 	min-height: 200px;
-	color: #666;
+	color: #6b7280;
 	font-style: italic;
 }
 
 .template-loading::before {
 	content: '';
 	display: inline-block;
-	width: 16px;
-	height: 16px;
-	border: 2px solid #ddd;
-	border-top-color: #007cba;
+	width: 20px;
+	height: 20px;
+	border: 2px solid #e5e7eb;
+	border-top-color: #6366f1;
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
-	margin-right: 8px;
+	margin-right: 12px;
 }
 
 @keyframes spin {
@@ -739,30 +1232,66 @@ $categories = array_merge(
 	}
 }
 
+/* Loading Overlay */
+.layoutberg-loading-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.9);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	z-index: 100;
+	border-radius: 12px;
+}
+
+.layoutberg-loading-overlay .layoutberg-spinner {
+	width: 32px;
+	height: 32px;
+	border: 3px solid #e5e7eb;
+	border-top-color: #6366f1;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin-bottom: 12px;
+}
+
+.layoutberg-loading-overlay p {
+	margin: 0;
+	color: #6b7280;
+	font-size: 14px;
+	font-weight: 500;
+}
+
 .template-visual-preview iframe {
 	width: 100%;
 	border: none;
 	min-height: 400px;
-	border-radius: 4px;
-	background: #fff;
+	border-radius: 8px;
+	background: white;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .template-preview-info {
-	margin-bottom: 20px;
+	margin-bottom: 24px;
 	padding-bottom: 20px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #e5e7eb;
 }
 
 .template-preview-info h3 {
-	margin: 0 0 10px;
+	margin: 0 0 12px;
 	font-size: 20px;
+	font-weight: 600;
+	color: #111827;
 }
 
 .template-preview-info .template-meta {
 	display: flex;
 	gap: 20px;
 	font-size: 14px;
-	color: #666;
+	color: #6b7280;
 }
 
 .template-preview-info .template-meta span {
@@ -774,17 +1303,22 @@ $categories = array_merge(
 }
 
 .template-code-preview h4 {
-	margin: 0 0 10px;
+	margin: 0 0 12px;
 	font-size: 16px;
+	font-weight: 600;
+	color: #111827;
 }
 
 .template-code-preview pre {
-	background: #f5f5f5;
-	padding: 15px;
-	border-radius: 4px;
+	background: #1f2937;
+	color: #f9fafb;
+	padding: 16px;
+	border-radius: 6px;
 	overflow-x: auto;
 	max-height: 300px;
 	overflow-y: auto;
+	font-size: 13px;
+	line-height: 1.5;
 }
 
 .template-code-preview code {
@@ -794,6 +1328,11 @@ $categories = array_merge(
 </style>
 
 <script>
+// Ensure ajaxurl is defined for WordPress admin
+if (typeof ajaxurl === 'undefined') {
+	window.ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 	// Helper function to make AJAX requests
 	function makeAjaxRequest(url, options) {
@@ -900,19 +1439,83 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 	
-	// Filter handling
+	// Enhanced Filter handling
 	const filterSelect = document.getElementById('filter-by-category');
+	const orderSelect = document.getElementById('filter-by-order');
+	const searchInput = document.getElementById('template-search');
+	const searchBtn = document.querySelector('.layoutberg-search-btn');
+	
+	function getFilterParams() {
+		return {
+			category: filterSelect ? filterSelect.value : '',
+			s: searchInput ? searchInput.value.trim() : '',
+			orderby: orderSelect ? orderSelect.value : 'created_at',
+			paged: 1
+		};
+	}
+	
+	function updateTemplatesGridAJAX() {
+		const params = getFilterParams();
+		const url = new URL(typeof ajaxurl !== 'undefined' ? ajaxurl : '<?php echo admin_url( 'admin-ajax.php' ); ?>', window.location.origin);
+		url.searchParams.set('action', 'layoutberg_render_templates_grid');
+		Object.entries(params).forEach(([key, value]) => {
+			if (value) url.searchParams.set(key, value);
+			else url.searchParams.delete(key);
+		});
+
+		const gridContainer = document.querySelector('.layoutberg-templates-grid') || document.querySelector('.layoutberg-templates-empty');
+		if (gridContainer) {
+			const loadingOverlay = document.createElement('div');
+			loadingOverlay.className = 'layoutberg-loading-overlay';
+			loadingOverlay.innerHTML = '<div class="layoutberg-spinner"></div><p>Loading templates...</p>';
+			gridContainer.parentNode.insertBefore(loadingOverlay, gridContainer);
+			gridContainer.style.opacity = '0.5';
+		}
+
+		fetch(url.toString(), { credentials: 'same-origin' })
+			.then(res => res.json())
+			.then(data => {
+				if (data.success && data.data && data.data.html) {
+					const grid = document.querySelector('.layoutberg-templates-grid') || document.querySelector('.layoutberg-templates-empty');
+					if (grid) {
+						const wrapper = document.createElement('div');
+						wrapper.innerHTML = data.data.html;
+						grid.replaceWith(wrapper.firstElementChild);
+					}
+				}
+			})
+			.catch(() => {
+				window.location.reload(); // fallback
+			})
+			.finally(() => {
+				const loading = document.querySelector('.layoutberg-loading-overlay');
+				if (loading) loading.remove();
+				if (searchInput) searchInput.focus();
+			});
+	}
+	
 	if (filterSelect) {
 		filterSelect.addEventListener('change', function() {
-			const category = this.value;
-			const url = new URL(window.location.href);
-			if (category) {
-				url.searchParams.set('category', category);
-			} else {
-				url.searchParams.delete('category');
+			updateTemplatesGridAJAX();
+		});
+	}
+	if (orderSelect) {
+		orderSelect.addEventListener('change', function() {
+			updateTemplatesGridAJAX();
+		});
+	}
+	if (searchInput) {
+		searchInput.addEventListener('keypress', function(e) {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				updateTemplatesGridAJAX();
 			}
-			url.searchParams.delete('paged');
-			window.location.href = url.toString();
+		});
+	}
+	if (searchBtn) {
+		searchBtn.addEventListener('click', function(e) {
+			e.preventDefault();
+			updateTemplatesGridAJAX();
 		});
 	}
 	
@@ -1110,7 +1713,19 @@ document.addEventListener('DOMContentLoaded', function() {
 	if (importBtn) {
 		importBtn.addEventListener('click', function(e) {
 			e.preventDefault();
-			showModal('layoutberg-template-import-modal');
+			
+			// Check if import is locked
+			if (this.classList.contains('disabled')) {
+				// Open pricing modal instead
+				if (window.layoutbergAdmin && window.layoutbergAdmin.openPricingModal) {
+					window.layoutbergAdmin.openPricingModal({
+						currentTarget: this,
+						preventDefault: function() {}
+					});
+				}
+			} else {
+				showModal('layoutberg-template-import-modal');
+			}
 		});
 	}
 	
@@ -1232,4 +1847,3 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 });
-</script>

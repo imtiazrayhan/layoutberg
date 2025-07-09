@@ -38,6 +38,7 @@ class Admin {
 	 */
 	public function __construct( $version ) {
 		$this->version = $version;
+		add_action('wp_ajax_layoutberg_render_templates_grid', array($this, 'ajax_render_templates_grid'));
 	}
 
 	/**
@@ -1445,6 +1446,14 @@ class Admin {
 			wp_send_json_error( __( 'You do not have permission to import templates.', 'layoutberg' ) );
 		}
 
+		// Check if user can import templates (Professional or Agency plan).
+		if ( ! LayoutBerg_Licensing::can_export_templates() ) {
+			$message = LayoutBerg_Licensing::is_expired_monthly()
+				? __( 'Your subscription has expired. Please renew to import templates.', 'layoutberg' )
+				: __( 'Template import is available in the Professional and Agency plans. Please upgrade to import templates.', 'layoutberg' );
+			wp_send_json_error( $message );
+		}
+
 		// Check file upload.
 		if ( ! isset( $_FILES['import_file'] ) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK ) {
 			wp_send_json_error( __( 'No file uploaded or upload error.', 'layoutberg' ) );
@@ -1690,15 +1699,14 @@ class Admin {
 					</button>
 				</div>
 				<div class="layoutberg-modal-body">
-					<div class="layoutberg-pricing-intro">
-						<p><?php esc_html_e( 'Unlock powerful features to supercharge your layout creation with LayoutBerg Pro.', 'layoutberg' ); ?></p>
-						<?php if ( $is_expired ) : ?>
+					<?php if ( $is_expired ) : ?>
+						<div class="layoutberg-pricing-intro">
 							<div class="layoutberg-alert layoutberg-alert-warning">
 								<span class="dashicons dashicons-warning"></span>
 								<?php esc_html_e( 'Your subscription has expired. Renew now to continue using premium features.', 'layoutberg' ); ?>
 							</div>
-						<?php endif; ?>
-					</div>
+						</div>
+					<?php endif; ?>
 					
 					<div class="layoutberg-pricing-grid">
 						<?php foreach ( $pricing_data as $plan_key => $plan ) : ?>
@@ -1773,5 +1781,164 @@ class Admin {
 			</div>
 		</div>
 		<?php
+	}
+
+	public function ajax_render_templates_grid() {
+		if ( ! current_user_can( 'layoutberg_manage_templates' ) ) {
+			wp_send_json_error( __( 'You do not have permission to view templates.', 'layoutberg' ) );
+		}
+		$category = isset( $_GET['category'] ) ? sanitize_text_field( $_GET['category'] ) : '';
+		$search = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
+		$paged = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
+		$orderby = isset( $_GET['orderby'] ) ? sanitize_text_field( $_GET['orderby'] ) : 'created_at';
+
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-template-manager.php';
+		$template_manager = new \DotCamp\LayoutBerg\Template_Manager();
+		$args = array(
+			'category' => $category,
+			'search'   => $search,
+			'page'     => $paged,
+			'per_page' => 20,
+			'orderby'  => $orderby,
+			'order'    => 'DESC',
+		);
+		if ( ! current_user_can( 'manage_options' ) ) {
+			$args['user_id'] = get_current_user_id();
+		}
+		$result = $template_manager->get_templates( $args );
+		$templates = $result['templates'];
+		$categories = $template_manager->get_categories();
+
+		ob_start();
+		if ( empty( $templates ) ) : ?>
+			<div class="layoutberg-templates-empty">
+				<div class="empty-illustration">
+					<span class="dashicons dashicons-layout" style="font-size: 64px; color: #94a3b8; margin-bottom: 16px; display: block;"></span>
+				</div>
+				<h3><?php esc_html_e( 'No templates yet', 'layoutberg' ); ?></h3>
+				<p><?php esc_html_e( 'Templates let you save and reuse your AI-generated layouts.', 'layoutberg' ); ?></p>
+				<p><?php esc_html_e( 'To create your first template:', 'layoutberg' ); ?></p>
+				<ol>
+					<li><?php esc_html_e( 'Click "Add New Template" to open the editor', 'layoutberg' ); ?></li>
+					<li><?php esc_html_e( 'Add a LayoutBerg AI Layout block', 'layoutberg' ); ?></li>
+					<li><?php esc_html_e( 'Generate a layout with your prompt', 'layoutberg' ); ?></li>
+					<li><?php esc_html_e( 'Save it as a template for future use', 'layoutberg' ); ?></li>
+				</ol>
+				<a href="<?php echo esc_url( admin_url( 'post-new.php?post_type=post&layoutberg_create_template=1' ) ); ?>" class="button button-primary button-hero">
+					<?php esc_html_e( 'Create Your First Template', 'layoutberg' ); ?>
+				</a>
+			</div>
+		<?php else : ?>
+			<div class="layoutberg-templates-grid">
+			<?php foreach ( $templates as $template ) : ?>
+				<div class="layoutberg-template-card" data-template-id="<?php echo esc_attr( $template->id ); ?>">
+					<div class="template-preview">
+						<?php if ( ! empty( $template->thumbnail_url ) ) : ?>
+							<img src="<?php echo esc_url( $template->thumbnail_url ); ?>" alt="<?php echo esc_attr( $template->name ); ?>">
+						<?php else : ?>
+							<div class="template-placeholder">
+								<span class="dashicons dashicons-layout"></span>
+							</div>
+						<?php endif; ?>
+						<div class="template-actions">
+							<button class="button button-primary layoutberg-use-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
+								<?php esc_html_e( 'Use Template', 'layoutberg' ); ?>
+							</button>
+							<button class="button layoutberg-preview-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
+								<?php esc_html_e( 'Preview', 'layoutberg' ); ?>
+							</button>
+						</div>
+					</div>
+					<div class="template-details">
+						<h3 class="template-name"><?php echo esc_html( $template->name ); ?></h3>
+						<?php if ( ! empty( $template->description ) ) : ?>
+							<p class="template-description"><?php echo esc_html( $template->description ); ?></p>
+						<?php endif; ?>
+						<div class="template-meta">
+							<span class="template-category <?php echo esc_attr( $template->category ); ?>">
+								<?php echo esc_html( $categories[ $template->category ] ?? $template->category ); ?>
+							</span>
+							<?php if ( $template->usage_count > 0 ) : ?>
+								<span class="template-usage">
+									<span class="usage-icon">📊</span>
+									<?php
+									printf(
+										esc_html( _n( '%s use', '%s uses', $template->usage_count, 'layoutberg' ) ),
+										number_format_i18n( $template->usage_count )
+									);
+									?>
+								</span>
+							<?php endif; ?>
+							<?php if ( ! empty( $template->tags ) ) : ?>
+								<span class="template-tags">
+									<span class="tags-icon">🏷️</span>
+									<?php 
+									$tags = is_array( $template->tags ) ? $template->tags : explode( ',', $template->tags );
+									$tags = array_slice( $tags, 0, 2 ); // Show only first 2 tags
+									echo esc_html( implode( ', ', $tags ) );
+									if ( count( is_array( $template->tags ) ? $template->tags : explode( ',', $template->tags ) ) > 2 ) {
+										echo ' +' . ( count( is_array( $template->tags ) ? $template->tags : explode( ',', $template->tags ) ) - 2 );
+									}
+									?>
+								</span>
+							<?php endif; ?>
+						</div>
+						<div class="template-footer">
+							<span class="template-date">
+								<?php
+								printf(
+									esc_html__( 'Created %s', 'layoutberg' ),
+									human_time_diff( strtotime( $template->created_at ), current_time( 'timestamp' ) ) . ' ' . __( 'ago', 'layoutberg' )
+								);
+								?>
+							</span>
+							<?php if ( current_user_can( 'layoutberg_manage_templates' ) && ( current_user_can( 'manage_options' ) || $template->created_by == get_current_user_id() ) ) : ?>
+								<span class="template-actions-footer">
+									<a href="#" class="edit-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
+										<?php esc_html_e( 'Edit', 'layoutberg' ); ?>
+									</a>
+									|
+									<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'delete', 'template_id' => $template->id ), admin_url( 'admin.php?page=layoutberg-templates' ) ), 'delete_template_' . $template->id ) ); ?>" class="delete-template" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete this template?', 'layoutberg' ); ?>');">
+										<?php esc_html_e( 'Delete', 'layoutberg' ); ?>
+									</a>
+									|
+									<?php 
+									// Check if user can export templates (Professional or Agency plan)
+									$can_export = false;
+									if ( function_exists( 'layoutberg_fs' ) ) {
+										$can_export = \layoutberg_fs()->can_use_premium_code() && 
+													 ( \layoutberg_fs()->is_plan('professional') || \layoutberg_fs()->is_plan('agency') );
+									}
+									if ( $can_export ) : 
+									?>
+										<a href="#" class="export-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
+											<?php esc_html_e( 'Export', 'layoutberg' ); ?>
+										</a>
+									<?php else : ?>
+										<?php 
+										// Show locked export option if Freemius is available
+										if ( function_exists( 'layoutberg_fs' ) ) :
+											$button_text = ! \layoutberg_fs()->can_use_premium_code() 
+												? __( 'Renew to export', 'layoutberg' )
+												: __( 'Upgrade to export', 'layoutberg' );
+											$button_url = ! \layoutberg_fs()->can_use_premium_code() 
+												? \layoutberg_fs()->get_account_url() 
+												: \layoutberg_fs()->get_upgrade_url();
+										?>
+											<a href="<?php echo esc_url( $button_url ); ?>" class="export-template-locked" title="<?php echo esc_attr( $button_text ); ?>">
+												<?php esc_html_e( 'Export', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 12px; vertical-align: middle;"></span>
+											</a>
+										<?php endif; ?>
+									<?php endif; ?>
+								</span>
+							<?php endif; ?>
+						</div>
+					</div>
+				</div>
+			<?php endforeach; ?>
+			</div>
+		<?php endif;
+		$html = ob_get_clean();
+		wp_send_json_success([ 'html' => $html ]);
 	}
 }

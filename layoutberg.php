@@ -125,20 +125,6 @@ register_activation_hook( __FILE__, __NAMESPACE__ . '\layoutberg_activate' );
 register_deactivation_hook( __FILE__, __NAMESPACE__ . '\layoutberg_deactivate' );
 
 /**
- * Load the plugin text domain for translation.
- *
- * @since 1.0.0
- */
-function layoutberg_load_textdomain() {
-	load_plugin_textdomain(
-		'layoutberg',
-		false,
-		dirname( LAYOUTBERG_PLUGIN_BASENAME ) . '/languages/'
-	);
-}
-add_action( 'plugins_loaded', __NAMESPACE__ . '\layoutberg_load_textdomain' );
-
-/**
  * Check and run database upgrades.
  *
  * @since 1.0.0

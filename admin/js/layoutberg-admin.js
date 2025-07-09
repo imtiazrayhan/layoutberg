@@ -832,8 +832,12 @@
 		 */
 		handleEscapeKey: function ( e ) {
 			if ( e.key === 'Escape' ) {
-				// Close modals
-				if ( $( '.layoutberg-modal.active' ).length ) {
+				// Close pricing modal if open
+				if ( $( '#layoutberg-pricing-modal.active' ).length ) {
+					this.closePricingModal();
+				}
+				// Close other modals
+				else if ( $( '.layoutberg-modal.active' ).length ) {
 					this.closeModal();
 				}
 
@@ -1208,7 +1212,12 @@
 		 * Close pricing modal
 		 */
 		closePricingModal: function ( e ) {
-			if ( e && e.target !== e.currentTarget ) {
+			// If event exists and it's not a backdrop or close button click, check if we clicked inside content
+			if ( e && e.target && 
+				!$( e.target ).hasClass( 'layoutberg-modal-backdrop' ) && 
+				!$( e.target ).hasClass( 'layoutberg-modal-close' ) &&
+				!$( e.target ).closest( '.layoutberg-modal-close' ).length &&
+				$( e.target ).closest( '.layoutberg-modal-content' ).length ) {
 				return; // Clicked inside modal content
 			}
 
