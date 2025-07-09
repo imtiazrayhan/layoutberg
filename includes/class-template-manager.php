@@ -171,8 +171,6 @@ class Template_Manager {
 		global $wpdb;
 
 		// Check if user can access premium features
-		// TODO: Re-enable these checks after testing
-		/*
 		if ( ! LayoutBerg_Licensing::can_use_premium_code() ) {
 			// Expired monthly - cannot save templates
 			return new \WP_Error( 
@@ -199,7 +197,6 @@ class Template_Manager {
 				);
 			}
 		}
-		*/
 
 		// Validate required fields.
 		if ( empty( $data['name'] ) || empty( $data['content'] ) ) {
@@ -378,13 +375,10 @@ class Template_Manager {
 		);
 
 		// Check if user can access premium features
-		// TODO: Re-enable after testing
-		/*
 		if ( ! LayoutBerg_Licensing::can_use_premium_code() || LayoutBerg_Licensing::is_starter_plan() ) {
 			// Expired monthly or Starter plan - basic categories only
 			return apply_filters( 'layoutberg_template_categories', $basic_categories );
 		}
-		*/
 
 		// Professional and Agency get all categories
 		$all_categories = array_merge( $basic_categories, array(

@@ -1459,15 +1459,12 @@ class Admin {
 		}
 
 		// Check if user can export templates (Professional or Agency plan).
-		// TODO: Re-enable this check after testing
-		/*
 		if ( ! LayoutBerg_Licensing::can_export_templates() ) {
 			$message = LayoutBerg_Licensing::is_expired_monthly() 
 				? __( 'Your subscription has expired. Please renew to export templates.', 'layoutberg' )
 				: __( 'Template export is available in the Professional and Agency plans. Please upgrade to export templates.', 'layoutberg' );
 			wp_send_json_error( $message );
 		}
-		*/
 
 		// Get template ID.
 		$template_id = isset( $_POST['template_id'] ) ? absint( $_POST['template_id'] ) : 0;

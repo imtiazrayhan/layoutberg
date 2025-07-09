@@ -241,16 +241,29 @@ $categories = array(
 									</a>
 									|
 									<?php 
-									// For testing purposes, always show export button
-									// TODO: Re-enable Freemius checks after testing
-									$show_export = true; // Temporarily always true for testing
-									
-									if ( $show_export ) : 
+									// Check if user can export templates (Professional or Agency plan)
+									if ( function_exists( 'layoutberg_fs' ) && \layoutberg_fs()->can_use_premium_code() && 
+										 ( \layoutberg_fs()->is_plan('professional') || \layoutberg_fs()->is_plan('agency') ) ) : 
 									?>
 										<a href="#" class="export-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
 											<?php esc_html_e( 'Export', 'layoutberg' ); ?>
 										</a>
 										|
+									<?php elseif ( function_exists( 'layoutberg_fs' ) ) : ?>
+										<?php 
+										$button_text = ! \layoutberg_fs()->can_use_premium_code() 
+											? __( 'Renew to export', 'layoutberg' )
+											: __( 'Upgrade to export', 'layoutberg' );
+										$button_url = ! \layoutberg_fs()->can_use_premium_code() 
+											? \layoutberg_fs()->get_account_url() 
+											: \layoutberg_fs()->get_upgrade_url();
+										?>
+										<a href="<?php echo esc_url( $button_url ); ?>" class="export-template-locked" title="<?php echo esc_attr( $button_text ); ?>">
+											<?php esc_html_e( 'Export', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 12px; vertical-align: middle;"></span>
+										</a>
+										|
+									<?php else : ?>
+										<!-- Freemius not loaded, hide export option -->
 									<?php endif; ?>
 									<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'delete', 'template_id' => $template->id ), admin_url( 'admin.php?page=layoutberg-templates' ) ), 'delete_template_' . $template->id ) ); ?>" class="delete-template" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete this template?', 'layoutberg' ); ?>');">
 										<?php esc_html_e( 'Delete', 'layoutberg' ); ?>

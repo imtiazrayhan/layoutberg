@@ -109,22 +109,6 @@
    - Would need central template repository
    - API for cross-site communication
 
-## ⚠️ IMPORTANT: Temporary Testing Bypasses
-
-The following licensing checks have been temporarily disabled for testing and need to be re-enabled:
-
-1. **Template Export UI** (`admin/partials/layoutberg-admin-templates.php` line 247)
-   - Change `$show_export = true;` back to proper Freemius checks
-
-2. **Export AJAX Handler** (`includes/class-admin.php` line 1454-1462)
-   - Uncomment the `LayoutBerg_Licensing::can_export_templates()` check
-
-3. **Template Save Licensing** (`includes/class-template-manager.php` line 175-202)
-   - Uncomment the licensing and template limit checks
-
-4. **Template Categories** (`includes/class-template-manager.php` line 382-387)
-   - Uncomment the category restriction checks
-
 ## Freemius Feature Gatekeeping Implementation
 
 ### Basic License Checking
