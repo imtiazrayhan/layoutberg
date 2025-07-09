@@ -30,8 +30,8 @@ _Ideal for agencies and professional developers_
 | Template import (JSON format)                                                                                      | ✅      | ✅  | **Fully Implemented**       |
 | Template export (JSON format)                                                                                      | ✅      | ✅  | **Fully Implemented**       |
 | Advanced generation options (temperature control, max tokens adjustment)                                           | ✅      | ✅  | **Fully Implemented**       |
-| Pattern variations support                                                                                         | ✅      | ❌  | **Needs UI Implementation** |
-| Block variations support                                                                                           | ✅      | ❌  | **Needs UI Implementation** |
+| Pattern variations support                                                                                         | ✅      | ✅  | **Fully Implemented**       |
+| Block variations support                                                                                           | ✅      | ✅  | **Fully Implemented**       |
 | Full generation history (unlimited)                                                                                | ✅      | ✅  | **Fully Implemented**       |
 | Detailed usage analytics with cost tracking                                                                        | ✅      | ✅  | **Fully Implemented**       |
 | Cache management controls                                                                                          | ✅      | ✅  | **Fully Implemented**       |
@@ -92,16 +92,21 @@ _For teams managing multiple client sites_
     - ~~Improved plan detection logic with case-insensitive checks~~
     - ~~Added debug page for troubleshooting licensing issues~~
 
+### ✅ Recently Completed (Professional Plan)
+
+6. ~~**Pattern/Block Variations UI**~~ ✅ **COMPLETED (2025-01-09)**
+
+    - ~~Add variations selector in generation modal~~
+    - ~~Implementation: Extended generation modal to include variation options~~
+    - ~~Created variation style selector (Random, Modern, Classic, Minimal)~~
+    - ~~Added licensing checks for Professional/Agency plans~~
+    - ~~Integrated with existing backend `Block_Variations` and `Pattern_Variations` classes~~
+    - ~~Added toggle to enable/disable variations usage~~
+    - ~~Fixed backend to respect user's toggle preference~~
+
 ### High Priority (Professional Plan) - TODO
 
-1. **Pattern/Block Variations UI**
-
-    - Add variations selector in generation modal
-    - Implementation: Extend `GeneratorModal.tsx` to include variation options
-    - Leverage existing `Block_Variations` and `Pattern_Variations` classes
-    - **Status**: Backend classes exist but no UI components found
-
-2. **Style Defaults Configuration UI**
+1. **Style Defaults Configuration UI**
     - Add settings tab for default styles
     - Implementation: Add new tab in settings page
     - Save to `layoutberg_options['style_defaults']`
@@ -540,6 +545,16 @@ This separation ensures that:
     - Debug page available at `LayoutBerg > Debug` when `WP_DEBUG` is enabled
     - Shows comprehensive Freemius status and licensing information
     - Helps troubleshoot plan detection and feature access issues
+
+4. **Pattern/Block Variations Implementation**
+    - Frontend: Variations UI in generation modal (`src/editor/modal.js`)
+    - Variation styles: Random (default), Modern, Classic, Minimal
+    - Backend: Checks both licensing AND user preference
+    - Toggle control allows users to opt-in to variations
+    - Variations only used when all conditions are met:
+      - User has Professional/Agency license
+      - User enables the toggle
+      - Prompt matches a predefined template
 
 ## Notes
 
