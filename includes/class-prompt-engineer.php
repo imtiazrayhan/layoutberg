@@ -529,18 +529,11 @@ OUTPUT FORMAT:
 - Use double quotes in JSON
 - Match opening/closing comments
 
-CRITICAL LAYOUT WIDTH RULES:
-- Top-level blocks (cover, group, columns) MUST use {"align":"full"} for full-width layouts
-- Section blocks should ALWAYS be full width to create edge-to-edge designs
-- Hero sections, feature grids, and main content areas: Use {"align":"full"}
-- Only use narrow widths for specific content like blog posts or testimonials
-- Default to full width unless specifically requested otherwise
-
 CRITICAL VALIDATION RULES:
 - Cover blocks: Use ONLY "url" attribute, NEVER "id" attribute. Do not add wp-image-XXX classes.
 - Images: Use absolute URLs (https://images.unsplash.com/photo-[id] or https://placehold.co/)
 - Classes: wp-block-[blockname], has-[color]-color has-text-color
-- Alignment: alignfull (preferred), alignwide, has-text-align-[left|center|right]
+- Alignment: alignfull, alignwide, has-text-align-[left|center|right]
 - Gradient backgrounds: Use predefined gradients like "vivid-cyan-blue-to-vivid-purple"
 
 CRITICAL VISIBILITY RULES:
@@ -571,18 +564,18 @@ COMMON ATTRIBUTES:
 		
 		$block_specs = array(
 			'heading' => '- Heading: {"level":1-6,"textAlign":"center","fontSize":"huge","textColor":"white"} (use white for dark backgrounds)',
-			'cover' => '- Cover: {"align":"full","gradient":"vivid-cyan-blue-to-vivid-purple"} or {"align":"full","url":"https://...","dimRatio":50}. NEVER use "id" attribute. Always use align:full.',
+			'cover' => '- Cover: Use gradient {"gradient":"vivid-cyan-blue-to-vivid-purple"} or image {"url":"https://...","dimRatio":50}. NEVER use "id" attribute. Inner content should have white text.',
 			'buttons' => '- Button: {"backgroundColor":"white","textColor":"black"} or {"backgroundColor":"primary","textColor":"white"}',
-			'columns' => '- Columns: {"align":"full","style":{"spacing":{"blockGap":{"left":"40px"}}}} with column blocks inside. Always use align:full.',
-			'image' => '- Image: {"url":"https://...","alt":"description","sizeSlug":"large","align":"wide"}',
+			'columns' => '- Columns: {"style":{"spacing":{"blockGap":{"left":"40px"}}}} with column blocks inside',
+			'image' => '- Image: {"url":"https://...","alt":"description","sizeSlug":"large"}',
 			'paragraph' => '- Paragraph: {"align":"center","textColor":"white"} for dark backgrounds',
 			'list' => '- List: Must contain list-item blocks inside',
-			'group' => '- Group: {"align":"full","backgroundColor":"base-2"} or {"align":"full","gradient":"pale-ocean"}. Always use align:full for section containers.',
+			'group' => '- Group: {"backgroundColor":"base-2"} or {"gradient":"pale-ocean"} for sections needing backgrounds',
 			'spacer' => '- Spacer: {"height":"50px"}',
 			'separator' => '- Separator: {"className":"is-style-wide"} or is-style-dots',
 			'quote' => '- Quote/Pullquote: {"citation":"Author Name"}',
-			'media-text' => '- Media & Text: {"align":"wide","mediaPosition":"left","mediaType":"image"}',
-			'gallery' => '- Gallery: {"align":"wide","columns":3,"imageCrop":true}',
+			'media-text' => '- Media & Text: {"mediaPosition":"left","mediaType":"image"}',
+			'gallery' => '- Gallery: {"columns":3,"imageCrop":true}',
 			'video' => '- Video: {"url":"https://...","controls":true}',
 			'details' => '- Details (FAQ): {"summary":"Question text"} with content inside',
 		);
@@ -654,8 +647,8 @@ COMMON ATTRIBUTES:
 </div>
 <!-- /wp:buttons -->',
 			
-			'group' => '<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"60px","bottom":"60px"}}}} -->
-<div class="wp-block-group alignfull" style="padding-top:60px;padding-bottom:60px">
+			'group' => '<!-- wp:group {"style":{"spacing":{"padding":{"top":"60px","bottom":"60px"}}}} -->
+<div class="wp-block-group" style="padding-top:60px;padding-bottom:60px">
 <!-- content -->
 </div>
 <!-- /wp:group -->',
@@ -668,8 +661,8 @@ COMMON ATTRIBUTES:
 </ul>
 <!-- /wp:list -->',
 			
-			'columns' => '<!-- wp:columns {"align":"full"} -->
-<div class="wp-block-columns alignfull">
+			'columns' => '<!-- wp:columns -->
+<div class="wp-block-columns">
 <!-- wp:column -->
 <div class="wp-block-column">
 <!-- content -->

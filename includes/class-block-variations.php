@@ -303,11 +303,8 @@ class Block_Variations {
 			// Paragraphs are often left-aligned or centered
 			$weights = array( 'none' => 4, 'left' => 3, 'center' => 2, 'right' => 1 );
 		} elseif ( $context === 'image' ) {
-			// Images should favor wide/full alignments for modern layouts
-			$weights = array( 'none' => 1, 'left' => 1, 'center' => 2, 'right' => 1, 'wide' => 4, 'full' => 3 );
-		} elseif ( $context === 'section' || $context === 'container' ) {
-			// Section containers should almost always be full width
-			$weights = array( 'full' => 8, 'wide' => 2 );
+			// Images can be aligned in various ways
+			$weights = array( 'none' => 3, 'left' => 2, 'center' => 3, 'right' => 2, 'wide' => 1, 'full' => 1 );
 		} else {
 			// General alignment
 			$weights = array( 'left' => 2, 'center' => 5, 'right' => 2 );
