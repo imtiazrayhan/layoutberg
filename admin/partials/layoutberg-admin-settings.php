@@ -101,18 +101,24 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 						<span class="dashicons dashicons-admin-generic"></span>
 						<?php esc_html_e( 'Advanced', 'layoutberg' ); ?>
 					</a>
-					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_professional_plan() || \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
-						<a href="#style-defaults" class="layoutberg-settings-nav-item" data-tab="style-defaults">
-							<span class="dashicons dashicons-art"></span>
-							<?php esc_html_e( 'Style Defaults', 'layoutberg' ); ?>
-						</a>
-					<?php endif; ?>
-					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
-						<a href="#agency-features" class="layoutberg-settings-nav-item" data-tab="agency-features">
-							<span class="dashicons dashicons-building"></span>
-							<?php esc_html_e( 'Agency Features', 'layoutberg' ); ?>
-						</a>
-					<?php endif; ?>
+					<?php 
+					$is_professional = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_professional_plan();
+					$is_agency = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan();
+					?>
+					<a href="#style-defaults" class="layoutberg-settings-nav-item <?php echo ( ! $is_professional && ! $is_agency ) ? 'layoutberg-locked-tab' : ''; ?>" data-tab="style-defaults">
+						<span class="dashicons dashicons-art"></span>
+						<?php esc_html_e( 'Style Defaults', 'layoutberg' ); ?>
+						<?php if ( ! $is_professional && ! $is_agency ) : ?>
+							<span class="dashicons dashicons-lock" style="font-size: 14px; margin-left: auto;"></span>
+						<?php endif; ?>
+					</a>
+					<a href="#agency-features" class="layoutberg-settings-nav-item <?php echo ! $is_agency ? 'layoutberg-locked-tab' : ''; ?>" data-tab="agency-features">
+						<span class="dashicons dashicons-building"></span>
+						<?php esc_html_e( 'Agency Features', 'layoutberg' ); ?>
+						<?php if ( ! $is_agency ) : ?>
+							<span class="dashicons dashicons-lock" style="font-size: 14px; margin-left: auto;"></span>
+						<?php endif; ?>
+					</a>
 				</nav>
 			</div>
 
@@ -513,8 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							<div class="layoutberg-grid layoutberg-grid-2">
 								<?php 
 								// Check if user can adjust advanced generation settings
-								$can_adjust_advanced = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_professional_plan() || 
-								                      \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan();
+								$can_adjust_advanced = \DotCamp\LayoutBerg\LayoutBerg_Licensing::can_use_advanced_options();
 								?>
 								
 								<div class="layoutberg-form-group">
@@ -702,7 +707,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							
 							<div class="layoutberg-form-group">
 								<label class="layoutberg-flex layoutberg-items-center layoutberg-gap-2">
-									<div class="layoutberg-toggle">
+									<div class="layoutberg-toggle" style="width: 63px;">
 										<input 
 											type="checkbox" 
 											name="layoutberg_options[use_simplified_generation]" 
@@ -722,9 +727,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						</div>
 					</div>
 
-					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_professional_plan() || \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
 					<!-- Style Defaults Tab -->
 					<div id="style-defaults" class="layoutberg-settings-tab">
+					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_professional_plan() || \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
 						<div class="layoutberg-card">
 							<div class="layoutberg-card-header">
 								<h3 class="layoutberg-card-title"><?php esc_html_e( 'Typography Defaults', 'layoutberg' ); ?></h3>
@@ -1018,12 +1023,32 @@ document.addEventListener('DOMContentLoaded', function() {
 								</p>
 							</div>
 						</div>
-					</div>
+					<?php else : ?>
+						<!-- Upgrade message for Style Defaults -->
+						<div class="layoutberg-card">
+							<div class="layoutberg-card-body layoutberg-text-center" style="padding: 60px 40px;">
+								<span class="dashicons dashicons-lock" style="font-size: 48px; color: #9ca3af; margin-bottom: 20px; display: block;"></span>
+								<h3 class="layoutberg-mb-3"><?php esc_html_e( 'Style Defaults is a Professional Feature', 'layoutberg' ); ?></h3>
+								<p class="layoutberg-text-muted layoutberg-mb-4">
+									<?php esc_html_e( 'Upgrade to Professional or Agency plan to customize default typography, colors, layout settings, and design styles for all your generated layouts.', 'layoutberg' ); ?>
+								</p>
+								<div class="layoutberg-upgrade-cta">
+									<?php
+									echo \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_locked_button(
+										__( 'Upgrade to Professional', 'layoutberg' ),
+										__( 'Style Defaults', 'layoutberg' ),
+										'professional'
+									);
+									?>
+								</div>
+							</div>
+						</div>
 					<?php endif; ?>
+					</div>
 
-					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
 					<!-- Agency Features Tab -->
 					<div id="agency-features" class="layoutberg-settings-tab">
+					<?php if ( \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
 						<!-- Prompt Templates -->
 						<div class="layoutberg-card">
 							<div class="layoutberg-card-header">
@@ -1230,8 +1255,28 @@ document.addEventListener('DOMContentLoaded', function() {
 							</div>
 						</div>
 						<?php endif; ?>
-					</div>
+					<?php else : ?>
+						<!-- Upgrade message for Agency Features -->
+						<div class="layoutberg-card">
+							<div class="layoutberg-card-body layoutberg-text-center" style="padding: 60px 40px;">
+								<span class="dashicons dashicons-lock" style="font-size: 48px; color: #9ca3af; margin-bottom: 20px; display: block;"></span>
+								<h3 class="layoutberg-mb-3"><?php esc_html_e( 'Agency Features are Exclusive to Agency Plan', 'layoutberg' ); ?></h3>
+								<p class="layoutberg-text-muted layoutberg-mb-4">
+									<?php esc_html_e( 'Upgrade to Agency plan to unlock prompt engineering templates, debug mode, verbose logging, and advanced multisite management features.', 'layoutberg' ); ?>
+								</p>
+								<div class="layoutberg-upgrade-cta">
+									<?php
+									echo \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_locked_button(
+										__( 'Upgrade to Agency', 'layoutberg' ),
+										__( 'Agency Features', 'layoutberg' ),
+										'agency'
+									);
+									?>
+								</div>
+							</div>
+						</div>
 					<?php endif; ?>
+					</div>
 
 					<!-- Save Button -->
 					<div class="layoutberg-mt-4">
@@ -1298,6 +1343,20 @@ document.addEventListener('DOMContentLoaded', function() {
 	background: #f3f4f6;
 	border-radius: 6px;
 	border: 1px solid #e5e7eb;
+	margin-top: 8px;
+	display: block !important;
+	visibility: visible !important;
+}
+
+.layoutberg-upgrade-notice p {
+	margin: 0 0 8px 0;
+	font-size: 14px;
+	color: #6b7280;
+}
+
+.layoutberg-upgrade-notice .button {
+	display: inline-block !important;
+	visibility: visible !important;
 }
 
 .layoutberg-locked-input-wrapper {
@@ -1314,6 +1373,47 @@ document.addEventListener('DOMContentLoaded', function() {
 	color: #9ca3af;
 	pointer-events: none;
 }
+
+/* Locked tab styling */
+.layoutberg-settings-nav-item.layoutberg-locked-tab {
+	opacity: 0.8;
+	position: relative;
+}
+
+.layoutberg-settings-nav-item.layoutberg-locked-tab:hover {
+	opacity: 1;
+	background-color: #f9fafb;
+}
+
+.layoutberg-settings-nav-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Upgrade CTA styling */
+.layoutberg-upgrade-cta {
+	margin-top: 24px;
+}
+
+.layoutberg-upgrade-cta .layoutberg-locked-feature {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 24px;
+	background: var(--lberg-primary);
+	color: white;
+	text-decoration: none;
+	border-radius: 6px;
+	font-weight: 500;
+	transition: all 0.2s;
+}
+
+.layoutberg-upgrade-cta .layoutberg-locked-feature:hover {
+	background: var(--lberg-primary-dark, #4f46e5);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
 </style>
 
 <script>
@@ -1325,6 +1425,12 @@ jQuery(document).ready(function($) {
 		e.preventDefault();
 		var target = $(this).data('tab');
 		console.log('Tab clicked:', target);
+		
+		// Check if this is a locked tab
+		if ($(this).hasClass('layoutberg-locked-tab')) {
+			// Still allow the tab to be clicked and viewed
+			console.log('Locked tab clicked:', target);
+		}
 		
 		// Update navigation
 		$('.layoutberg-settings-nav-item').removeClass('active');
@@ -1654,5 +1760,10 @@ jQuery(document).ready(function($) {
 	$('.layoutberg-settings-nav-item[data-tab="agency-features"]').on('click', function() {
 		loadPromptTemplates();
 	});
+	
+	// Ensure pricing modal triggers work on settings page
+	if (window.LayoutBergAdmin && window.LayoutBergAdmin.initPricingModal) {
+		window.LayoutBergAdmin.initPricingModal();
+	}
 });
 </script>

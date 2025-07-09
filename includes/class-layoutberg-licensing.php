@@ -239,10 +239,8 @@ class LayoutBerg_Licensing {
 	 * @return string Account URL for renewal or upgrade URL.
 	 */
 	public static function get_action_url() {
-		if ( self::is_expired_monthly() ) {
-			return \layoutberg_fs()->get_account_url(); // For renewal
-		}
-		return \layoutberg_fs()->get_upgrade_url(); // For upgrade
+		// Always return the dashboard pricing page URL
+		return admin_url( 'admin.php?page=layoutberg' ) . '#pricing';
 	}
 
 	/**
@@ -360,7 +358,7 @@ class LayoutBerg_Licensing {
 		<div class="<?php echo esc_attr( $args['classes'] ); ?>">
 			<p><?php echo esc_html( $message ); ?></p>
 			<?php if ( $args['show_button'] ) : ?>
-				<a href="<?php echo esc_url( $action_url ); ?>" class="button button-primary">
+				<a href="<?php echo esc_url( $action_url ); ?>" class="button button-primary layoutberg-pricing-trigger" data-required-plan="<?php echo esc_attr( $required_plan ); ?>">
 					<?php echo esc_html( $args['button_text'] ); ?>
 				</a>
 			<?php endif; ?>
@@ -389,18 +387,15 @@ class LayoutBerg_Licensing {
 		$action_text = $is_expired ? __( 'Renew', 'layoutberg' ) : __( 'Upgrade', 'layoutberg' );
 
 		return sprintf(
-			'<a href="%s" class="button layoutberg-locked-feature" data-feature="%s" data-required-plan="%s" title="%s" style="%s">
+			'<a href="%s" class="button layoutberg-locked-feature layoutberg-pricing-trigger" data-feature="%s" data-required-plan="%s" style="%s">
 				%s 
 				<span class="dashicons dashicons-lock" style="font-size: 14px; margin-left: 4px; vertical-align: middle;"></span>
-				<span class="layoutberg-upgrade-hint" style="position: absolute; bottom: -20px; left: 50%%; transform: translateX(-50%%); font-size: 11px; white-space: nowrap; background: #333; color: #fff; padding: 2px 8px; border-radius: 3px; opacity: 0; transition: all 0.2s;">%s</span>
 			</a>',
 			esc_url( $action_url ),
 			esc_attr( $feature_name ),
 			esc_attr( $required_plan ),
-			esc_attr( $message ),
 			esc_attr( $button_style ),
-			esc_html( $button_text ),
-			esc_html( $action_text )
+			esc_html( $button_text )
 		);
 	}
 

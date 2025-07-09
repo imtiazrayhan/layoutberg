@@ -40,6 +40,7 @@ class Admin {
 		$this->version = $version;
 		add_action('wp_ajax_layoutberg_render_templates_grid', array($this, 'ajax_render_templates_grid'));
 		add_action('wp_dashboard_setup', array($this, 'add_dashboard_widget'));
+		add_action('admin_footer', array($this, 'render_pricing_modal'));
 	}
 
 	/**
@@ -1352,6 +1353,173 @@ class Admin {
 		} else {
 			wp_send_json_error( __( 'Failed to clear cache.', 'layoutberg' ) );
 		}
+	}
+
+	/**
+	 * AJAX handler to export analytics data as CSV.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_export_csv() {
+		// Check nonce.
+		if ( ! check_ajax_referer( 'layoutberg_nonce', '_wpnonce', false ) ) {
+			wp_send_json_error( __( 'Invalid security token.', 'layoutberg' ) );
+		}
+
+		// Check if user can export CSV (Agency plan only).
+		if ( ! \DotCamp\LayoutBerg\LayoutBerg_Licensing::can_export_csv() ) {
+			wp_send_json_error( __( 'CSV export requires an Agency plan. Please upgrade to access this feature.', 'layoutberg' ) );
+		}
+
+		// Check permissions.
+		if ( ! current_user_can( 'layoutberg_view_analytics' ) ) {
+			wp_send_json_error( __( 'You do not have permission to export analytics data.', 'layoutberg' ) );
+		}
+
+		// Get parameters.
+		$period = isset( $_POST['period'] ) ? sanitize_text_field( $_POST['period'] ) : 'month';
+		$format = isset( $_POST['format'] ) ? sanitize_text_field( $_POST['format'] ) : 'daily';
+
+		// Get current user data.
+		$user_id = get_current_user_id();
+		$today   = current_time( 'Y-m-d' );
+
+		// Calculate date ranges based on period.
+		switch ( $period ) {
+			case 'today':
+				$start_date = $today;
+				$end_date   = $today;
+				break;
+			case 'week':
+				$start_date = date( 'Y-m-d', strtotime( '-6 days' ) );
+				$end_date   = $today;
+				break;
+			case 'month':
+				$start_date = date( 'Y-m-01' );
+				$end_date   = date( 'Y-m-t' );
+				break;
+			case 'last_month':
+				$start_date = date( 'Y-m-01', strtotime( '-1 month' ) );
+				$end_date   = date( 'Y-m-t', strtotime( '-1 month' ) );
+				break;
+			case 'year':
+				$start_date = date( 'Y-01-01' );
+				$end_date   = date( 'Y-12-31' );
+				break;
+			case 'all':
+				$start_date = '2000-01-01';
+				$end_date   = $today;
+				break;
+			default:
+				$start_date = date( 'Y-m-01' );
+				$end_date   = date( 'Y-m-t' );
+		}
+
+		// Database tables.
+		global $wpdb;
+		$table_usage       = $wpdb->prefix . 'layoutberg_usage';
+		$table_generations = $wpdb->prefix . 'layoutberg_generations';
+
+		// Prepare CSV data based on format.
+		$csv_data = array();
+		
+		if ( $format === 'daily' ) {
+			// Get daily usage data.
+			$daily_usage = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT date, generations_count, tokens_used, cost 
+					FROM $table_usage 
+					WHERE user_id = %d AND date >= %s AND date <= %s
+					ORDER BY date ASC",
+					$user_id,
+					$start_date,
+					$end_date
+				)
+			);
+
+			// Add headers.
+			$csv_data[] = array( 'Date', 'Generations', 'Tokens Used', 'Cost (USD)' );
+
+			// Add data rows.
+			foreach ( $daily_usage as $day ) {
+				$csv_data[] = array(
+					$day->date,
+					$day->generations_count,
+					$day->tokens_used,
+					number_format( $day->cost, 4, '.', '' ),
+				);
+			}
+		} else {
+			// Get detailed generation data.
+			$generations = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT 
+						created_at,
+						prompt,
+						model,
+						tokens_used,
+						status,
+						error_message
+					FROM $table_generations 
+					WHERE user_id = %d AND created_at >= %s AND created_at <= %s
+					ORDER BY created_at DESC",
+					$user_id,
+					$start_date . ' 00:00:00',
+					$end_date . ' 23:59:59'
+				)
+			);
+
+			// Add headers.
+			$csv_data[] = array( 'Date/Time', 'Prompt', 'Model', 'Tokens', 'Status', 'Error' );
+
+			// Add data rows.
+			foreach ( $generations as $gen ) {
+				$csv_data[] = array(
+					$gen->created_at,
+					substr( $gen->prompt, 0, 100 ), // Limit prompt length.
+					$gen->model,
+					$gen->tokens_used,
+					$gen->status,
+					$gen->error_message ?: '',
+				);
+			}
+		}
+
+		// Generate CSV content.
+		$csv_content = '';
+		foreach ( $csv_data as $row ) {
+			$csv_content .= $this->array_to_csv_line( $row ) . "\n";
+		}
+
+		// Return CSV data.
+		wp_send_json_success(
+			array(
+				'filename' => 'layoutberg-analytics-' . $period . '-' . date( 'Y-m-d' ) . '.csv',
+				'content'  => $csv_content,
+				'mimeType' => 'text/csv',
+			)
+		);
+	}
+
+	/**
+	 * Convert array to CSV line.
+	 *
+	 * @since 1.0.0
+	 * @param array $fields Array of fields.
+	 * @return string CSV line.
+	 */
+	private function array_to_csv_line( $fields ) {
+		$csv_fields = array();
+		foreach ( $fields as $field ) {
+			// Escape quotes by doubling them.
+			$field = str_replace( '"', '""', $field );
+			// Wrap field in quotes if it contains comma, quote, or newline.
+			if ( strpos( $field, ',' ) !== false || strpos( $field, '"' ) !== false || strpos( $field, "\n" ) !== false ) {
+				$field = '"' . $field . '"';
+			}
+			$csv_fields[] = $field;
+		}
+		return implode( ',', $csv_fields );
 	}
 
 	/**
