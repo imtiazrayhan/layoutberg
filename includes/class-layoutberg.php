@@ -138,6 +138,9 @@ class LayoutBerg {
 		// Load onboarding handler.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-onboarding.php';
 
+		// Load licensing helper.
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-layoutberg-licensing.php';
+
 		// Get container instance and loader.
 		$this->container = Container::get_instance();
 		$this->loader = $this->container->make( 'DotCamp\LayoutBerg\Loader' );

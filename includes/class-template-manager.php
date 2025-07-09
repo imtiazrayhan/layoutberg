@@ -170,9 +170,49 @@ class Template_Manager {
 	public function save_template( $data ) {
 		global $wpdb;
 
+		// Check if user can access premium features
+		if ( ! LayoutBerg_Licensing::can_use_premium_code() ) {
+			// Expired monthly - cannot save templates
+			return new \WP_Error( 
+				'license_expired', 
+				__( 'Your subscription has expired. Please renew to save templates.', 'layoutberg' ),
+				array( 'account_url' => layoutberg_fs()->get_account_url() )
+			);
+		}
+
+		// Check template limit for Starter plan
+		if ( LayoutBerg_Licensing::is_starter_plan() ) {
+			$user_templates_count = $wpdb->get_var( 
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$this->table_name} WHERE created_by = %d",
+					get_current_user_id()
+				)
+			);
+			
+			if ( $user_templates_count >= 10 ) {
+				return new \WP_Error( 
+					'template_limit_reached', 
+					__( 'Template limit reached. Upgrade to Professional to save unlimited templates.', 'layoutberg' ),
+					array( 'upgrade_url' => layoutberg_fs()->get_upgrade_url() )
+				);
+			}
+		}
+
 		// Validate required fields.
 		if ( empty( $data['name'] ) || empty( $data['content'] ) ) {
 			return new \WP_Error( 'missing_fields', __( 'Template name and content are required.', 'layoutberg' ) );
+		}
+
+		// Validate category is allowed for user's plan
+		if ( isset( $data['category'] ) && ! empty( $data['category'] ) ) {
+			$allowed_categories = array_keys( $this->get_categories() );
+			if ( ! in_array( $data['category'], $allowed_categories, true ) ) {
+				return new \WP_Error(
+					'invalid_category',
+					__( 'This category is not available in your current plan.', 'layoutberg' ),
+					array( 'upgrade_url' => layoutberg_fs()->get_upgrade_url() )
+				);
+			}
 		}
 
 		// Generate slug.
@@ -328,18 +368,28 @@ class Template_Manager {
 	 * @return array Categories.
 	 */
 	public function get_categories() {
-		$categories = array(
-			'general'    => __( 'General', 'layoutberg' ),
-			'business'   => __( 'Business', 'layoutberg' ),
+		$basic_categories = array(
+			'general'  => __( 'General', 'layoutberg' ),
+			'business' => __( 'Business', 'layoutberg' ),
+			'blog'     => __( 'Blog/Magazine', 'layoutberg' ),
+		);
+
+		// Check if user can access premium features
+		if ( ! LayoutBerg_Licensing::can_use_premium_code() || LayoutBerg_Licensing::is_starter_plan() ) {
+			// Expired monthly or Starter plan - basic categories only
+			return apply_filters( 'layoutberg_template_categories', $basic_categories );
+		}
+
+		// Professional and Agency get all categories
+		$all_categories = array_merge( $basic_categories, array(
 			'creative'   => __( 'Creative', 'layoutberg' ),
 			'ecommerce'  => __( 'E-commerce', 'layoutberg' ),
-			'blog'       => __( 'Blog/Magazine', 'layoutberg' ),
 			'portfolio'  => __( 'Portfolio', 'layoutberg' ),
 			'landing'    => __( 'Landing Pages', 'layoutberg' ),
 			'custom'     => __( 'Custom', 'layoutberg' ),
-		);
+		));
 
-		return apply_filters( 'layoutberg_template_categories', $categories );
+		return apply_filters( 'layoutberg_template_categories', $all_categories );
 	}
 
 	/**

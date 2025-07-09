@@ -343,14 +343,34 @@ class Admin {
 			
 			// Only show OpenAI models if API key is configured
 			if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) {
-				$models['openai'] = array(
-					'label' => __( 'OpenAI Models', 'layoutberg' ),
-					'models' => $openai_models,
-				);
+				// Check user's plan for model access
+				if ( ! LayoutBerg_Licensing::can_use_premium_code() ) {
+					// Expired monthly - only show GPT-3.5 Turbo
+					$models['openai'] = array(
+						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'models' => array(
+							'gpt-3.5-turbo' => $openai_models['gpt-3.5-turbo'],
+						),
+					);
+				} elseif ( LayoutBerg_Licensing::is_starter_plan() ) {
+					// Starter plan - only show GPT-3.5 Turbo
+					$models['openai'] = array(
+						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'models' => array(
+							'gpt-3.5-turbo' => $openai_models['gpt-3.5-turbo'],
+						),
+					);
+				} else {
+					// Professional and Agency - show all OpenAI models
+					$models['openai'] = array(
+						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'models' => $openai_models,
+					);
+				}
 			}
 			
-			// Only show Claude models if API key is configured
-			if ( $claude_key_status === 'valid' ) {
+			// Only show Claude models if API key is configured AND user has appropriate plan
+			if ( $claude_key_status === 'valid' && LayoutBerg_Licensing::can_use_all_models() ) {
 				$models['claude'] = array(
 					'label' => __( 'Claude Models', 'layoutberg' ),
 					'models' => $claude_models,
@@ -360,47 +380,62 @@ class Admin {
 		} catch ( Exception $e ) {
 			// Fallback to hardcoded models if Model Config fails
 			if ( $openai_key_status === 'valid' || ! empty( $options['api_key'] ) ) {
-				$models['openai'] = array(
-					'label' => __( 'OpenAI Models', 'layoutberg' ),
-					'models' => array(
-						'gpt-3.5-turbo' => array(
-							'label' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
-							'name' => 'GPT-3.5 Turbo',
-							'description' => 'Fast & Affordable',
-							'context_window' => 16385,
-							'max_output' => 4096,
-							'cost_per_1k_input' => 0.0005,
-							'cost_per_1k_output' => 0.0015,
-							'supports_json_mode' => true,
-							'supports_functions' => true,
-						),
-						'gpt-4' => array(
-							'label' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
-							'name' => 'GPT-4',
-							'description' => 'Most Capable',
-							'context_window' => 8192,
-							'max_output' => 4096,
-							'cost_per_1k_input' => 0.03,
-							'cost_per_1k_output' => 0.06,
-							'supports_json_mode' => true,
-							'supports_functions' => true,
-						),
-						'gpt-4-turbo' => array(
-							'label' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
-							'name' => 'GPT-4 Turbo',
-							'description' => 'Fast & Capable',
-							'context_window' => 128000,
-							'max_output' => 4096,
-							'cost_per_1k_input' => 0.01,
-							'cost_per_1k_output' => 0.03,
-							'supports_json_mode' => true,
-							'supports_functions' => true,
-						),
+				$fallback_openai_models = array(
+					'gpt-3.5-turbo' => array(
+						'label' => __( 'GPT-3.5 Turbo (Fast & Affordable)', 'layoutberg' ),
+						'name' => 'GPT-3.5 Turbo',
+						'description' => 'Fast & Affordable',
+						'context_window' => 16385,
+						'max_output' => 4096,
+						'cost_per_1k_input' => 0.0005,
+						'cost_per_1k_output' => 0.0015,
+						'supports_json_mode' => true,
+						'supports_functions' => true,
+					),
+					'gpt-4' => array(
+						'label' => __( 'GPT-4 (Most Capable)', 'layoutberg' ),
+						'name' => 'GPT-4',
+						'description' => 'Most Capable',
+						'context_window' => 8192,
+						'max_output' => 4096,
+						'cost_per_1k_input' => 0.03,
+						'cost_per_1k_output' => 0.06,
+						'supports_json_mode' => true,
+						'supports_functions' => true,
+					),
+					'gpt-4-turbo' => array(
+						'label' => __( 'GPT-4 Turbo (Fast & Capable)', 'layoutberg' ),
+						'name' => 'GPT-4 Turbo',
+						'description' => 'Fast & Capable',
+						'context_window' => 128000,
+						'max_output' => 4096,
+						'cost_per_1k_input' => 0.01,
+						'cost_per_1k_output' => 0.03,
+						'supports_json_mode' => true,
+						'supports_functions' => true,
 					),
 				);
+
+				// Apply plan restrictions to fallback models
+				if ( ! LayoutBerg_Licensing::can_use_premium_code() || LayoutBerg_Licensing::is_starter_plan() ) {
+					// Expired monthly or Starter - only show GPT-3.5 Turbo
+					$models['openai'] = array(
+						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'models' => array(
+							'gpt-3.5-turbo' => $fallback_openai_models['gpt-3.5-turbo'],
+						),
+					);
+				} else {
+					// Professional and Agency - show all OpenAI models
+					$models['openai'] = array(
+						'label' => __( 'OpenAI Models', 'layoutberg' ),
+						'models' => $fallback_openai_models,
+					);
+				}
 			}
 			
-			if ( $claude_key_status === 'valid' ) {
+			// Only show Claude models if API key is configured AND user has Professional or Agency plan
+			if ( $claude_key_status === 'valid' && LayoutBerg_Licensing::can_use_all_models() ) {
 				$models['claude'] = array(
 					'label' => __( 'Claude Models', 'layoutberg' ),
 					'models' => array(
