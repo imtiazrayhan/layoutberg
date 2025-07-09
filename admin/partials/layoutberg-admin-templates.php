@@ -110,7 +110,7 @@ $categories = array_merge(
 		<div class="layoutberg-filter-group" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
 			<div class="layoutberg-search-container">
 				<input type="text" id="template-search" name="s" value="<?php echo esc_attr( $search_term ); ?>" placeholder="<?php esc_attr_e( 'Search templates...', 'layoutberg' ); ?>" class="layoutberg-search">
-				<button type="submit" class="button layoutberg-search-btn">
+				<button type="button" class="button layoutberg-search-btn">
 					<span class="dashicons dashicons-search"></span>
 				</button>
 			</div>
@@ -1521,10 +1521,17 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// Preview template
 	document.addEventListener('click', function(e) {
-		if (e.target.classList.contains('layoutberg-preview-template')) {
+		const previewButton = e.target.closest('.layoutberg-preview-template');
+		if (previewButton) {
 			e.preventDefault();
-			const templateId = e.target.getAttribute('data-template-id');
+			e.stopPropagation();
+			const templateId = previewButton.getAttribute('data-template-id');
 			console.log('Preview button clicked for template ID:', templateId);
+			
+			if (!templateId) {
+				console.error('No template ID found');
+				return;
+			}
 			
 			const modal = showModal('layoutberg-template-preview-modal');
 			if (!modal) return;
@@ -1608,9 +1615,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// Edit template
 	document.addEventListener('click', function(e) {
-		if (e.target.classList.contains('edit-template')) {
+		const editLink = e.target.closest('.edit-template');
+		if (editLink) {
 			e.preventDefault();
-			const templateId = e.target.getAttribute('data-template-id');
+			const templateId = editLink.getAttribute('data-template-id');
 			console.log('Edit button clicked for template ID:', templateId);
 			
 			const modal = showModal('layoutberg-template-edit-modal');
@@ -1758,8 +1766,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// Use template
 	document.addEventListener('click', function(e) {
-		if (e.target.classList.contains('layoutberg-use-template') || e.target.classList.contains('layoutberg-use-template-modal')) {
-			const templateId = e.target.getAttribute('data-template-id');
+		const useButton = e.target.closest('.layoutberg-use-template, .layoutberg-use-template-modal');
+		if (useButton) {
+			e.preventDefault();
+			e.stopPropagation();
+			console.log('Use template clicked');
+			const templateId = useButton.getAttribute('data-template-id');
+			console.log('Template ID:', templateId);
 			
 			// Close any open modals
 			const modals = document.querySelectorAll('.layoutberg-modal');
@@ -1774,10 +1787,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					increment_usage: 1,
 					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
 				}
-			}).then(() => {
+			}).then((response) => {
+				console.log('Template get response:', response);
 				// Redirect to post editor with template (usage already incremented)
 				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
-			}).catch(() => {
+			}).catch((error) => {
+				console.error('Error getting template:', error);
 				// Redirect anyway even if usage increment fails
 				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
 			});
@@ -1786,9 +1801,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// Export template
 	document.addEventListener('click', function(e) {
-		if (e.target.classList.contains('export-template')) {
+		const exportLink = e.target.closest('.export-template');
+		if (exportLink) {
 			e.preventDefault();
-			const templateId = e.target.getAttribute('data-template-id');
+			const templateId = exportLink.getAttribute('data-template-id');
 			
 			// Make AJAX request to export template
 			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
@@ -1847,3 +1863,4 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 });
+</script>
