@@ -1,4 +1,8 @@
-# CLAUDE.md - LayoutBerg Development Guidelines
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+# LayoutBerg Development Guidelines
 
 This document contains specific instructions and guidelines for Claude (AI assistant) when working on the LayoutBerg WordPress plugin. Always refer to this document before making any code changes.
 
@@ -108,12 +112,18 @@ npm run build
 npm run dev
 
 # Run linting
-npm run lint
-composer run-script phpcs
+npm run lint         # Runs both lint:js and lint:css
+npm run lint:js      # Lint JavaScript only
+npm run lint:css     # Lint CSS only
+npm run format       # Auto-format code
+composer phpcs       # Check PHP coding standards
+composer phpcs-fix   # Auto-fix PHP coding standards
 
 # Run tests
-npm test
-composer run-script test
+npm test             # Run Jest tests
+npm run test:watch   # Run tests in watch mode
+composer test        # Run PHPUnit tests
+composer test:coverage # Generate coverage report
 ```
 
 ---
@@ -176,6 +186,8 @@ Important files to be aware of:
 -   `src/blocks/ai-layout/index.js` - Main Gutenberg block registration
 -   `src/admin/components/GeneratorModal.tsx` - AI generation interface
 -   `admin/partials/layoutberg-admin-display.php` - Settings page template
+-   `webpack.config.js` - Custom webpack configuration extending @wordpress/scripts
+-   `tsconfig.json` - TypeScript configuration with path aliases
 
 ---
 
@@ -270,11 +282,12 @@ public function generate_layout( string $prompt, array $options = [] ) {
 
 ### JavaScript/React Standards
 
--   **TypeScript:** Use for all new React components
+-   **TypeScript:** Use for all new React components (strict mode enabled)
 -   **ES Modules:** Use modern imports
 -   **WordPress Packages:** Prefer `@wordpress/*` packages
 -   **State Management:** Use WordPress Data stores where applicable
--   **Formatting:** Follow Prettier config
+-   **Formatting:** Follow @wordpress/scripts ESLint config
+-   **Path Aliases:** Use configured aliases (@components, @utils, @hooks, @admin, @blocks, @editor)
 
 Example:
 
@@ -572,6 +585,21 @@ register_rest_route( 'layoutberg/v1', '/generate', array(
 
 ---
 
+## Build System Details
+
+### Webpack Configuration
+- Extends @wordpress/scripts default config
+- Custom entry points for modular loading
+- TypeScript support via ts-loader
+- Code splitting for WordPress vendor packages
+- Path aliases configured for cleaner imports
+
+### TypeScript Configuration
+- Target: ES2018 for broad browser support
+- Strict mode enabled for better type safety
+- Path aliases matching webpack config
+- Declaration files generated for type checking
+
 ## Common WordPress Gotchas
 
 -   Post meta keys starting with `_` are hidden
@@ -598,22 +626,30 @@ register_rest_route( 'layoutberg/v1', '/generate', array(
 
 ```bash
 # Before starting work
-git pull origin develop
+git pull origin master
 composer install
 npm install
 
 # During development
 npm run dev
-composer run-script phpcs-fix
+composer phpcs-fix
 
 # Before committing
 npm run lint
-composer run-script test
+composer test
 git diff --cached
 
 # Building for production
 npm run build
 composer install --no-dev
+
+# Webpack Entry Points (configured in webpack.config.js)
+# - admin/index: Admin interface
+# - admin/template-preview: Template preview
+# - admin/onboarding: Onboarding wizard
+# - editor: Main Gutenberg editor integration
+# - blocks/ai-layout/index: AI Layout block
+# - public/index: Public-facing scripts
 ```
 
 Remember: Quality over speed. A well-tested, secure feature is better than a quickly implemented one.
