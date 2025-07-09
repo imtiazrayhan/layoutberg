@@ -55,47 +55,75 @@
 
 ## Implementation Priority List
 
-### High Priority (Professional Plan)
-1. ~~**Template Export UI**~~ ✅ **COMPLETED**
+### ✅ Completed Tasks
+
+1. ~~**Template Export UI**~~ ✅ **COMPLETED (2025-01-09)**
    - ~~Add export button in templates list~~
    - ~~Implementation: Add button next to each template in `layoutberg-admin-templates.php`~~
    - ~~Use existing `export_template()` method from `Template_Manager` class~~
+   - ~~Add AJAX handler with licensing checks~~
+   - ~~Fix import/export compatibility issues~~
 
-2. **Pattern/Block Variations UI**
+2. ~~**License Validation**~~ ✅ **COMPLETED (2025-01-09)**
+   - ~~Updated `validate_license()` method to use Freemius SDK~~
+   - ~~Updated `is_pro()` method to use `can_use_premium_code()`~~
+   - ~~Properly integrated with Freemius licensing system~~
+
+### High Priority (Professional Plan) - TODO
+
+1. **Pattern/Block Variations UI**
    - Add variations selector in generation modal
    - Implementation: Extend `GeneratorModal.tsx` to include variation options
    - Leverage existing `Block_Variations` and `Pattern_Variations` classes
 
-3. **Style Defaults Configuration UI**
+2. **Style Defaults Configuration UI**
    - Add settings tab for default styles
    - Implementation: Add new tab in settings page
    - Save to `layoutberg_options['style_defaults']`
 
-### Medium Priority (Agency Plan)
-4. **Prompt Engineering Templates UI**
+### Medium Priority (Agency Plan) - TODO
+
+1. **Prompt Engineering Templates UI**
    - Expose templates in settings/editor
    - Implementation: Create interface to view/select prompt templates
    - Use existing `Prompt_Engineer` class templates
 
-5. **Debug Mode Toggle**
+2. **Debug Mode Toggle**
    - Add toggle in Advanced settings
    - Implementation: Add checkbox in settings to enable/disable debug mode
    - Control `WP_DEBUG` logging for LayoutBerg specifically
 
-6. **Multisite Features**
+3. **Multisite Features**
    - Enhance network support beyond basic compatibility
    - Implementation: Add network admin pages
    - Create network-wide settings management
 
-### Low Priority (Future Enhancement)
-7. **Advanced Block Customization**
+### Low Priority (Future Enhancement) - TODO
+
+1. **Advanced Block Customization**
    - New feature development required
    - Would need custom block attribute controls
 
-8. **Template Sharing Between Sites**
+2. **Template Sharing Between Sites**
    - Requires significant architecture changes
    - Would need central template repository
    - API for cross-site communication
+
+## ⚠️ IMPORTANT: Temporary Testing Bypasses
+
+The following licensing checks have been temporarily disabled for testing and need to be re-enabled:
+
+1. **Template Export UI** (`admin/partials/layoutberg-admin-templates.php` line 247)
+   - Change `$show_export = true;` back to proper Freemius checks
+
+2. **Export AJAX Handler** (`includes/class-admin.php` line 1454-1462)
+   - Uncomment the `LayoutBerg_Licensing::can_export_templates()` check
+
+3. **Template Save Licensing** (`includes/class-template-manager.php` line 175-202)
+   - Uncomment the licensing and template limit checks
+
+4. **Template Categories** (`includes/class-template-manager.php` line 382-387)
+   - Uncomment the category restriction checks
 
 ## Freemius Feature Gatekeeping Implementation
 
