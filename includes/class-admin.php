@@ -1807,7 +1807,18 @@ class Admin {
 		}
 		$result = $template_manager->get_templates( $args );
 		$templates = $result['templates'];
+		
+		// Convert arrays to objects for easier access in the template
+		$templates = array_map( function( $template ) {
+			return (object) $template;
+		}, $templates );
+		
 		$categories = $template_manager->get_categories();
+		// Add 'All Categories' option for consistency with the main page
+		$categories = array_merge(
+			array( 'all' => __( 'All Categories', 'layoutberg' ) ),
+			$categories
+		);
 
 		ob_start();
 		if ( empty( $templates ) ) : ?>
@@ -1904,11 +1915,7 @@ class Admin {
 									|
 									<?php 
 									// Check if user can export templates (Professional or Agency plan)
-									$can_export = false;
-									if ( function_exists( 'layoutberg_fs' ) ) {
-										$can_export = \layoutberg_fs()->can_use_premium_code() && 
-													 ( \layoutberg_fs()->is_plan('professional') || \layoutberg_fs()->is_plan('agency') );
-									}
+									$can_export = \DotCamp\LayoutBerg\LayoutBerg_Licensing::can_export_templates();
 									if ( $can_export ) : 
 									?>
 										<a href="#" class="export-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
@@ -1916,19 +1923,16 @@ class Admin {
 										</a>
 									<?php else : ?>
 										<?php 
-										// Show locked export option if Freemius is available
-										if ( function_exists( 'layoutberg_fs' ) ) :
-											$button_text = ! \layoutberg_fs()->can_use_premium_code() 
-												? __( 'Renew to export', 'layoutberg' )
-												: __( 'Upgrade to export', 'layoutberg' );
-											$button_url = ! \layoutberg_fs()->can_use_premium_code() 
-												? \layoutberg_fs()->get_account_url() 
-												: \layoutberg_fs()->get_upgrade_url();
+										// Show locked export option
+										$is_expired = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_expired_monthly();
+										$button_text = $is_expired 
+											? __( 'Renew to export', 'layoutberg' )
+											: __( 'Upgrade to export', 'layoutberg' );
+										$button_url = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url();
 										?>
-											<a href="<?php echo esc_url( $button_url ); ?>" class="export-template-locked" title="<?php echo esc_attr( $button_text ); ?>">
-												<?php esc_html_e( 'Export', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 12px; vertical-align: middle;"></span>
-											</a>
-										<?php endif; ?>
+										<a href="<?php echo esc_url( $button_url ); ?>" class="export-template-locked" title="<?php echo esc_attr( $button_text ); ?>">
+											<?php esc_html_e( 'Export', 'layoutberg' ); ?> <span class="dashicons dashicons-lock" style="font-size: 12px; vertical-align: middle;"></span>
+										</a>
 									<?php endif; ?>
 								</span>
 							<?php endif; ?>
