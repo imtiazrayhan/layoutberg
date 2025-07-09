@@ -191,6 +191,7 @@ class LayoutBerg {
 		$this->loader->add_action( 'wp_ajax_layoutberg_get_template', $admin, 'ajax_get_template' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_update_template', $admin, 'ajax_update_template' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_import_template', $admin, 'ajax_import_template' );
+		$this->loader->add_action( 'wp_ajax_layoutberg_export_template', $admin, 'ajax_export_template' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_get_generation_result', $admin, 'ajax_get_generation_result' );
 		$this->loader->add_action( 'wp_ajax_layoutberg_clear_cache', $admin, 'ajax_clear_cache' );
 
@@ -395,8 +396,11 @@ class LayoutBerg {
 	 * @return bool True if pro version is active.
 	 */
 	private function is_pro() {
-		$license = get_option( 'layoutberg_license_key' );
-		return ! empty( $license ) && $this->validate_license( $license );
+		// Use Freemius to check if user has valid license
+		if ( function_exists( '\layoutberg_fs' ) ) {
+			return \layoutberg_fs()->can_use_premium_code();
+		}
+		return false;
 	}
 
 	/**
@@ -405,10 +409,12 @@ class LayoutBerg {
 	 * @since 1.0.0
 	 * @param string $license License key.
 	 * @return bool True if license is valid.
+	 * @deprecated 1.0.0 Use is_pro() instead, which uses Freemius SDK
 	 */
 	private function validate_license( $license ) {
-		// TODO: Implement license validation.
-		return true;
+		// This method is deprecated - we now use Freemius SDK for license validation
+		// Keeping for backward compatibility but always returning false
+		return false;
 	}
 
 	/**

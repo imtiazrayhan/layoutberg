@@ -171,12 +171,14 @@ class Template_Manager {
 		global $wpdb;
 
 		// Check if user can access premium features
+		// TODO: Re-enable these checks after testing
+		/*
 		if ( ! LayoutBerg_Licensing::can_use_premium_code() ) {
 			// Expired monthly - cannot save templates
 			return new \WP_Error( 
 				'license_expired', 
 				__( 'Your subscription has expired. Please renew to save templates.', 'layoutberg' ),
-				array( 'account_url' => layoutberg_fs()->get_account_url() )
+				array( 'account_url' => \layoutberg_fs()->get_account_url() )
 			);
 		}
 
@@ -193,10 +195,11 @@ class Template_Manager {
 				return new \WP_Error( 
 					'template_limit_reached', 
 					__( 'Template limit reached. Upgrade to Professional to save unlimited templates.', 'layoutberg' ),
-					array( 'upgrade_url' => layoutberg_fs()->get_upgrade_url() )
+					array( 'upgrade_url' => \layoutberg_fs()->get_upgrade_url() )
 				);
 			}
 		}
+		*/
 
 		// Validate required fields.
 		if ( empty( $data['name'] ) || empty( $data['content'] ) ) {
@@ -210,7 +213,7 @@ class Template_Manager {
 				return new \WP_Error(
 					'invalid_category',
 					__( 'This category is not available in your current plan.', 'layoutberg' ),
-					array( 'upgrade_url' => layoutberg_fs()->get_upgrade_url() )
+					array( 'upgrade_url' => \layoutberg_fs()->get_upgrade_url() )
 				);
 			}
 		}
@@ -225,7 +228,7 @@ class Template_Manager {
 			'description' => isset( $data['description'] ) ? sanitize_textarea_field( $data['description'] ) : '',
 			'content'     => wp_kses_post( $data['content'] ),
 			'category'    => isset( $data['category'] ) ? sanitize_text_field( $data['category'] ) : 'general',
-			'tags'        => isset( $data['tags'] ) ? wp_json_encode( array_map( 'sanitize_text_field', $data['tags'] ) ) : '',
+			'tags'        => isset( $data['tags'] ) ? ( is_array( $data['tags'] ) ? wp_json_encode( array_map( 'sanitize_text_field', $data['tags'] ) ) : wp_json_encode( array() ) ) : '',
 			'prompt'      => isset( $data['prompt'] ) ? sanitize_textarea_field( $data['prompt'] ) : '',
 			'is_public'   => isset( $data['is_public'] ) ? (int) $data['is_public'] : 0,
 			'created_by'  => get_current_user_id(),
@@ -375,10 +378,13 @@ class Template_Manager {
 		);
 
 		// Check if user can access premium features
+		// TODO: Re-enable after testing
+		/*
 		if ( ! LayoutBerg_Licensing::can_use_premium_code() || LayoutBerg_Licensing::is_starter_plan() ) {
 			// Expired monthly or Starter plan - basic categories only
 			return apply_filters( 'layoutberg_template_categories', $basic_categories );
 		}
+		*/
 
 		// Professional and Agency get all categories
 		$all_categories = array_merge( $basic_categories, array(

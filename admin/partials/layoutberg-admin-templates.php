@@ -240,6 +240,18 @@ $categories = array(
 										<?php esc_html_e( 'Edit', 'layoutberg' ); ?>
 									</a>
 									|
+									<?php 
+									// For testing purposes, always show export button
+									// TODO: Re-enable Freemius checks after testing
+									$show_export = true; // Temporarily always true for testing
+									
+									if ( $show_export ) : 
+									?>
+										<a href="#" class="export-template" data-template-id="<?php echo esc_attr( $template->id ); ?>">
+											<?php esc_html_e( 'Export', 'layoutberg' ); ?>
+										</a>
+										|
+									<?php endif; ?>
 									<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'delete', 'template_id' => $template->id ), admin_url( 'admin.php?page=layoutberg-templates' ) ), 'delete_template_' . $template->id ) ); ?>" class="delete-template" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete this template?', 'layoutberg' ); ?>');">
 										<?php esc_html_e( 'Delete', 'layoutberg' ); ?>
 									</a>
@@ -492,6 +504,14 @@ $categories = array(
 .template-actions-footer a:hover {
 	color: #135e96;
 	text-decoration: underline;
+}
+
+.template-actions-footer .export-template-locked {
+	opacity: 0.7;
+}
+
+.template-actions-footer .export-template-locked:hover {
+	opacity: 1;
 }
 
 .layoutberg-templates-empty {
@@ -781,7 +801,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (options.data instanceof FormData) {
 					requestData = options.data;
 				} else if (typeof options.data === 'object') {
-					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 					const formData = new URLSearchParams();
 					for (const key in options.data) {
 						formData.append(key, options.data[key]);
@@ -790,7 +809,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 			
+			// Open the connection FIRST
 			xhr.open(method, requestUrl);
+			
+			// Set headers AFTER opening the connection
+			if (method === 'POST' && !(options.data instanceof FormData)) {
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			}
 			
 			xhr.onload = function() {
 				if (xhr.status >= 200 && xhr.status < 300) {
@@ -1128,6 +1153,51 @@ document.addEventListener('DOMContentLoaded', function() {
 				// Redirect anyway even if usage increment fails
 				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
 			});
+		}
+	});
+	
+	// Export template
+	document.addEventListener('click', function(e) {
+		if (e.target.classList.contains('export-template')) {
+			e.preventDefault();
+			const templateId = e.target.getAttribute('data-template-id');
+			
+			// Make AJAX request to export template
+			makeAjaxRequest('<?php echo admin_url( 'admin-ajax.php' ); ?>', {
+				method: 'POST',
+				data: {
+					action: 'layoutberg_export_template',
+					template_id: templateId,
+					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
+				}
+			}).then(response => {
+				if (response.success && response.data) {
+					// Create a blob from the JSON data
+					const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+					const url = window.URL.createObjectURL(blob);
+					
+					// Create a temporary link and trigger download
+					const a = document.createElement('a');
+					a.href = url;
+					a.download = response.data.name ? `layoutberg-template-${response.data.name.toLowerCase().replace(/\s+/g, '-')}.json` : 'layoutberg-template.json';
+					document.body.appendChild(a);
+					a.click();
+					
+					// Cleanup
+					window.URL.revokeObjectURL(url);
+					document.body.removeChild(a);
+				} else {
+					alert(response.data || 'Failed to export template');
+				}
+			}).catch(error => {
+				alert('Error exporting template: ' + error.message);
+			});
+		}
+		
+		// Handle locked export links
+		if (e.target.classList.contains('export-template-locked')) {
+			// Let the default action happen (navigate to upgrade/account URL)
+			return true;
 		}
 	});
 	

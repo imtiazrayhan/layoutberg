@@ -1405,33 +1405,86 @@ class Admin {
 			wp_send_json_error( __( 'No file uploaded or upload error.', 'layoutberg' ) );
 		}
 
-		// Validate file type.
-		$file_type = wp_check_filetype( $_FILES['import_file']['name'] );
-		if ( $file_type['ext'] !== 'json' ) {
+		// Validate file type - check the file extension manually since wp_check_filetype might not recognize .json
+		$filename = $_FILES['import_file']['name'];
+		$file_extension = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+		
+		if ( $file_extension !== 'json' ) {
 			wp_send_json_error( __( 'Invalid file type. Please upload a JSON file.', 'layoutberg' ) );
 		}
-
-		// Read file content.
+		
+		// Read and validate file content
 		$content = file_get_contents( $_FILES['import_file']['tmp_name'] );
 		if ( ! $content ) {
 			wp_send_json_error( __( 'Failed to read file content.', 'layoutberg' ) );
 		}
-
-		// Parse JSON.
+		
+		// Parse and validate JSON
 		$template_data = json_decode( $content, true );
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			wp_send_json_error( __( 'Invalid JSON format.', 'layoutberg' ) );
+			wp_send_json_error( __( 'Invalid JSON format. Please upload a valid JSON file.', 'layoutberg' ) );
 		}
 
 		// Import template.
-		$template_manager = new Template_Manager();
-		$template_id = $template_manager->import_template( $template_data );
+		try {
+			$template_manager = new Template_Manager();
+			$template_id = $template_manager->import_template( $template_data );
 
-		if ( is_wp_error( $template_id ) ) {
-			wp_send_json_error( $template_id->get_error_message() );
+			if ( is_wp_error( $template_id ) ) {
+				wp_send_json_error( $template_id->get_error_message() );
+			}
+
+			wp_send_json_success( __( 'Template imported successfully.', 'layoutberg' ) );
+		} catch ( Exception $e ) {
+			error_log( 'LayoutBerg Import Error: ' . $e->getMessage() );
+			error_log( 'Stack trace: ' . $e->getTraceAsString() );
+			wp_send_json_error( __( 'Import failed: ', 'layoutberg' ) . $e->getMessage() );
+		}
+	}
+
+	/**
+	 * AJAX handler to export a template.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_export_template() {
+		// Check nonce.
+		if ( ! check_ajax_referer( 'layoutberg_nonce', '_wpnonce', false ) ) {
+			wp_send_json_error( __( 'Invalid security token.', 'layoutberg' ) );
 		}
 
-		wp_send_json_success( __( 'Template imported successfully.', 'layoutberg' ) );
+		// Check permissions.
+		if ( ! current_user_can( 'layoutberg_manage_templates' ) ) {
+			wp_send_json_error( __( 'You do not have permission to export templates.', 'layoutberg' ) );
+		}
+
+		// Check if user can export templates (Professional or Agency plan).
+		// TODO: Re-enable this check after testing
+		/*
+		if ( ! LayoutBerg_Licensing::can_export_templates() ) {
+			$message = LayoutBerg_Licensing::is_expired_monthly() 
+				? __( 'Your subscription has expired. Please renew to export templates.', 'layoutberg' )
+				: __( 'Template export is available in the Professional and Agency plans. Please upgrade to export templates.', 'layoutberg' );
+			wp_send_json_error( $message );
+		}
+		*/
+
+		// Get template ID.
+		$template_id = isset( $_POST['template_id'] ) ? absint( $_POST['template_id'] ) : 0;
+		if ( ! $template_id ) {
+			wp_send_json_error( __( 'Invalid template ID.', 'layoutberg' ) );
+		}
+
+		// Export template.
+		$template_manager = new Template_Manager();
+		$template_data = $template_manager->export_template( $template_id );
+
+		if ( is_wp_error( $template_data ) ) {
+			wp_send_json_error( $template_data->get_error_message() );
+		}
+
+		// Return template data for download.
+		wp_send_json_success( $template_data );
 	}
 
 	/**

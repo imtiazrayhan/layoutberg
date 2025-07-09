@@ -32,7 +32,7 @@ class LayoutBerg_Licensing {
 	 * @return bool True if user can use premium features.
 	 */
 	public static function can_use_premium_code() {
-		return layoutberg_fs()->can_use_premium_code();
+		return \layoutberg_fs()->can_use_premium_code();
 	}
 
 	/**
@@ -42,9 +42,9 @@ class LayoutBerg_Licensing {
 	 * @return bool True if user has expired monthly subscription.
 	 */
 	public static function is_expired_monthly() {
-		return layoutberg_fs()->is_registered() && 
-		       ! layoutberg_fs()->can_use_premium_code() && 
-		       ! layoutberg_fs()->is_paying();
+		return \layoutberg_fs()->is_registered() && 
+		       ! \layoutberg_fs()->can_use_premium_code() && 
+		       ! \layoutberg_fs()->is_paying();
 	}
 
 	/**
@@ -54,7 +54,7 @@ class LayoutBerg_Licensing {
 	 * @return bool True if user is on Starter plan.
 	 */
 	public static function is_starter_plan() {
-		return self::can_use_premium_code() && layoutberg_fs()->is_plan( 'starter' );
+		return self::can_use_premium_code() && \layoutberg_fs()->is_plan( 'starter' );
 	}
 
 	/**
@@ -64,7 +64,7 @@ class LayoutBerg_Licensing {
 	 * @return bool True if user is on Professional plan.
 	 */
 	public static function is_professional_plan() {
-		return self::can_use_premium_code() && layoutberg_fs()->is_plan( 'professional' );
+		return self::can_use_premium_code() && \layoutberg_fs()->is_plan( 'professional' );
 	}
 
 	/**
@@ -74,7 +74,7 @@ class LayoutBerg_Licensing {
 	 * @return bool True if user is on Agency plan.
 	 */
 	public static function is_agency_plan() {
-		return self::can_use_premium_code() && layoutberg_fs()->is_plan( 'agency' );
+		return self::can_use_premium_code() && \layoutberg_fs()->is_plan( 'agency' );
 	}
 
 	/**
@@ -190,9 +190,9 @@ class LayoutBerg_Licensing {
 	 */
 	public static function get_action_url() {
 		if ( self::is_expired_monthly() ) {
-			return layoutberg_fs()->get_account_url(); // For renewal
+			return \layoutberg_fs()->get_account_url(); // For renewal
 		}
-		return layoutberg_fs()->get_upgrade_url(); // For upgrade
+		return \layoutberg_fs()->get_upgrade_url(); // For upgrade
 	}
 
 	/**
