@@ -39,6 +39,7 @@ class Admin {
 	public function __construct( $version ) {
 		$this->version = $version;
 		add_action('wp_ajax_layoutberg_render_templates_grid', array($this, 'ajax_render_templates_grid'));
+		add_action('wp_dashboard_setup', array($this, 'add_dashboard_widget'));
 	}
 
 	/**
@@ -2051,5 +2052,126 @@ class Admin {
 		<?php endif;
 		$html = ob_get_clean();
 		wp_send_json_success([ 'html' => $html ]);
+	}
+	
+	/**
+	 * Add dashboard widget for plan status
+	 *
+	 * @since 1.0.0
+	 */
+	public function add_dashboard_widget() {
+		wp_add_dashboard_widget(
+			'layoutberg_plan_status',
+			__( 'LayoutBerg Plan Status', 'layoutberg' ),
+			array( $this, 'render_dashboard_widget' )
+		);
+	}
+	
+	/**
+	 * Render dashboard widget content
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_dashboard_widget() {
+		// Get current plan info
+		$plan_name = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_plan_name();
+		$is_starter = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_starter_plan();
+		$is_expired = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_expired_monthly();
+		
+		// Get usage stats
+		global $wpdb;
+		$user_id = get_current_user_id();
+		
+		// Template count
+		$templates_table = $wpdb->prefix . 'layoutberg_templates';
+		$template_count = $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$templates_table} WHERE user_id = %d",
+			$user_id
+		) );
+		$template_limit = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_template_limit();
+		
+		// Generation count (last 30 days)
+		$generations_table = $wpdb->prefix . 'layoutberg_generations';
+		$generation_count = $wpdb->get_var( $wpdb->prepare(
+			"SELECT COUNT(*) FROM {$generations_table} WHERE user_id = %d AND created_at >= %s",
+			$user_id,
+			date( 'Y-m-d H:i:s', strtotime( '-30 days' ) )
+		) );
+		
+		?>
+		<div class="layoutberg-dashboard-widget">
+			<div class="plan-header" style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e5e7eb;">
+				<h4 style="margin: 0 0 5px 0; font-size: 16px;">
+					<?php esc_html_e( 'Current Plan:', 'layoutberg' ); ?>
+					<span style="color: <?php echo $is_expired ? '#ef4444' : '#6366f1'; ?>;">
+						<?php echo esc_html( $plan_name ); ?>
+					</span>
+				</h4>
+				<?php if ( $is_expired ) : ?>
+					<p style="color: #ef4444; margin: 5px 0;">
+						<?php esc_html_e( 'Your subscription has expired. Some features are limited.', 'layoutberg' ); ?>
+					</p>
+				<?php endif; ?>
+			</div>
+			
+			<div class="usage-stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+				<!-- Templates -->
+				<div class="stat-box" style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+					<h5 style="margin: 0 0 10px 0; font-size: 13px; color: #6b7280;">
+						<?php esc_html_e( 'Templates', 'layoutberg' ); ?>
+					</h5>
+					<div style="font-size: 24px; font-weight: bold; color: #111827;">
+						<?php echo number_format_i18n( $template_count ); ?>
+						<?php if ( $template_limit !== PHP_INT_MAX ) : ?>
+							<span style="font-size: 14px; font-weight: normal; color: #6b7280;">
+								/ <?php echo number_format_i18n( $template_limit ); ?>
+							</span>
+						<?php endif; ?>
+					</div>
+					<?php if ( $is_starter && $template_limit > 0 ) : ?>
+						<div style="margin-top: 8px; background: #e5e7eb; height: 4px; border-radius: 2px; overflow: hidden;">
+							<div style="
+								background: <?php echo $template_count >= $template_limit ? '#ef4444' : '#6366f1'; ?>;
+								width: <?php echo min( 100, ( $template_count / $template_limit ) * 100 ); ?>%;
+								height: 100%;
+							"></div>
+						</div>
+					<?php endif; ?>
+				</div>
+				
+				<!-- Generations -->
+				<div class="stat-box" style="background: #f3f4f6; padding: 15px; border-radius: 8px;">
+					<h5 style="margin: 0 0 10px 0; font-size: 13px; color: #6b7280;">
+						<?php esc_html_e( 'Generations (30d)', 'layoutberg' ); ?>
+					</h5>
+					<div style="font-size: 24px; font-weight: bold; color: #111827;">
+						<?php echo number_format_i18n( $generation_count ); ?>
+					</div>
+					<?php if ( $is_starter ) : ?>
+						<p style="margin-top: 5px; font-size: 11px; color: #9ca3af;">
+							<?php esc_html_e( 'History limited to 30 days', 'layoutberg' ); ?>
+						</p>
+					<?php endif; ?>
+				</div>
+			</div>
+			
+			<div class="widget-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=layoutberg' ) ); ?>" class="button button-primary">
+					<?php esc_html_e( 'Open LayoutBerg', 'layoutberg' ); ?>
+				</a>
+				<?php if ( ! \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_agency_plan() ) : ?>
+					<a href="<?php echo esc_url( \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url() ); ?>" class="button">
+						<?php echo $is_expired ? esc_html__( 'Renew Plan', 'layoutberg' ) : esc_html__( 'Upgrade Plan', 'layoutberg' ); ?>
+					</a>
+				<?php endif; ?>
+			</div>
+		</div>
+		
+		<style>
+		.layoutberg-dashboard-widget {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+		}
+		</style>
+		<?php
 	}
 }

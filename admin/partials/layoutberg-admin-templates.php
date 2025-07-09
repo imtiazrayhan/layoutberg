@@ -68,9 +68,63 @@ $categories = array_merge(
 	array( 'all' => __( 'All Categories', 'layoutberg' ) ),
 	$available_categories
 );
+// Get current user's template count for Starter plan limit display
+$user_template_count = 0;
+$template_limit = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_template_limit();
+$is_starter = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_starter_plan();
+
+if ( $is_starter ) {
+	$user_templates_table = $wpdb->prefix . 'layoutberg_templates';
+	$user_template_count = $wpdb->get_var( $wpdb->prepare(
+		"SELECT COUNT(*) FROM {$user_templates_table} WHERE user_id = %d",
+		get_current_user_id()
+	) );
+}
 ?>
 
 <div class="wrap layoutberg-templates">
+	<?php if ( $is_starter && $template_limit > 0 ) : ?>
+		<div class="layoutberg-plan-usage-bar" style="margin-bottom: 20px;">
+			<div class="usage-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+				<h3 style="margin: 0; font-size: 14px; font-weight: 500;"><?php esc_html_e( 'Template Usage', 'layoutberg' ); ?></h3>
+				<span style="font-size: 14px; color: #6b7280;">
+					<?php 
+					printf( 
+						esc_html__( '%d of %d templates', 'layoutberg' ), 
+						$user_template_count, 
+						$template_limit 
+					); 
+					?>
+				</span>
+			</div>
+			<div class="usage-progress" style="background: #e5e7eb; height: 8px; border-radius: 4px; overflow: hidden;">
+				<div class="usage-bar" style="
+					background: <?php echo $user_template_count >= $template_limit ? '#ef4444' : '#6366f1'; ?>;
+					width: <?php echo min( 100, ( $user_template_count / $template_limit ) * 100 ); ?>%;
+					height: 100%;
+					transition: width 0.3s ease;
+				"></div>
+			</div>
+			<?php if ( $user_template_count >= $template_limit ) : ?>
+				<p style="margin-top: 8px; color: #ef4444; font-size: 13px;">
+					<?php esc_html_e( 'You\'ve reached your template limit.', 'layoutberg' ); ?>
+					<a href="<?php echo esc_url( \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url() ); ?>" style="color: #6366f1; text-decoration: underline;">
+						<?php esc_html_e( 'Upgrade for unlimited templates', 'layoutberg' ); ?>
+					</a>
+				</p>
+			<?php elseif ( $user_template_count >= $template_limit * 0.8 ) : ?>
+				<p style="margin-top: 8px; color: #f59e0b; font-size: 13px;">
+					<?php 
+					printf( 
+						esc_html__( 'You have %d templates remaining.', 'layoutberg' ), 
+						$template_limit - $user_template_count 
+					); 
+					?>
+				</p>
+			<?php endif; ?>
+		</div>
+	<?php endif; ?>
+	
 	<div class="layoutberg-header-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
 		<h1 class="wp-heading-inline" style="margin-bottom: 0;">
 			<?php echo esc_html( get_admin_page_title() ); ?>
