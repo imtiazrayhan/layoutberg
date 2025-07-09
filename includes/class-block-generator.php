@@ -128,7 +128,8 @@ class Block_Generator {
 		$this->cache_manager->track_miss();
 
 		// Check if variations are enabled and prompt matches a predefined template
-		if ( $this->use_pattern_variations() ) {
+		// Must check both licensing AND user preference
+		if ( $this->use_pattern_variations() && isset( $options['useVariations'] ) && $options['useVariations'] === true ) {
 			$template_key = $this->matches_predefined_template( $prompt );
 
 			if ( $template_key !== false ) {

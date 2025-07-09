@@ -181,6 +181,9 @@ class API_Handler {
 					'model'        => $settings['model'] ?? 'gpt-3.5-turbo',
 					'temperature'  => $settings['temperature'] ?? 0.7,
 					'max_tokens'   => $settings['maxTokens'] ?? 2000,
+					'useVariations' => $settings['useVariations'] ?? false,
+					'variationStyle' => $settings['variationStyle'] ?? null,
+					'templateKey' => $settings['templateKey'] ?? null,
 				);
 			}
 
