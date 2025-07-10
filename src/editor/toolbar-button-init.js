@@ -119,7 +119,7 @@ const addLayoutBergButton = () => {
 						}
 					}, 100 );
 				} else {
-					console.log( 'LayoutBerg: Could not find modal trigger' );
+					// Modal trigger not found
 				}
 			}
 		} );

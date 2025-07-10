@@ -108,7 +108,7 @@ const OnboardingWizard = () => {
 					},
 				} );
 			} catch ( error ) {
-				console.error( 'Failed to save progress:', error );
+				// Error saving progress
 			}
 			setIsLoading( false );
 		}
@@ -139,7 +139,7 @@ const OnboardingWizard = () => {
 			window.location.href =
 				response.redirect_url || layoutbergOnboarding.dashboardUrl;
 		} catch ( error ) {
-			console.error( 'Failed to complete onboarding:', error );
+			// Error completing onboarding
 			setIsLoading( false );
 		}
 	};
@@ -165,7 +165,7 @@ const OnboardingWizard = () => {
 				window.location.href =
 					response.redirect_url || layoutbergOnboarding.settingsUrl;
 			} catch ( error ) {
-				console.error( 'Failed to skip onboarding:', error );
+				// Error skipping onboarding
 				setIsLoading( false );
 			}
 		}

@@ -979,7 +979,7 @@
 			var $modal = $( '#layoutberg-modal-' + modalId );
 
 			if ( ! $modal.length ) {
-				console.warn( 'Modal not found:', modalId );
+				// Modal not found
 				return;
 			}
 

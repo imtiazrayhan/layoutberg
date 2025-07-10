@@ -1408,7 +1408,7 @@ if (typeof ajaxurl === 'undefined') {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-	console.log('DOMContentLoaded fired - initializing LayoutBerg templates page');
+	// Initialize LayoutBerg templates page
 	
 	// Helper function to make AJAX requests
 	function makeAjaxRequest(url, options) {
@@ -1466,9 +1466,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				options.beforeSend();
 			}
 			
-			console.log('Making request to:', requestUrl);
-			console.log('Request method:', method);
-			console.log('Request data:', requestData);
+			// Making request to: requestUrl with method: method
 			
 			xhr.send(requestData);
 		});
@@ -1476,29 +1474,22 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// Helper function to show modal
 	function showModal(modalId) {
-		console.log('Attempting to show modal:', modalId);
+		// Attempting to show modal: modalId
 		
 		// First, close any currently open modals
 		const openModals = document.querySelectorAll('.layoutberg-modal');
 		openModals.forEach(openModal => {
 			if (openModal.style.display === 'flex' || openModal.classList.contains('show')) {
-				console.log('Closing previously open modal:', openModal.id);
+				// Closing previously open modal
 				hideModal(openModal);
 			}
 		});
 		
 		const modal = document.getElementById(modalId);
-		console.log('Modal element found:', modal);
+		// Modal element found
 		
 		if (modal) {
-			console.log('Modal initial display:', getComputedStyle(modal).display);
-			console.log('Modal initial style attribute:', modal.getAttribute('style'));
-			console.log('Modal computed styles:', {
-				position: getComputedStyle(modal).position,
-				zIndex: getComputedStyle(modal).zIndex,
-				visibility: getComputedStyle(modal).visibility,
-				opacity: getComputedStyle(modal).opacity
-			});
+			// Check modal computed styles before displaying
 			
 			// Remove all inline styles first to ensure clean state
 			modal.removeAttribute('style');
@@ -1513,20 +1504,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Prevent body scrolling when modal is open
 			document.body.style.overflow = 'hidden';
 			
-			console.log('Modal style after show:', modal.getAttribute('style'));
-			console.log('Modal display after show:', getComputedStyle(modal).display);
-			console.log('Modal is visible:', modal.offsetWidth > 0 && modal.offsetHeight > 0);
-			console.log('Modal dimensions:', {
-				width: modal.offsetWidth,
-				height: modal.offsetHeight,
-				clientWidth: modal.clientWidth,
-				clientHeight: modal.clientHeight
-			});
+			// Modal display state and dimensions updated
 			
 			return modal;
 		} else {
-			console.error('Modal not found:', modalId);
-			console.error('Available elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+			// Modal not found: modalId
 			return null;
 		}
 	}
@@ -1534,7 +1516,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Helper function to hide modal
 	function hideModal(modal) {
 		if (modal) {
-			console.log('Hiding modal:', modal.id);
+			// Hiding modal
 			// Remove all inline styles to ensure clean state
 			modal.removeAttribute('style');
 			// Re-apply display none
@@ -1543,7 +1525,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			modal.classList.remove('show');
 			// Ensure body scroll is restored
 			document.body.style.overflow = '';
-			console.log('Modal hidden, body overflow restored');
+			// Modal hidden, body overflow restored
 		}
 	}
 	
@@ -1563,9 +1545,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	
 	function updateTemplatesGridAJAX() {
-		console.log('updateTemplatesGridAJAX called');
+		// Update templates grid with AJAX
 		const params = getFilterParams();
-		console.log('Filter params:', params);
+		// Filter params collected
 		
 		const url = new URL(typeof ajaxurl !== 'undefined' ? ajaxurl : '<?php echo admin_url( 'admin-ajax.php' ); ?>', window.location.origin);
 		url.searchParams.set('action', 'layoutberg_render_templates_grid');
@@ -1574,7 +1556,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			else url.searchParams.delete(key);
 		});
 		
-		console.log('AJAX URL:', url.toString());
+		// AJAX URL prepared
 
 		const gridContainer = document.querySelector('.layoutberg-templates-grid') || document.querySelector('.layoutberg-templates-empty');
 		const searchContainer = document.querySelector('.layoutberg-search-container');
@@ -1594,14 +1576,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		fetch(url.toString(), { credentials: 'same-origin' })
 			.then(res => {
-				console.log('AJAX response status:', res.status);
+				// Check AJAX response status
 				if (!res.ok) {
 					throw new Error('HTTP error! status: ' + res.status);
 				}
 				return res.json();
 			})
 			.then(data => {
-				console.log('AJAX response data:', data);
+				// Process AJAX response data
 				if (data.success && data.data && data.data.html) {
 					const grid = document.querySelector('.layoutberg-templates-grid') || document.querySelector('.layoutberg-templates-empty');
 					if (grid) {
@@ -1610,14 +1592,14 @@ document.addEventListener('DOMContentLoaded', function() {
 						grid.replaceWith(wrapper.firstElementChild);
 					}
 				} else {
-					console.error('AJAX error:', data.data || 'Unknown error');
+					// AJAX error occurred
 					if (data.data) {
 						alert('Error: ' + data.data);
 					}
 				}
 			})
 			.catch((error) => {
-				console.error('AJAX fetch error:', error);
+				// AJAX fetch error occurred
 				alert('Error loading templates: ' + error.message);
 			})
 			.finally(() => {
@@ -1671,11 +1653,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	const debouncedUpdate = debounce(updateTemplatesGridAJAX, 300);
 	
 	if (searchInput) {
-		console.log('Search input element found:', searchInput);
+		// Search input element found
 		
 		// Live search as you type
 		searchInput.addEventListener('input', function(e) {
-			console.log('Search input event fired, value:', e.target.value);
+			// Search input event fired
 			// Show instant feedback
 			if (e.target.value.trim()) {
 				searchInput.setAttribute('data-searching', 'true');
@@ -1687,10 +1669,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Also handle Enter key for immediate search
 		searchInput.addEventListener('keypress', function(e) {
-			console.log('Keypress event fired, key:', e.key);
+			// Keypress event fired
 			if (e.key === 'Enter') {
 				e.preventDefault();
-				console.log('Enter key pressed, triggering immediate search');
+				// Enter key pressed, triggering immediate search
 				// Cancel any pending debounced calls
 				clearTimeout(debouncedUpdate.timeout);
 				// Execute search immediately
@@ -1698,7 +1680,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		});
 	} else {
-		console.error('Search input element not found! Looking for #template-search');
+		// Search input element not found
 	}
 	if (searchBtn) {
 		searchBtn.addEventListener('click', function(e) {
@@ -1714,10 +1696,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			e.preventDefault();
 			e.stopPropagation();
 			const templateId = previewButton.getAttribute('data-template-id');
-			console.log('Preview button clicked for template ID:', templateId);
+			// Preview button clicked for template
 			
 			if (!templateId) {
-				console.error('No template ID found');
+				// No template ID found
 				return;
 			}
 			
@@ -1734,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
 				},
 				beforeSend: function() {
-					console.log('Sending AJAX request for preview template ID:', templateId);
+					// Sending AJAX request for preview template
 					// Show loading state using the preview component
 					if (window.layoutbergTemplatePreview && window.layoutbergTemplatePreview.init) {
 						window.layoutbergTemplatePreview.init(
@@ -1745,11 +1727,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 			}).then(response => {
-				console.log('Preview AJAX response:', response);
+				// Preview AJAX response received
 				if (response.success && response.data) {
-					console.log('Template content:', response.data.content);
-					console.log('Content type:', typeof response.data.content);
-					console.log('Content length:', response.data.content ? response.data.content.length : 0);
+					// Template content loaded successfully
 					
 					// Test with hardcoded content first
 					const testContent = `<!-- wp:paragraph -->
@@ -1760,7 +1740,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <h2>Test Heading</h2>
 <!-- /wp:heading -->`;
 					
-					console.log('Using test content for debugging');
+					// Using test content for debugging
 					
 					// Use the new Gutenberg preview component
 					if (window.layoutbergTemplatePreview && window.layoutbergTemplatePreview.init) {
@@ -1792,7 +1772,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 			}).catch(error => {
-				console.log('Preview AJAX error:', error);
+				// Preview AJAX error occurred
 				const container = document.getElementById('layoutberg-gutenberg-preview-container');
 				if (container) {
 					container.innerHTML = '<div class="notice notice-error"><p>Error loading template: ' + error.message + '</p></div>';
@@ -1807,7 +1787,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (editLink) {
 			e.preventDefault();
 			const templateId = editLink.getAttribute('data-template-id');
-			console.log('Edit button clicked for template ID:', templateId);
+			// Edit button clicked for template
 			
 			const modal = showModal('layoutberg-template-edit-modal');
 			if (!modal) return;
@@ -1821,10 +1801,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
 				},
 				beforeSend: function() {
-					console.log('Sending AJAX request for edit template ID:', templateId);
+					// Sending AJAX request for edit template
 				}
 			}).then(response => {
-				console.log('Edit AJAX response:', response);
+				// Edit AJAX response received
 				if (response.success && response.data) {
 					const fields = {
 						'template-id': response.data.id,
@@ -1861,7 +1841,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}
 			}).catch(error => {
-				console.log('Edit AJAX error:', error);
+				// Edit AJAX error occurred
 				alert('Error loading template data: ' + error.message);
 				hideModal(modal);
 			});
@@ -1906,16 +1886,15 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	// Import template
 	const importBtn = document.querySelector('.layoutberg-import-template');
-	console.log('Import button found:', importBtn);
+	// Import button element
 	if (importBtn) {
 		importBtn.addEventListener('click', function(e) {
 			e.preventDefault();
-			console.log('Import button clicked');
-			console.log('Button classes:', this.classList);
+			// Import button clicked
 			
 			// Check if import is locked
 			if (this.classList.contains('disabled')) {
-				console.log('Import is disabled/locked');
+				// Import is disabled/locked
 				// Open pricing modal instead
 				if (window.layoutbergAdmin && window.layoutbergAdmin.openPricingModal) {
 					window.layoutbergAdmin.openPricingModal({
@@ -1924,9 +1903,9 @@ document.addEventListener('DOMContentLoaded', function() {
 					});
 				}
 			} else {
-				console.log('Attempting to show import modal');
+				// Attempting to show import modal
 				const modal = showModal('layoutberg-template-import-modal');
-				console.log('Modal shown:', modal);
+				// Modal display initiated
 			}
 		});
 	} else {
@@ -1966,15 +1945,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (useButton) {
 			e.preventDefault();
 			e.stopPropagation();
-			console.log('Use template clicked');
+			// Use template clicked
 			const templateId = useButton.getAttribute('data-template-id');
-			console.log('Template ID:', templateId);
+			// Template ID retrieved
 			
 			// Close any open modals properly
 			const modals = document.querySelectorAll('.layoutberg-modal');
 			modals.forEach(modal => {
 				if (modal.style.display === 'flex' || modal.classList.contains('show')) {
-					console.log('Closing modal before redirect:', modal.id);
+					// Closing modal before redirect
 					hideModal(modal);
 				}
 			});
@@ -1989,11 +1968,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					_wpnonce: '<?php echo wp_create_nonce( 'layoutberg_nonce' ); ?>'
 				}
 			}).then((response) => {
-				console.log('Template get response:', response);
+				// Template get response received
 				// Redirect to post editor with template (usage already incremented)
 				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
 			}).catch((error) => {
-				console.error('Error getting template:', error);
+				// Error getting template
 				// Redirect anyway even if usage increment fails
 				window.location.href = '<?php echo admin_url( 'post-new.php?post_type=post&layoutberg_template=' ); ?>' + templateId;
 			});
@@ -2049,7 +2028,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const lockedImportLink = e.target.closest('.import-template-locked');
 		if (lockedImportLink) {
 			e.preventDefault();
-			console.log('Locked import button clicked');
+			// Locked import button clicked
 			
 			// Trigger pricing modal with import feature context
 			if (window.LayoutBergAdmin && window.LayoutBergAdmin.openPricingModal) {
@@ -2062,7 +2041,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					preventDefault: function() {}
 				});
 			} else {
-				console.log('LayoutBergAdmin.openPricingModal not available');
+				// LayoutBergAdmin.openPricingModal not available
 				// Fallback: redirect to licensing action URL
 				const actionUrl = '<?php echo esc_url( \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_action_url() ); ?>';
 				if (actionUrl) {
@@ -2078,7 +2057,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Check if clicked element or its parent has the close class
 		const closeButton = e.target.closest('.layoutberg-modal-close');
 		if (closeButton) {
-			console.log('Closing modal via close button');
+			// Closing modal via close button
 			const modal = closeButton.closest('.layoutberg-modal');
 			hideModal(modal);
 			e.preventDefault();
@@ -2088,7 +2067,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Close modal on background click
 		if (e.target.classList.contains('layoutberg-modal')) {
-			console.log('Closing modal via background click');
+			// Closing modal via background click
 			hideModal(e.target);
 			e.preventDefault();
 			e.stopPropagation();
@@ -2100,7 +2079,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (e.key === 'Escape') {
 			const openModals = document.querySelectorAll('.layoutberg-modal[style*="display: flex"]');
 			openModals.forEach(modal => {
-				console.log('Closing modal via ESC key:', modal.id);
+				// Closing modal via ESC key
 				hideModal(modal);
 			});
 		}

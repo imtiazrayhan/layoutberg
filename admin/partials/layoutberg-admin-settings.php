@@ -1402,18 +1402,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 jQuery(document).ready(function($) {
-	console.log('LayoutBerg settings page loaded');
+	// LayoutBerg settings page loaded
 	
 	// Tab switching
 	$('.layoutberg-settings-nav-item').on('click', function(e) {
 		e.preventDefault();
 		var target = $(this).data('tab');
-		console.log('Tab clicked:', target);
+		// Tab clicked
 		
 		// Check if this is a locked tab
 		if ($(this).hasClass('layoutberg-locked-tab')) {
 			// Still allow the tab to be clicked and viewed
-			console.log('Locked tab clicked:', target);
+			// Locked tab clicked
 		}
 		
 		// Update navigation
@@ -1423,7 +1423,7 @@ jQuery(document).ready(function($) {
 		// Update content
 		$('.layoutberg-settings-tab').removeClass('active');
 		$('#' + target).addClass('active');
-		console.log('Tab switched to:', target);
+		// Tab switched
 	});
 
 	// Temperature slider update - only for users who can adjust it
@@ -1440,7 +1440,7 @@ jQuery(document).ready(function($) {
 	
 	// Model selection debugging
 	$('#layoutberg_model').on('change', function() {
-		console.log('Model changed to:', $(this).val());
+		// Model changed
 	});
 
 	// Test API keys
@@ -1508,7 +1508,7 @@ jQuery(document).ready(function($) {
 				
 				// Log cache stats if available
 				if (response.data.stats) {
-					console.log('Cache stats after clearing:', response.data.stats);
+					// Cache stats after clearing
 				}
 				
 				setTimeout(function() {
@@ -1574,7 +1574,7 @@ jQuery(document).ready(function($) {
 			promptTemplates = response.templates || [];
 			renderPromptTemplates();
 		}).fail(function() {
-			console.error('Failed to load prompt templates');
+			// Failed to load prompt templates
 		});
 	}
 	
@@ -1616,17 +1616,17 @@ jQuery(document).ready(function($) {
 	
 	// Show prompt template modal
 	$('#add-prompt-template').on('click', function() {
-		console.log('Add Template button clicked');
+		// Add Template button clicked
 		editingTemplateId = null;
 		$('#prompt-template-modal').find('.layoutberg-modal-title').text('<?php esc_html_e( 'Add Prompt Template', 'layoutberg' ); ?>');
 		$('#template-name').val('');
 		$('#template-category').val('hero');
 		$('#template-prompt').val('');
 		$('#template-variables').val('');
-		console.log('Modal element:', $('#prompt-template-modal'));
+		// Modal element checked
 		// Use addClass('active') instead of show() for the layoutberg modal
 		$('#prompt-template-modal').addClass('active');
-		console.log('Modal active class added');
+		// Modal active class added
 	});
 	
 	// Edit template

@@ -452,7 +452,7 @@ export function initTemplatePreview(
 ) {
 	const container = document.getElementById( containerId );
 	if ( ! container ) {
-		console.error( `Container with ID ${ containerId } not found` );
+		// Container not found
 		return;
 	}
 
