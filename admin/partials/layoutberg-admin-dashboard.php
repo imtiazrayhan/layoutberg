@@ -26,7 +26,8 @@ $this_month = current_time( 'Y-m' );
 // Get today's usage.
 $today_usage = $wpdb->get_row(
 	$wpdb->prepare(
-		"SELECT generations_count, tokens_used FROM $table_usage WHERE user_id = %d AND date = %s",
+		"SELECT generations_count, tokens_used FROM %i WHERE user_id = %d AND date = %s",
+		$table_usage,
 		$user_id,
 		$today
 	)
@@ -38,8 +39,9 @@ $last_day_of_month = date( 'Y-m-t', strtotime( $first_day_of_month ) );
 $month_usage = $wpdb->get_row(
 	$wpdb->prepare(
 		"SELECT SUM(generations_count) as total_generations, SUM(tokens_used) as total_tokens 
-		FROM $table_usage 
+		FROM %i 
 		WHERE user_id = %d AND date >= %s AND date <= %s",
+		$table_usage,
 		$user_id,
 		$first_day_of_month,
 		$last_day_of_month
@@ -49,10 +51,11 @@ $month_usage = $wpdb->get_row(
 // Get recent generations.
 $recent_generations = $wpdb->get_results(
 	$wpdb->prepare(
-		"SELECT * FROM $table_generations 
+		"SELECT * FROM %i 
 		WHERE user_id = %d 
 		ORDER BY created_at DESC 
 		LIMIT 5",
+		$table_generations,
 		$user_id
 	)
 );

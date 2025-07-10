@@ -29,14 +29,16 @@ if ( isset( $_POST['reset_data'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'rese
 	// Delete all data for current user
 	$wpdb->query(
 		$wpdb->prepare(
-			"DELETE FROM $table_usage WHERE user_id = %d",
+			"DELETE FROM %i WHERE user_id = %d",
+			$table_usage,
 			$user_id
 		)
 	);
 	
 	$wpdb->query(
 		$wpdb->prepare(
-			"DELETE FROM $table_generations WHERE user_id = %d",
+			"DELETE FROM %i WHERE user_id = %d",
+			$table_generations,
 			$user_id
 		)
 	);
@@ -64,11 +66,12 @@ if ( isset( $_POST['test_tracking'] ) && wp_verify_nonce( $_POST['_wpnonce'], 't
 	// Update daily usage
 	$updated = $wpdb->query(
 		$wpdb->prepare(
-			"UPDATE $table_usage 
+			"UPDATE %i 
 			SET generations_count = generations_count + 1, 
 			    tokens_used = tokens_used + 100,
 			    cost = cost + 0.002
 			WHERE user_id = %d AND date = %s",
+			$table_usage,
 			$user_id,
 			$today
 		)
@@ -94,7 +97,8 @@ if ( isset( $_POST['test_tracking'] ) && wp_verify_nonce( $_POST['_wpnonce'], 't
 // Get current data
 $today_usage = $wpdb->get_row(
 	$wpdb->prepare(
-		"SELECT * FROM $table_usage WHERE user_id = %d AND date = %s",
+		"SELECT * FROM %i WHERE user_id = %d AND date = %s",
+		$table_usage,
 		$user_id,
 		$today
 	)
@@ -106,8 +110,9 @@ $last_day_of_month = date( 'Y-m-t', strtotime( $first_day_of_month ) );
 $month_usage = $wpdb->get_row(
 	$wpdb->prepare(
 		"SELECT SUM(generations_count) as total_generations, SUM(tokens_used) as total_tokens, SUM(cost) as total_cost
-		FROM $table_usage 
+		FROM %i 
 		WHERE user_id = %d AND date >= %s AND date <= %s",
+		$table_usage,
 		$user_id,
 		$first_day_of_month,
 		$last_day_of_month
@@ -117,7 +122,8 @@ $month_usage = $wpdb->get_row(
 // Get all usage records
 $all_usage = $wpdb->get_results(
 	$wpdb->prepare(
-		"SELECT * FROM $table_usage WHERE user_id = %d ORDER BY date DESC LIMIT 30",
+		"SELECT * FROM %i WHERE user_id = %d ORDER BY date DESC LIMIT 30",
+		$table_usage,
 		$user_id
 	)
 );

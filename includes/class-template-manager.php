@@ -90,7 +90,8 @@ class Template_Manager {
 		$offset = ( $args['page'] - 1 ) * $args['per_page'];
 
 		// Build query.
-		$query = "SELECT * FROM {$this->table_name} WHERE {$where}";
+		$query = "SELECT * FROM %i WHERE {$where}";
+		array_unshift( $prepare_args, $this->table_name );
 
 		// Add ORDER BY.
 		$allowed_orderby = array( 'name', 'created_at', 'updated_at', 'usage_count' );
@@ -110,7 +111,7 @@ class Template_Manager {
 		);
 
 		// Get total count.
-		$count_query = "SELECT COUNT(*) FROM {$this->table_name} WHERE {$where}";
+		$count_query = "SELECT COUNT(*) FROM %i WHERE {$where}";
 		$total_items = $wpdb->get_var(
 			$wpdb->prepare( $count_query, array_slice( $prepare_args, 0, -2 ) )
 		);
@@ -142,7 +143,8 @@ class Template_Manager {
 
 		$template = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->table_name} WHERE id = %d",
+				"SELECT * FROM %i WHERE id = %d",
+				$this->table_name,
 				$template_id
 			),
 			ARRAY_A
@@ -184,7 +186,8 @@ class Template_Manager {
 		if ( LayoutBerg_Licensing::is_starter_plan() ) {
 			$user_templates_count = $wpdb->get_var( 
 				$wpdb->prepare(
-					"SELECT COUNT(*) FROM {$this->table_name} WHERE created_by = %d",
+					"SELECT COUNT(*) FROM %i WHERE created_by = %d",
+					$this->table_name,
 					get_current_user_id()
 				)
 			);
@@ -478,7 +481,8 @@ class Template_Manager {
 			
 			$exists = $wpdb->get_var(
 				$wpdb->prepare(
-					"SELECT COUNT(*) FROM {$this->table_name} WHERE slug = %s",
+					"SELECT COUNT(*) FROM %i WHERE slug = %s",
+					$this->table_name,
 					$check_slug
 				)
 			);
@@ -509,7 +513,8 @@ class Template_Manager {
 		// Check if user owns the template.
 		$created_by = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT created_by FROM {$this->table_name} WHERE id = %d",
+				"SELECT created_by FROM %i WHERE id = %d",
+				$this->table_name,
 				$template_id
 			)
 		);
@@ -528,7 +533,8 @@ class Template_Manager {
 
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$this->table_name} SET usage_count = usage_count + 1 WHERE id = %d",
+				"UPDATE %i SET usage_count = usage_count + 1 WHERE id = %d",
+				$this->table_name,
 				$template_id
 			)
 		);
@@ -577,14 +583,15 @@ class Template_Manager {
 		$where = implode( ' AND ', $where_clauses );
 
 		// Get total count.
-		$count_query = "SELECT COUNT(*) FROM {$this->table_name} WHERE {$where}";
+		$count_query = "SELECT COUNT(*) FROM %i WHERE {$where}";
+		array_unshift( $prepare_args, $this->table_name );
 		
 		if ( ! empty( $prepare_args ) ) {
 			$total_items = $wpdb->get_var(
 				$wpdb->prepare( $count_query, $prepare_args )
 			);
 		} else {
-			$total_items = $wpdb->get_var( $count_query );
+			$total_items = $wpdb->get_var( $wpdb->prepare( $count_query, array( $this->table_name ) ) );
 		}
 
 		return intval( $total_items );

@@ -76,7 +76,8 @@ $is_starter = \DotCamp\LayoutBerg\LayoutBerg_Licensing::is_starter_plan();
 if ( $is_starter ) {
 	$user_templates_table = $wpdb->prefix . 'layoutberg_templates';
 	$user_template_count = $wpdb->get_var( $wpdb->prepare(
-		"SELECT COUNT(*) FROM {$user_templates_table} WHERE user_id = %d",
+		"SELECT COUNT(*) FROM %i WHERE user_id = %d",
+		$user_templates_table,
 		get_current_user_id()
 	) );
 }

@@ -476,10 +476,11 @@ class API_Handler {
 		$usage_data = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT date, generations_count, tokens_used 
-				FROM $table_name 
+				FROM %i 
 				WHERE user_id = %d 
 				AND date BETWEEN %s AND %s 
 				ORDER BY date ASC",
+				$table_name,
 				$user_id,
 				$start_date,
 				$end_date
@@ -493,9 +494,10 @@ class API_Handler {
 				"SELECT 
 					SUM(generations_count) as total_generations,
 					SUM(tokens_used) as total_tokens
-				FROM $table_name 
+				FROM %i 
 				WHERE user_id = %d 
 				AND date BETWEEN %s AND %s",
+				$table_name,
 				$user_id,
 				$start_date,
 				$end_date

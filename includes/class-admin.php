@@ -1428,10 +1428,11 @@ class Admin {
 			$daily_usage = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT date, generations_count, tokens_used, cost 
-					FROM $table_usage 
+					FROM %i 
 					WHERE user_id = %d AND date >= %s AND date <= %s
 					ORDER BY date ASC
 					LIMIT 10000",
+					$table_usage,
 					$user_id,
 					$start_date,
 					$end_date
@@ -1461,10 +1462,11 @@ class Admin {
 						tokens_used,
 						status,
 						error_message
-					FROM $table_generations 
+					FROM %i 
 					WHERE user_id = %d AND created_at >= %s AND created_at <= %s
 					ORDER BY created_at DESC
 					LIMIT 10000",
+					$table_generations,
 					$user_id,
 					$start_date . ' 00:00:00',
 					$end_date . ' 23:59:59'
@@ -1844,7 +1846,8 @@ class Admin {
 
 		$generation = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$table_generations} WHERE id = %d AND user_id = %d",
+				"SELECT * FROM %i WHERE id = %d AND user_id = %d",
+				$table_generations,
 				$generation_id,
 				get_current_user_id()
 			)
@@ -2255,7 +2258,8 @@ class Admin {
 		// Template count
 		$templates_table = $wpdb->prefix . 'layoutberg_templates';
 		$template_count = $wpdb->get_var( $wpdb->prepare(
-			"SELECT COUNT(*) FROM {$templates_table} WHERE user_id = %d",
+			"SELECT COUNT(*) FROM %i WHERE user_id = %d",
+			$templates_table,
 			$user_id
 		) );
 		$template_limit = \DotCamp\LayoutBerg\LayoutBerg_Licensing::get_template_limit();
@@ -2263,7 +2267,8 @@ class Admin {
 		// Generation count (last 30 days)
 		$generations_table = $wpdb->prefix . 'layoutberg_generations';
 		$generation_count = $wpdb->get_var( $wpdb->prepare(
-			"SELECT COUNT(*) FROM {$generations_table} WHERE user_id = %d AND created_at >= %s",
+			"SELECT COUNT(*) FROM %i WHERE user_id = %d AND created_at >= %s",
+			$generations_table,
 			$user_id,
 			date( 'Y-m-d H:i:s', strtotime( '-30 days' ) )
 		) );

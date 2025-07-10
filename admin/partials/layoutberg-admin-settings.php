@@ -420,30 +420,7 @@ window.layoutbergModels = <?php echo json_encode( $models ); ?>;
 </script>
 
 <?php
-// Debug: Check what models are available
-error_log( 'LayoutBerg Debug: Models array keys: ' . print_r( array_keys( $models ), true ) );
-error_log( 'LayoutBerg Debug: Current model: ' . $current_model );
-error_log( 'LayoutBerg Debug: Models array: ' . print_r( $models, true ) );
 
-								// Show model information if a model is selected
-								$model_config = null;
-if ( ! empty( $current_model ) ) {
-	// Check Model Config first
-	if ( isset( $models[ $current_model ] ) && isset( $models[ $current_model ]['context_window'] ) ) {
-		$model_config = $models[ $current_model ];
-		error_log( 'LayoutBerg Debug: Using Model Config for ' . $current_model );
-	}
-	// Check fallback models if not found in Model Config
-	elseif ( isset( $openai_models[ $current_model ] ) && isset( $openai_models[ $current_model ]['context_window'] ) ) {
-		$model_config = $openai_models[ $current_model ];
-		error_log( 'LayoutBerg Debug: Using fallback OpenAI model for ' . $current_model );
-	} elseif ( isset( $claude_models[ $current_model ] ) && isset( $claude_models[ $current_model ]['context_window'] ) ) {
-		$model_config = $claude_models[ $current_model ];
-		error_log( 'LayoutBerg Debug: Using fallback Claude model for ' . $current_model );
-	} else {
-		error_log( 'LayoutBerg Debug: No model config found for ' . $current_model );
-	}
-}
 
 if ( $model_config ) :
 	?>
