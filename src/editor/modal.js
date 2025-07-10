@@ -379,11 +379,6 @@ const LayoutBergModal = ( {
 			for ( const selector of selectors ) {
 				const element = document.querySelector( selector );
 				if ( element ) {
-					console.log(
-						'Found scrollable element:',
-						selector,
-						element
-					);
 					element.scrollTop = 0;
 					// Also try scrolling into view
 					element.scrollIntoView( {
@@ -758,28 +753,6 @@ const LayoutBergModal = ( {
 												window.layoutbergEditor
 													?.models || {};
 
-											// Debug log
-											console.log(
-												'window.layoutbergEditor:',
-												window.layoutbergEditor
-											);
-											console.log(
-												'LayoutBerg Models:',
-												models
-											);
-											console.log(
-												'Available model keys:',
-												Object.keys( models )
-											);
-											console.log(
-												'Has OpenAI models:',
-												models.openai ? 'yes' : 'no'
-											);
-											console.log(
-												'Has Claude models:',
-												models.claude ? 'yes' : 'no'
-											);
-
 											// Build options from available models
 											Object.keys( models ).forEach(
 												( provider ) => {
@@ -820,9 +793,6 @@ const LayoutBergModal = ( {
 
 											// Fallback if no models are available
 											if ( options.length === 0 ) {
-												console.log(
-													'No models found, using fallback'
-												);
 												options.push(
 													{
 														label: __(

@@ -68,6 +68,7 @@ class LayoutBerg {
 	private function __construct() {
 		$this->version = LAYOUTBERG_VERSION;
 		$this->load_dependencies();
+		$this->set_locale();
 		$this->check_for_upgrades();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
@@ -101,6 +102,9 @@ class LayoutBerg {
 
 		// Load the loader class.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-loader.php';
+
+		// Load i18n class.
+		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-i18n.php';
 
 		// Load admin classes.
 		require_once LAYOUTBERG_PLUGIN_DIR . 'includes/class-admin.php';
@@ -144,6 +148,20 @@ class LayoutBerg {
 		// Get container instance and loader.
 		$this->container = Container::get_instance();
 		$this->loader = $this->container->make( 'DotCamp\LayoutBerg\Loader' );
+	}
+
+	/**
+	 * Define the locale for this plugin for internationalization.
+	 *
+	 * Uses the I18n class in order to set the domain and to register the hook
+	 * with WordPress.
+	 *
+	 * @since  1.0.0
+	 * @access private
+	 */
+	private function set_locale() {
+		$plugin_i18n = new I18n();
+		$this->loader->add_action( 'init', $plugin_i18n, 'load_plugin_textdomain' );
 	}
 
 	/**
@@ -431,12 +449,6 @@ class LayoutBerg {
 		$models = array();
 		$options = get_option( 'layoutberg_options', array() );
 		
-		// Debug logging - let's see what's in options
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'LayoutBerg get_available_models - Raw options:' );
-			error_log( print_r( $options, true ) );
-		}
-		
 		// Check for OpenAI API key
 		$has_openai_key = false;
 		if ( ! empty( $options['openai_api_key'] ) || ! empty( $options['api_key'] ) ) {
@@ -445,14 +457,6 @@ class LayoutBerg {
 		
 		// Check for Claude API key
 		$has_claude_key = ! empty( $options['claude_api_key'] );
-		
-		// Debug logging
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( 'LayoutBerg get_available_models:' );
-			error_log( '- Options keys: ' . implode( ', ', array_keys( $options ) ) );
-			error_log( '- Has OpenAI key: ' . ( $has_openai_key ? 'yes' : 'no' ) );
-			error_log( '- Has Claude key: ' . ( $has_claude_key ? 'yes' : 'no' ) );
-		}
 		
 		// Get full model configurations from Model_Config
 		$model_config = new \DotCamp\LayoutBerg\Model_Config();

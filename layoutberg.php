@@ -50,7 +50,7 @@ function layoutberg_check_requirements() {
 	if ( version_compare( PHP_VERSION, LAYOUTBERG_MIN_PHP_VERSION, '<' ) ) {
 		$errors[] = sprintf(
 			/* translators: 1: Required PHP version, 2: Current PHP version */
-			__( 'LayoutBerg requires PHP %1$s or higher. You are running PHP %2$s.', 'layoutberg' ),
+			'LayoutBerg requires PHP %1$s or higher. You are running PHP %2$s.',
 			LAYOUTBERG_MIN_PHP_VERSION,
 			PHP_VERSION
 		);
@@ -60,7 +60,7 @@ function layoutberg_check_requirements() {
 	if ( version_compare( get_bloginfo( 'version' ), LAYOUTBERG_MIN_WP_VERSION, '<' ) ) {
 		$errors[] = sprintf(
 			/* translators: 1: Required WordPress version, 2: Current WordPress version */
-			__( 'LayoutBerg requires WordPress %1$s or higher. You are running WordPress %2$s.', 'layoutberg' ),
+			'LayoutBerg requires WordPress %1$s or higher. You are running WordPress %2$s.',
 			LAYOUTBERG_MIN_WP_VERSION,
 			get_bloginfo( 'version' )
 		);
@@ -73,7 +73,7 @@ function layoutberg_check_requirements() {
 			function() use ( $errors ) {
 				?>
 				<div class="notice notice-error">
-					<p><strong><?php esc_html_e( 'LayoutBerg cannot be activated.', 'layoutberg' ); ?></strong></p>
+					<p><strong><?php echo esc_html( 'LayoutBerg cannot be activated.' ); ?></strong></p>
 					<ul>
 						<?php foreach ( $errors as $error ) : ?>
 							<li><?php echo esc_html( $error ); ?></li>

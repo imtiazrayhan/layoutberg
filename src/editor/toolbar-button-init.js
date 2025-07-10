@@ -40,10 +40,6 @@ const addLayoutBergButton = () => {
 		for ( const selector of selectors ) {
 			targetElement = document.querySelector( selector );
 			if ( targetElement ) {
-				console.log(
-					'LayoutBerg: Found toolbar element with selector:',
-					selector
-				);
 				break;
 			}
 		}
@@ -190,14 +186,12 @@ const addLayoutBergButton = () => {
 		}
 
 		buttonAdded = true;
-		console.log( 'LayoutBerg: Button added to DOM' );
 		return true;
 	};
 
 	// Function to monitor and maintain button presence
 	const maintainButton = () => {
 		if ( ! document.getElementById( 'layoutberg-toolbar-button' ) ) {
-			console.log( 'LayoutBerg: Button missing, re-adding...' );
 			insertButton();
 		}
 	};
@@ -248,19 +242,16 @@ const addLayoutBergButton = () => {
 
 // Initialize when DOM is ready
 domReady( () => {
-	console.log( 'LayoutBerg: DOM ready, initializing toolbar button...' );
 	addLayoutBergButton();
 } );
 
 // Also try when the editor is initialized
 addAction( 'editor.PostEdit.mounted', 'layoutberg/toolbar-button', () => {
-	console.log( 'LayoutBerg: Editor mounted, checking toolbar button...' );
 	addLayoutBergButton();
 } );
 
 // Try on window load as well
 window.addEventListener( 'load', () => {
-	console.log( 'LayoutBerg: Window loaded, checking toolbar button...' );
 	addLayoutBergButton();
 } );
 

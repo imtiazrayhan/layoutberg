@@ -91,7 +91,7 @@ class Admin {
 
 		// Enqueue template preview script on templates page
 		$screen = get_current_screen();
-		if ( $screen && 'layoutberg_page_layoutberg-templates' === $screen->id ) {
+		if ( $screen && isset( $screen->id ) && 'layoutberg_page_layoutberg-templates' === $screen->id ) {
 			// Check if build file exists for template preview
 			$preview_asset_file = LAYOUTBERG_PLUGIN_DIR . 'build/admin/template-preview.asset.php';
 			$preview_asset      = file_exists( $preview_asset_file )
@@ -152,7 +152,7 @@ class Admin {
 		wp_set_script_translations( 'layoutberg-admin', 'layoutberg' );
 
 		// Enqueue onboarding scripts on onboarding page
-		if ( $screen && 'admin_page_layoutberg-onboarding' === $screen->id ) {
+		if ( $screen && isset( $screen->id ) && 'admin_page_layoutberg-onboarding' === $screen->id ) {
 			// Check if build file exists for onboarding
 			$onboarding_asset_file = LAYOUTBERG_PLUGIN_DIR . 'build/admin/onboarding.asset.php';
 			$onboarding_asset      = file_exists( $onboarding_asset_file )
@@ -1532,7 +1532,7 @@ class Admin {
 	 */
 	private function is_layoutberg_admin_page() {
 		$screen = get_current_screen();
-		if ( ! $screen ) {
+		if ( ! $screen || ! isset( $screen->id ) || ! is_string( $screen->id ) ) {
 			return false;
 		}
 

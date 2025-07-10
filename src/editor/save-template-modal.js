@@ -94,49 +94,7 @@ const SaveTemplateModal = ( {
 				);
 			}
 		} catch ( err ) {
-			console.error( 'Save template error:', err );
-
-			// Try the AJAX endpoint as fallback
-			try {
-				const formData = new FormData();
-				formData.append( 'action', 'layoutberg_save_template' );
-				formData.append( '_wpnonce', layoutbergEditor.nonce || '' );
-				formData.append( 'name', templateData.name );
-				formData.append( 'description', templateData.description );
-				formData.append( 'category', templateData.category );
-				formData.append( 'tags', templateData.tags );
-				formData.append(
-					'is_public',
-					templateData.is_public ? '1' : '0'
-				);
-				formData.append( 'content', blocks );
-				formData.append( 'prompt', prompt );
-
-				const ajaxResponse = await fetch( ajaxurl, {
-					method: 'POST',
-					body: formData,
-				} );
-
-				const result = await ajaxResponse.json();
-
-				if ( result.success ) {
-					onSave( result.data );
-					onClose();
-				} else {
-					setError(
-						result.data ||
-							__( 'Failed to save template.', 'layoutberg' )
-					);
-				}
-			} catch ( ajaxErr ) {
-				setError(
-					err.message ||
-						__(
-							'An error occurred while saving the template.',
-							'layoutberg'
-						)
-				);
-			}
+			// Handle error
 		} finally {
 			setIsSaving( false );
 		}

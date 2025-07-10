@@ -64,6 +64,9 @@ class LayoutBerg_Licensing {
 		}
 
 		// Check by plan name (case insensitive)
+		if ( empty( $plan->name ) ) {
+			return false;
+		}
 		$plan_name = strtolower( $plan->name );
 		return in_array( $plan_name, array( 'starter', 'start', 'basic' ), true );
 	}
@@ -85,6 +88,9 @@ class LayoutBerg_Licensing {
 		}
 
 		// Check by plan name (case insensitive)
+		if ( empty( $plan->name ) ) {
+			return false;
+		}
 		$plan_name = strtolower( $plan->name );
 		return in_array( $plan_name, array( 'professional', 'pro', 'premium' ), true );
 	}
@@ -106,6 +112,9 @@ class LayoutBerg_Licensing {
 		}
 
 		// Check by plan name (case insensitive)
+		if ( empty( $plan->name ) ) {
+			return false;
+		}
 		$plan_name = strtolower( $plan->name );
 		return in_array( $plan_name, array( 'agency', 'business', 'enterprise', 'team' ), true );
 	}

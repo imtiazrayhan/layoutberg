@@ -315,7 +315,6 @@ const LayoutBergEditor = () => {
 				} );
 			}
 		} catch ( error ) {
-			console.error( 'LayoutBerg generation error:', error );
 			dispatch( {
 				type: GENERATION_ACTIONS.ERROR,
 				payload:
@@ -615,5 +614,3 @@ registerPlugin( 'layoutberg-editor', {
 	icon: 'layout',
 	title: __( 'LayoutBerg', 'layoutberg' ),
 } );
-
-console.log( 'LayoutBerg editor integration loaded' );

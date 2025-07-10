@@ -29,7 +29,11 @@ class Simple_Prompt_Engineer {
 	 * @return string System prompt.
 	 */
 	public function build_system_prompt( $options = array() ) {
-		$theme_name = wp_get_theme()->get( 'Name' );
+		$theme = wp_get_theme();
+		$theme_name = $theme ? $theme->get( 'Name' ) : 'Default';
+		if ( empty( $theme_name ) ) {
+			$theme_name = 'Default';
+		}
 		$theme_colors = $this->get_theme_colors();
 		
 		$color_info = '';

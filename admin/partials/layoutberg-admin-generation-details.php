@@ -59,7 +59,7 @@ if ( $generation ) {
 	$usage = isset( $result_data['usage'] ) ? $result_data['usage'] : null;
 	
 	// Check if it's a Claude model
-	if ( strpos( $generation->model, 'claude' ) === 0 && $usage ) {
+	if ( ! empty( $generation->model ) && strpos( $generation->model, 'claude' ) === 0 && $usage ) {
 		$input_tokens = isset( $usage['input_tokens'] ) ? intval( $usage['input_tokens'] ) : 0;
 		$output_tokens = isset( $usage['output_tokens'] ) ? intval( $usage['output_tokens'] ) : 0;
 		
@@ -268,7 +268,7 @@ if ( $generation ) {
 							$output_tokens = 0;
 							$has_token_breakdown = false;
 							
-							if ( strpos( $generation->model, 'claude' ) === 0 && $usage ) {
+							if ( ! empty( $generation->model ) && strpos( $generation->model, 'claude' ) === 0 && $usage ) {
 								if ( isset( $usage['input_tokens'] ) && isset( $usage['output_tokens'] ) ) {
 									$input_tokens = $usage['input_tokens'];
 									$output_tokens = $usage['output_tokens'];

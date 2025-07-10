@@ -31,19 +31,6 @@ const TemplatePreview = ( {
 	useEffect( () => {
 		if ( templateContent ) {
 			try {
-				console.log(
-					'TemplatePreview: Received content:',
-					templateContent
-				);
-				console.log(
-					'TemplatePreview: Content type:',
-					typeof templateContent
-				);
-				console.log(
-					'TemplatePreview: Content length:',
-					templateContent.length
-				);
-
 				// Decode HTML entities if present
 				const textarea = document.createElement( 'textarea' );
 				textarea.innerHTML = templateContent;
@@ -60,101 +47,52 @@ const TemplatePreview = ( {
 				// Remove any leading newlines
 				decodedContent = decodedContent.trim();
 
-				console.log(
-					'TemplatePreview: First 500 chars of formatted content:',
-					decodedContent.substring( 0, 500 )
-				);
-
 				// Try different parsing approaches
 				let parsedBlocks = [];
 
 				// First try the imported parse function
 				try {
 					parsedBlocks = parse( decodedContent );
-					console.log(
-						'TemplatePreview: Parse attempt 1 - blocks:',
-						parsedBlocks.length
-					);
 				} catch ( e ) {
-					console.error( 'Parse attempt 1 failed:', e );
-				}
+					// If no blocks found, try using wp.blocks if available
+					if (
+						parsedBlocks.length === 0 &&
+						window.wp &&
+						window.wp.blocks &&
+						window.wp.blocks.parse
+					) {
+						try {
+							parsedBlocks = window.wp.blocks.parse( decodedContent );
+						} catch ( e ) {
+							// If still no blocks, try a more aggressive formatting approach
+							if ( parsedBlocks.length === 0 ) {
+								// Ensure each block is on its own line with proper spacing
+								const reformatted = decodedContent
+									.replace( /-->\s*/g, '-->\n\n' )
+									.replace( /\s*<!--/g, '\n\n<!--' )
+									.trim();
 
-				// If no blocks found, try using wp.blocks if available
-				if (
-					parsedBlocks.length === 0 &&
-					window.wp &&
-					window.wp.blocks &&
-					window.wp.blocks.parse
-				) {
-					try {
-						parsedBlocks = window.wp.blocks.parse( decodedContent );
-						console.log(
-							'TemplatePreview: Parse attempt 2 (wp.blocks) - blocks:',
-							parsedBlocks.length
-						);
-					} catch ( e ) {
-						console.error( 'Parse attempt 2 failed:', e );
+								try {
+									parsedBlocks = parse( reformatted );
+								} catch ( e ) {
+									setError(
+										__( 'Failed to parse template content', 'layoutberg' )
+									);
+									setBlocks( [] );
+									return;
+								}
+							}
+						}
 					}
 				}
-
-				// If still no blocks, try a more aggressive formatting approach
-				if ( parsedBlocks.length === 0 ) {
-					// Ensure each block is on its own line with proper spacing
-					const reformatted = decodedContent
-						.replace( /-->\s*/g, '-->\n\n' )
-						.replace( /\s*<!--/g, '\n\n<!--' )
-						.trim();
-
-					console.log(
-						'TemplatePreview: Trying with reformatted content...'
-					);
-					console.log(
-						'First 500 chars:',
-						reformatted.substring( 0, 500 )
-					);
-
-					try {
-						parsedBlocks = parse( reformatted );
-						console.log(
-							'TemplatePreview: Parse attempt 3 (reformatted) - blocks:',
-							parsedBlocks.length
-						);
-					} catch ( e ) {
-						console.error( 'Parse attempt 3 failed:', e );
-					}
-				}
-
-				console.log(
-					'TemplatePreview: Final parsed blocks:',
-					parsedBlocks
-				);
-				console.log(
-					'TemplatePreview: Number of blocks:',
-					parsedBlocks.length
-				);
 
 				// Check if we got any valid blocks
 				const validBlocks = parsedBlocks.filter(
 					( block ) => block.name !== null
 				);
-				console.log(
-					'TemplatePreview: Valid blocks:',
-					validBlocks.length
-				);
-
-				// Log first block for debugging
-				if ( parsedBlocks.length > 0 ) {
-					console.log(
-						'TemplatePreview: First block:',
-						parsedBlocks[ 0 ]
-					);
-				}
 
 				// If no valid blocks found, use HTML preview
 				if ( validBlocks.length === 0 ) {
-					console.log(
-						'TemplatePreview: No valid blocks found, switching to HTML preview mode'
-					);
 					setUseHtmlPreview( true );
 				} else {
 					setUseHtmlPreview( false );
@@ -163,14 +101,12 @@ const TemplatePreview = ( {
 				setBlocks( parsedBlocks );
 				setError( null );
 			} catch ( err ) {
-				console.error( 'Error parsing template content:', err );
 				setError(
 					__( 'Failed to parse template content', 'layoutberg' )
 				);
 				setBlocks( [] );
 			}
 		} else {
-			console.log( 'TemplatePreview: No template content provided' );
 		}
 	}, [ templateContent ] );
 

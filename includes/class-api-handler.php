@@ -234,11 +234,6 @@ class API_Handler {
 			$settings         = $request->get_param( 'settings' );
 			$replace_selected = $request->get_param( 'replace_selected' );
 
-			// Debug logging to verify settings received
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'LayoutBerg API Handler: Settings received from frontend: ' . print_r( $settings, true ) );
-			}
-
 			// Extract only AI-related options.
 			$options = array();
 			if ( ! empty( $settings ) ) {
@@ -250,11 +245,6 @@ class API_Handler {
 					'variationStyle' => $settings['variationStyle'] ?? null,
 					'templateKey' => $settings['templateKey'] ?? null,
 				);
-			}
-
-			// Debug logging to verify options extracted
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'LayoutBerg API Handler: Options extracted: ' . print_r( $options, true ) );
 			}
 			
 			// Validate model access based on user's plan
@@ -354,10 +344,8 @@ class API_Handler {
 			return rest_ensure_response( $response );
 		} catch ( \Exception $e ) {
 			// Log the error for debugging
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'LayoutBerg Generate Error: ' . $e->getMessage() );
-				error_log( 'Stack trace: ' . $e->getTraceAsString() );
-			}
+			error_log( 'LayoutBerg Generate Error: ' . $e->getMessage() );
+			error_log( 'Stack trace: ' . $e->getTraceAsString() );
 			
 			return new \WP_Error(
 				'generation_error',
