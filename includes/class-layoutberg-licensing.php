@@ -63,11 +63,9 @@ class LayoutBerg_Licensing {
 			return false;
 		}
 
-		// Check by plan name (case insensitive) or common variations
+		// Check by plan name (case insensitive)
 		$plan_name = strtolower( $plan->name );
-		return in_array( $plan_name, array( 'starter', 'start', 'basic' ), true ) ||
-				\layoutberg_fs()->is_plan( 'starter' ) ||
-				\layoutberg_fs()->is_plan( 'Starter' );
+		return in_array( $plan_name, array( 'starter', 'start', 'basic' ), true );
 	}
 
 	/**
@@ -86,11 +84,9 @@ class LayoutBerg_Licensing {
 			return false;
 		}
 
-		// Check by plan name (case insensitive) or common variations
+		// Check by plan name (case insensitive)
 		$plan_name = strtolower( $plan->name );
-		return in_array( $plan_name, array( 'professional', 'pro', 'premium' ), true ) ||
-				\layoutberg_fs()->is_plan( 'professional' ) ||
-				\layoutberg_fs()->is_plan( 'Professional' );
+		return in_array( $plan_name, array( 'professional', 'pro', 'premium' ), true );
 	}
 
 	/**
@@ -109,11 +105,9 @@ class LayoutBerg_Licensing {
 			return false;
 		}
 
-		// Check by plan name (case insensitive) or common variations
+		// Check by plan name (case insensitive)
 		$plan_name = strtolower( $plan->name );
-		return in_array( $plan_name, array( 'agency', 'business', 'enterprise', 'team' ), true ) ||
-				\layoutberg_fs()->is_plan( 'agency' ) ||
-				\layoutberg_fs()->is_plan( 'Agency' );
+		return in_array( $plan_name, array( 'agency', 'business', 'enterprise', 'team' ), true );
 	}
 
 	/**
