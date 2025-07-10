@@ -152,9 +152,10 @@ class Input_Sanitizer {
 		// Validate format (OpenAI API keys start with 'sk-').
 		// Updated to be more flexible with key format as OpenAI has changed formats over time
 		if ( ! empty( $api_key ) && ! preg_match( '/^sk-[a-zA-Z0-9\-_]{20,}$/', $api_key ) ) {
+			$message = did_action( 'init' ) ? __( 'Invalid API key format. OpenAI API keys should start with "sk-".', 'layoutberg' ) : 'Invalid API key format. OpenAI API keys should start with "sk-".';
 			return new \WP_Error(
 				'invalid_api_key_format',
-				__( 'Invalid API key format. OpenAI API keys should start with "sk-".', 'layoutberg' )
+				$message
 			);
 		}
 
@@ -175,9 +176,10 @@ class Input_Sanitizer {
 		$required_fields = array( 'name', 'content' );
 		foreach ( $required_fields as $field ) {
 			if ( empty( $template_data[ $field ] ) ) {
+				$message = did_action( 'init' ) ? sprintf( __( 'Required field "%s" is missing.', 'layoutberg' ), $field ) : sprintf( 'Required field "%s" is missing.', $field );
 				return new \WP_Error(
 					'missing_required_field',
-					sprintf( __( 'Required field "%s" is missing.', 'layoutberg' ), $field )
+					$message
 				);
 			}
 		}
@@ -185,9 +187,10 @@ class Input_Sanitizer {
 		// Sanitize name.
 		$sanitized['name'] = sanitize_text_field( $template_data['name'] );
 		if ( strlen( $sanitized['name'] ) > 100 ) {
+			$message = did_action( 'init' ) ? __( 'Template name must be 100 characters or less.', 'layoutberg' ) : 'Template name must be 100 characters or less.';
 			return new \WP_Error(
 				'name_too_long',
-				__( 'Template name must be 100 characters or less.', 'layoutberg' )
+				$message
 			);
 		}
 
@@ -267,22 +270,22 @@ class Input_Sanitizer {
 		$length = strlen( $prompt );
 
 		if ( $length < $this->min_prompt_length ) {
+			$message = did_action( 'init' ) 
+				? sprintf( __( 'Prompt must be at least %d characters long.', 'layoutberg' ), $this->min_prompt_length )
+				: sprintf( 'Prompt must be at least %d characters long.', $this->min_prompt_length );
 			return new \WP_Error(
 				'prompt_too_short',
-				sprintf(
-					__( 'Prompt must be at least %d characters long.', 'layoutberg' ),
-					$this->min_prompt_length
-				)
+				$message
 			);
 		}
 
 		if ( $length > $this->max_prompt_length ) {
+			$message = did_action( 'init' )
+				? sprintf( __( 'Prompt must be %d characters or less.', 'layoutberg' ), $this->max_prompt_length )
+				: sprintf( 'Prompt must be %d characters or less.', $this->max_prompt_length );
 			return new \WP_Error(
 				'prompt_too_long',
-				sprintf(
-					__( 'Prompt must be %d characters or less.', 'layoutberg' ),
-					$this->max_prompt_length
-				)
+				$message
 			);
 		}
 
@@ -300,23 +303,25 @@ class Input_Sanitizer {
 		// Check for blocked patterns.
 		foreach ( $this->blocked_patterns as $pattern => $message ) {
 			if ( preg_match( $pattern, $prompt ) ) {
-				return new \WP_Error( 'blocked_content', $message );
+				return new \WP_Error( 'blocked_content', $this->get_translated_message( $message ) );
 			}
 		}
 
 		// Check for excessive repetition.
 		if ( $this->has_excessive_repetition( $prompt ) ) {
+			$message = did_action( 'init' ) ? __( 'Prompt contains excessive repetition. Please rephrase.', 'layoutberg' ) : 'Prompt contains excessive repetition. Please rephrase.';
 			return new \WP_Error(
 				'excessive_repetition',
-				__( 'Prompt contains excessive repetition. Please rephrase.', 'layoutberg' )
+				$message
 			);
 		}
 
 		// Check for potential injection attempts.
 		if ( $this->has_injection_patterns( $prompt ) ) {
+			$message = did_action( 'init' ) ? __( 'Prompt contains potentially harmful content.', 'layoutberg' ) : 'Prompt contains potentially harmful content.';
 			return new \WP_Error(
 				'potential_injection',
-				__( 'Prompt contains potentially harmful content.', 'layoutberg' )
+				$message
 			);
 		}
 
@@ -567,15 +572,39 @@ class Input_Sanitizer {
 	 * @since 1.0.0
 	 */
 	private function init_blocked_patterns() {
+		// Store patterns with untranslated messages
 		$this->blocked_patterns = array(
-			'/\b(hack|crack|exploit|vulnerability|inject)\b/i' => __( 'Content contains prohibited security-related terms.', 'layoutberg' ),
-			'/\b(porn|adult|xxx|sex)\b/i' => __( 'Content contains adult material references.', 'layoutberg' ),
-			'/\b(spam|scam|phishing|fraud)\b/i' => __( 'Content contains prohibited promotional terms.', 'layoutberg' ),
-			'/\b(download|torrent|pirate|illegal)\b/i' => __( 'Content contains prohibited download references.', 'layoutberg' ),
+			'/\b(hack|crack|exploit|vulnerability|inject)\b/i' => 'Content contains prohibited security-related terms.',
+			'/\b(porn|adult|xxx|sex)\b/i' => 'Content contains adult material references.',
+			'/\b(spam|scam|phishing|fraud)\b/i' => 'Content contains prohibited promotional terms.',
+			'/\b(download|torrent|pirate|illegal)\b/i' => 'Content contains prohibited download references.',
 		);
 
 		// Apply filters to allow customization.
 		$this->blocked_patterns = apply_filters( 'layoutberg_blocked_patterns', $this->blocked_patterns );
+	}
+	
+	/**
+	 * Get translated error message for blocked pattern.
+	 *
+	 * @since 1.0.0
+	 * @param string $message The untranslated message.
+	 * @return string The translated message.
+	 */
+	private function get_translated_message( $message ) {
+		if ( ! did_action( 'init' ) ) {
+			return $message;
+		}
+		
+		// Translate known messages
+		$translations = array(
+			'Content contains prohibited security-related terms.' => __( 'Content contains prohibited security-related terms.', 'layoutberg' ),
+			'Content contains adult material references.' => __( 'Content contains adult material references.', 'layoutberg' ),
+			'Content contains prohibited promotional terms.' => __( 'Content contains prohibited promotional terms.', 'layoutberg' ),
+			'Content contains prohibited download references.' => __( 'Content contains prohibited download references.', 'layoutberg' ),
+		);
+		
+		return isset( $translations[ $message ] ) ? $translations[ $message ] : $message;
 	}
 
 	/**
@@ -588,12 +617,14 @@ class Input_Sanitizer {
 	public function validate_file_upload( $file ) {
 		// Check if file was uploaded.
 		if ( ! isset( $file['tmp_name'] ) || empty( $file['tmp_name'] ) ) {
-			return new \WP_Error( 'no_file_uploaded', __( 'No file was uploaded.', 'layoutberg' ) );
+			$message = did_action( 'init' ) ? __( 'No file was uploaded.', 'layoutberg' ) : 'No file was uploaded.';
+			return new \WP_Error( 'no_file_uploaded', $message );
 		}
 
 		// Check for upload errors.
 		if ( isset( $file['error'] ) && $file['error'] !== UPLOAD_ERR_OK ) {
-			return new \WP_Error( 'upload_error', __( 'File upload error occurred.', 'layoutberg' ) );
+			$message = did_action( 'init' ) ? __( 'File upload error occurred.', 'layoutberg' ) : 'File upload error occurred.';
+			return new \WP_Error( 'upload_error', $message );
 		}
 
 		// Validate file type.
@@ -601,21 +632,24 @@ class Input_Sanitizer {
 		$file_type = wp_check_filetype( $file['name'] );
 		
 		if ( ! in_array( $file_type['ext'], $allowed_types, true ) ) {
+			$message = did_action( 'init' ) 
+				? sprintf( __( 'Invalid file type. Allowed types: %s', 'layoutberg' ), implode( ', ', $allowed_types ) )
+				: sprintf( 'Invalid file type. Allowed types: %s', implode( ', ', $allowed_types ) );
 			return new \WP_Error( 
 				'invalid_file_type', 
-				sprintf( 
-					__( 'Invalid file type. Allowed types: %s', 'layoutberg' ), 
-					implode( ', ', $allowed_types ) 
-				) 
+				$message
 			);
 		}
 
 		// Check file size (max 1MB).
 		$max_size = 1048576; // 1MB in bytes.
 		if ( $file['size'] > $max_size ) {
+			$message = did_action( 'init' ) 
+				? sprintf( __( 'File size must be less than %s.', 'layoutberg' ), size_format( $max_size ) )
+				: sprintf( 'File size must be less than %s.', size_format( $max_size ) );
 			return new \WP_Error( 
 				'file_too_large', 
-				sprintf( __( 'File size must be less than %s.', 'layoutberg' ), size_format( $max_size ) ) 
+				$message
 			);
 		}
 

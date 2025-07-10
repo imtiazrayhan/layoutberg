@@ -211,17 +211,17 @@ class Simple_Prompt_Engineer {
 	 */
 	public function validate_prompt( $prompt ) {
 		if ( strlen( $prompt ) < 10 ) {
-			return new \WP_Error( 
-				'prompt_too_short', 
-				__( 'Please provide more details about what you want to create.', 'layoutberg' )
-			);
+			$message = did_action( 'init' ) 
+				? __( 'Please provide more details about what you want to create.', 'layoutberg' )
+				: 'Please provide more details about what you want to create.';
+			return new \WP_Error( 'prompt_too_short', $message );
 		}
 		
 		if ( strlen( $prompt ) > 1000 ) {
-			return new \WP_Error( 
-				'prompt_too_long', 
-				__( 'Please keep your description under 1000 characters.', 'layoutberg' )
-			);
+			$message = did_action( 'init' )
+				? __( 'Please keep your description under 1000 characters.', 'layoutberg' )
+				: 'Please keep your description under 1000 characters.';
+			return new \WP_Error( 'prompt_too_long', $message );
 		}
 		
 		return true;

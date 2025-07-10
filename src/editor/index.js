@@ -134,13 +134,7 @@ const LayoutBergEditor = () => {
 		try {
 			// Debug logging to verify settings are being sent
 			if ( window.layoutbergDebug ) {
-				console.log(
-					'LayoutBerg: Modal settings being sent to API:',
-					settings
-				);
-				console.log( 'LayoutBerg: Model:', settings.model );
-				console.log( 'LayoutBerg: Max Tokens:', settings.maxTokens );
-				console.log( 'LayoutBerg: Temperature:', settings.temperature );
+				// Debug logging removed for production
 			}
 
 			// Small delay for UI feedback
@@ -183,7 +177,7 @@ const LayoutBergEditor = () => {
 
 			// Debug logging to verify response
 			if ( window.layoutbergDebug ) {
-				console.log( 'LayoutBerg: API response received:', response );
+				// Debug logging removed for production
 			}
 
 			// Move to processing state after API call completes
@@ -206,11 +200,7 @@ const LayoutBergEditor = () => {
 
 				// Debug logging to verify parsing
 				if ( window.layoutbergDebug ) {
-					console.log(
-						'LayoutBerg: Raw blocks:',
-						response.data.blocks
-					);
-					console.log( 'LayoutBerg: Parsed blocks:', parsedBlocks );
+					// Debug logging removed for production
 				}
 
 				// Validate parsed blocks

@@ -250,33 +250,36 @@ class LayoutBerg_Licensing {
 	 * Get plan display name.
 	 *
 	 * @since 1.0.0
+	 * @param bool $translate Whether to translate the plan name.
 	 * @return string Current plan name or 'Free' if no active plan.
 	 */
-	public static function get_plan_name() {
+	public static function get_plan_name( $translate = true ) {
+		$plan_name = '';
+		
 		if ( ! self::can_use_premium_code() ) {
-			return __( 'Free (Expired)', 'layoutberg' );
+			$plan_name = 'Free (Expired)';
+		} elseif ( self::is_agency_plan() ) {
+			$plan_name = 'Agency';
+		} elseif ( self::is_professional_plan() ) {
+			$plan_name = 'Professional';
+		} elseif ( self::is_starter_plan() ) {
+			$plan_name = 'Starter';
+		} else {
+			// If none match, return the actual plan name from Freemius
+			$plan = \layoutberg_fs()->get_plan();
+			if ( $plan && ! empty( $plan->name ) ) {
+				$plan_name = ucfirst( $plan->name );
+			} else {
+				$plan_name = 'Unknown';
+			}
 		}
-
-		// First check using our enhanced plan detection
-		if ( self::is_agency_plan() ) {
-			return __( 'Agency', 'layoutberg' );
+		
+		// Only translate if requested and after init hook
+		if ( $translate && did_action( 'init' ) ) {
+			return __( $plan_name, 'layoutberg' );
 		}
-
-		if ( self::is_professional_plan() ) {
-			return __( 'Professional', 'layoutberg' );
-		}
-
-		if ( self::is_starter_plan() ) {
-			return __( 'Starter', 'layoutberg' );
-		}
-
-		// If none match, return the actual plan name from Freemius
-		$plan = \layoutberg_fs()->get_plan();
-		if ( $plan && ! empty( $plan->name ) ) {
-			return ucfirst( $plan->name );
-		}
-
-		return __( 'Unknown', 'layoutberg' );
+		
+		return $plan_name;
 	}
 
 	/**
@@ -288,6 +291,11 @@ class LayoutBerg_Licensing {
 	 * @return string Upgrade message.
 	 */
 	public static function get_upgrade_message( $feature_name, $required_plan = 'professional' ) {
+		// Only translate after init hook
+		if ( ! did_action( 'init' ) ) {
+			return $feature_name . ' requires an upgrade.';
+		}
+		
 		if ( self::is_expired_monthly() ) {
 			return sprintf(
 				/* translators: %s: feature name */
@@ -352,9 +360,14 @@ class LayoutBerg_Licensing {
 		$message    = self::get_upgrade_message( $feature_name, $required_plan );
 
 		if ( empty( $args['button_text'] ) ) {
-			$args['button_text'] = $is_expired
-				? __( 'Renew Subscription', 'layoutberg' )
-				: __( 'Upgrade Now', 'layoutberg' );
+			// Only translate after init hook
+			if ( did_action( 'init' ) ) {
+				$args['button_text'] = $is_expired
+					? __( 'Renew Subscription', 'layoutberg' )
+					: __( 'Upgrade Now', 'layoutberg' );
+			} else {
+				$args['button_text'] = $is_expired ? 'Renew Subscription' : 'Upgrade Now';
+			}
 		}
 
 		?>
@@ -387,7 +400,11 @@ class LayoutBerg_Licensing {
 		$button_style = 'opacity: 0.7; cursor: pointer; position: relative; overflow: hidden;';
 		
 		// Determine button action text based on status
-		$action_text = $is_expired ? __( 'Renew', 'layoutberg' ) : __( 'Upgrade', 'layoutberg' );
+		if ( did_action( 'init' ) ) {
+			$action_text = $is_expired ? __( 'Renew', 'layoutberg' ) : __( 'Upgrade', 'layoutberg' );
+		} else {
+			$action_text = $is_expired ? 'Renew' : 'Upgrade';
+		}
 
 		return sprintf(
 			'<a href="%s" class="button layoutberg-locked-feature layoutberg-pricing-trigger" data-feature="%s" data-required-plan="%s" style="%s">
@@ -409,6 +426,11 @@ class LayoutBerg_Licensing {
 	 * @return array Pricing plans with features.
 	 */
 	public static function get_pricing_data() {
+		// Only translate after init hook
+		if ( ! did_action( 'init' ) ) {
+			return array();
+		}
+		
 		$plans = array(
 			'starter'      => array(
 				'name'        => __( 'Starter', 'layoutberg' ),

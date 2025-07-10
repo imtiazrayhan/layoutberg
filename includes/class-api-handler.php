@@ -252,9 +252,12 @@ class API_Handler {
 			
 			// Check if user can access the requested model
 			if ( ! $this->validate_model_access( $requested_model ) ) {
+				$message = did_action( 'init' )
+					? __( 'You do not have access to this model. Please upgrade your plan to use premium models.', 'layoutberg' )
+					: 'You do not have access to this model. Please upgrade your plan to use premium models.';
 				return new WP_Error(
 					'invalid_model_access',
-					__( 'You do not have access to this model. Please upgrade your plan to use premium models.', 'layoutberg' ),
+					$message,
 					array( 'status' => 403 )
 				);
 			}
@@ -347,9 +350,12 @@ class API_Handler {
 			error_log( 'LayoutBerg Generate Error: ' . $e->getMessage() );
 			error_log( 'Stack trace: ' . $e->getTraceAsString() );
 			
+			$message = did_action( 'init' )
+				? __( 'An error occurred while generating the layout: ', 'layoutberg' )
+				: 'An error occurred while generating the layout: ';
 			return new \WP_Error(
 				'generation_error',
-				__( 'An error occurred while generating the layout: ', 'layoutberg' ) . $e->getMessage(),
+				$message . $e->getMessage(),
 				array( 'status' => 500 )
 			);
 		}
@@ -427,10 +433,13 @@ class API_Handler {
 			return $result;
 		}
 
+		$message = did_action( 'init' )
+			? __( 'Template saved successfully!', 'layoutberg' )
+			: 'Template saved successfully!';
 		return rest_ensure_response( array( 
 			'id' => $result,
 			'name' => $template_data['name'],
-			'message' => __( 'Template saved successfully!', 'layoutberg' ) 
+			'message' => $message 
 		) );
 	}
 
@@ -539,7 +548,10 @@ class API_Handler {
 				if ( $decrypted ) {
 					$api_key = $decrypted;
 				} else {
-					return new \WP_Error( 'decrypt_failed', __( 'Failed to decrypt stored API key.', 'layoutberg' ) );
+					$message = did_action( 'init' )
+						? __( 'Failed to decrypt stored API key.', 'layoutberg' )
+						: 'Failed to decrypt stored API key.';
+					return new \WP_Error( 'decrypt_failed', $message );
 				}
 			} elseif ( $provider === 'openai' && ! empty( $options['api_key'] ) ) {
 				// Backward compatibility for OpenAI
@@ -547,11 +559,17 @@ class API_Handler {
 				if ( $decrypted ) {
 					$api_key = $decrypted;
 				} else {
-					return new \WP_Error( 'decrypt_failed', __( 'Failed to decrypt stored API key.', 'layoutberg' ) );
+					$message = did_action( 'init' )
+						? __( 'Failed to decrypt stored API key.', 'layoutberg' )
+						: 'Failed to decrypt stored API key.';
+					return new \WP_Error( 'decrypt_failed', $message );
 				}
 			} else {
 				$provider_name = $provider === 'claude' ? 'Claude' : 'OpenAI';
-				return new \WP_Error( 'no_api_key', sprintf( __( 'No %s API key configured.', 'layoutberg' ), $provider_name ) );
+				$message = did_action( 'init' )
+					? sprintf( __( 'No %s API key configured.', 'layoutberg' ), $provider_name )
+					: sprintf( 'No %s API key configured.', $provider_name );
+				return new \WP_Error( 'no_api_key', $message );
 			}
 		}
 
@@ -884,7 +902,10 @@ class API_Handler {
 		// Get existing templates
 		$templates = get_user_meta( $user_id, 'layoutberg_prompt_templates', true );
 		if ( ! is_array( $templates ) ) {
-			return new WP_Error( 'template_not_found', __( 'Template not found', 'layoutberg' ), array( 'status' => 404 ) );
+			$message = did_action( 'init' )
+				? __( 'Template not found', 'layoutberg' )
+				: 'Template not found';
+			return new WP_Error( 'template_not_found', $message, array( 'status' => 404 ) );
 		}
 
 		// Find and update the template
@@ -902,15 +923,21 @@ class API_Handler {
 		}
 
 		if ( ! $found ) {
-			return new WP_Error( 'template_not_found', __( 'Template not found', 'layoutberg' ), array( 'status' => 404 ) );
+			$message = did_action( 'init' )
+				? __( 'Template not found', 'layoutberg' )
+				: 'Template not found';
+			return new WP_Error( 'template_not_found', $message, array( 'status' => 404 ) );
 		}
 
 		// Save back to user meta
 		update_user_meta( $user_id, 'layoutberg_prompt_templates', $templates );
 
+		$message = did_action( 'init' )
+			? __( 'Template updated successfully', 'layoutberg' )
+			: 'Template updated successfully';
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Template updated successfully', 'layoutberg' ),
+			'message' => $message,
 		) );
 	}
 
@@ -928,7 +955,10 @@ class API_Handler {
 		// Get existing templates
 		$templates = get_user_meta( $user_id, 'layoutberg_prompt_templates', true );
 		if ( ! is_array( $templates ) ) {
-			return new WP_Error( 'template_not_found', __( 'Template not found', 'layoutberg' ), array( 'status' => 404 ) );
+			$message = did_action( 'init' )
+				? __( 'Template not found', 'layoutberg' )
+				: 'Template not found';
+			return new WP_Error( 'template_not_found', $message, array( 'status' => 404 ) );
 		}
 
 		// Filter out the template to delete
@@ -938,7 +968,10 @@ class API_Handler {
 
 		// Check if template was actually deleted
 		if ( count( $filtered_templates ) === count( $templates ) ) {
-			return new WP_Error( 'template_not_found', __( 'Template not found', 'layoutberg' ), array( 'status' => 404 ) );
+			$message = did_action( 'init' )
+				? __( 'Template not found', 'layoutberg' )
+				: 'Template not found';
+			return new WP_Error( 'template_not_found', $message, array( 'status' => 404 ) );
 		}
 
 		// Re-index array
@@ -947,9 +980,12 @@ class API_Handler {
 		// Save back to user meta
 		update_user_meta( $user_id, 'layoutberg_prompt_templates', $filtered_templates );
 
+		$message = did_action( 'init' )
+			? __( 'Template deleted successfully', 'layoutberg' )
+			: 'Template deleted successfully';
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Template deleted successfully', 'layoutberg' ),
+			'message' => $message,
 		) );
 	}
 }

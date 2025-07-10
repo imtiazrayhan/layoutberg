@@ -48,6 +48,13 @@ if ( ! empty( $options['claude_api_key'] ) ) {
 		$claude_key_status  = 'valid';
 	}
 }
+
+// Get current model configuration
+$current_model = $options['model'] ?? 'gpt-3.5-turbo';
+$model_config = null;
+if ( class_exists( '\DotCamp\LayoutBerg\Model_Config' ) ) {
+	$model_config = \DotCamp\LayoutBerg\Model_Config::get_model( $current_model );
+}
 ?>
 
 <div class="layoutberg-admin-page">

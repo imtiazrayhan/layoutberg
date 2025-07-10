@@ -689,7 +689,7 @@ class Admin {
 
 		// Temporary: Add hidden upgrade page
 		add_submenu_page(
-			null, // Hidden from menu
+			'', // Hidden from menu (empty string to avoid null parameter warning)
 			__( 'Upgrade DB', 'layoutberg' ),
 			__( 'Upgrade DB', 'layoutberg' ),
 			'manage_options',
@@ -699,7 +699,7 @@ class Admin {
 
 		// Temporary: Add hidden test usage page
 		add_submenu_page(
-			null, // Hidden from menu
+			'', // Hidden from menu (empty string to avoid null parameter warning)
 			__( 'Test Usage', 'layoutberg' ),
 			__( 'Test Usage', 'layoutberg' ),
 			'manage_options',
@@ -709,7 +709,7 @@ class Admin {
 
 		// Temporary: Add hidden reset data page
 		add_submenu_page(
-			null, // Hidden from menu
+			'', // Hidden from menu (empty string to avoid null parameter warning)
 			__( 'Reset Data', 'layoutberg' ),
 			__( 'Reset Data', 'layoutberg' ),
 			'manage_options',
@@ -719,7 +719,7 @@ class Admin {
 
 		// Add hidden generation details page
 		add_submenu_page(
-			null, // Hidden from menu
+			'', // Hidden from menu (empty string to avoid null parameter warning)
 			__( 'Generation Details', 'layoutberg' ),
 			__( 'Generation Details', 'layoutberg' ),
 			'manage_options',
@@ -729,7 +729,7 @@ class Admin {
 
 		// Add hidden onboarding page
 		add_submenu_page(
-			null, // Hidden from menu
+			'', // Hidden from menu (empty string to avoid null parameter warning)
 			__( 'Welcome to LayoutBerg', 'layoutberg' ),
 			__( 'Welcome', 'layoutberg' ),
 			'manage_options',

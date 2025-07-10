@@ -229,11 +229,11 @@ class Activator {
 		return array(
 			// Landing Page Template
 			array(
-				'name'        => __( 'Modern Landing Page', 'layoutberg' ),
-				'description' => __( 'A clean, modern landing page layout with hero section, features, and call-to-action.', 'layoutberg' ),
+				'name'        => 'Modern Landing Page',
+				'description' => 'A clean, modern landing page layout with hero section, features, and call-to-action.',
 				'category'    => 'landing',
 				'tags'        => array( 'hero', 'features', 'cta', 'modern' ),
-				'prompt'      => __( 'Create a modern landing page with hero section, feature highlights, and call-to-action', 'layoutberg' ),
+				'prompt'      => 'Create a modern landing page with hero section, feature highlights, and call-to-action',
 				'is_public'   => 1,
 				'content'     => '<!-- wp:cover {"url":"https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200","hasParallax":true,"dimRatio":40,"overlayColor":"black","contentPosition":"center center","align":"full"} -->
 <div class="wp-block-cover alignfull has-parallax has-black-background-color has-background-dim-40 has-background-dim"><div class="wp-block-cover__image-background has-parallax" style="background-image:url(https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200)"></div><div class="wp-block-cover__inner-container"><!-- wp:group {"layout":{"type":"constrained","contentSize":"800px"}} -->
@@ -306,11 +306,11 @@ class Activator {
 
 			// Blog Post Template
 			array(
-				'name'        => __( 'Professional Blog Post', 'layoutberg' ),
-				'description' => __( 'A well-structured blog post layout with featured image, content sections, and author bio.', 'layoutberg' ),
+				'name'        => 'Professional Blog Post',
+				'description' => 'A well-structured blog post layout with featured image, content sections, and author bio.',
 				'category'    => 'blog',
 				'tags'        => array( 'blog', 'article', 'content', 'professional' ),
-				'prompt'      => __( 'Create a professional blog post layout with featured image and structured content', 'layoutberg' ),
+				'prompt'      => 'Create a professional blog post layout with featured image and structured content',
 				'is_public'   => 1,
 				'content'     => '<!-- wp:image {"align":"wide","sizeSlug":"large"} -->
 <figure class="wp-block-image alignwide size-large"><img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=1200" alt=""/></figure>
@@ -357,11 +357,11 @@ class Activator {
 
 			// About Us Template
 			array(
-				'name'        => __( 'About Us Page', 'layoutberg' ),
-				'description' => __( 'A comprehensive about page with team introduction, company values, and mission statement.', 'layoutberg' ),
+				'name'        => 'About Us Page',
+				'description' => 'A comprehensive about page with team introduction, company values, and mission statement.',
 				'category'    => 'about',
 				'tags'        => array( 'about', 'team', 'company', 'mission' ),
-				'prompt'      => __( 'Create an about us page with team section, company values, and mission statement', 'layoutberg' ),
+				'prompt'      => 'Create an about us page with team section, company values, and mission statement',
 				'is_public'   => 1,
 				'content'     => '<!-- wp:group {"style":{"spacing":{"padding":{"top":"4rem","bottom":"4rem"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group" style="padding-top:4rem;padding-bottom:4rem"><!-- wp:heading {"textAlign":"center","level":1,"style":{"typography":{"fontSize":"3rem","fontWeight":"700"}}} -->
@@ -462,11 +462,11 @@ class Activator {
 
 			// Contact Page Template
 			array(
-				'name'        => __( 'Contact Us Page', 'layoutberg' ),
-				'description' => __( 'A professional contact page with contact form, location info, and multiple contact methods.', 'layoutberg' ),
+				'name'        => 'Contact Us Page',
+				'description' => 'A professional contact page with contact form, location info, and multiple contact methods.',
 				'category'    => 'contact',
 				'tags'        => array( 'contact', 'form', 'location', 'business' ),
-				'prompt'      => __( 'Create a contact page with contact form, business information, and location details', 'layoutberg' ),
+				'prompt'      => 'Create a contact page with contact form, business information, and location details',
 				'is_public'   => 1,
 				'content'     => '<!-- wp:group {"style":{"spacing":{"padding":{"top":"4rem","bottom":"4rem"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group" style="padding-top:4rem;padding-bottom:4rem"><!-- wp:heading {"textAlign":"center","level":1,"style":{"typography":{"fontSize":"3rem","fontWeight":"700"}}} -->
@@ -567,11 +567,11 @@ class Activator {
 
 			// Portfolio Template
 			array(
-				'name'        => __( 'Portfolio Showcase', 'layoutberg' ),
-				'description' => __( 'A creative portfolio layout to showcase work, projects, and achievements in an elegant grid format.', 'layoutberg' ),
+				'name'        => 'Portfolio Showcase',
+				'description' => 'A creative portfolio layout to showcase work, projects, and achievements in an elegant grid format.',
 				'category'    => 'portfolio',
 				'tags'        => array( 'portfolio', 'showcase', 'projects', 'creative' ),
-				'prompt'      => __( 'Create a portfolio page with project gallery, skills, and professional showcase', 'layoutberg' ),
+				'prompt'      => 'Create a portfolio page with project gallery, skills, and professional showcase',
 				'is_public'   => 1,
 				'content'     => '<!-- wp:group {"style":{"spacing":{"padding":{"top":"4rem","bottom":"4rem"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group" style="padding-top:4rem;padding-bottom:4rem"><!-- wp:heading {"textAlign":"center","level":1,"style":{"typography":{"fontSize":"3rem","fontWeight":"700"}}} -->
@@ -686,11 +686,11 @@ class Activator {
 
 			// Service Page Template
 			array(
-				'name'        => __( 'Services Overview', 'layoutberg' ),
-				'description' => __( 'A comprehensive services page highlighting different offerings with pricing and features.', 'layoutberg' ),
+				'name'        => 'Services Overview',
+				'description' => 'A comprehensive services page highlighting different offerings with pricing and features.',
 				'category'    => 'services',
 				'tags'        => array( 'services', 'pricing', 'features', 'business' ),
-				'prompt'      => __( 'Create a services page with service descriptions, features, and pricing information', 'layoutberg' ),
+				'prompt'      => 'Create a services page with service descriptions, features, and pricing information',
 				'is_public'   => 1,
 				'content'     => '<!-- wp:group {"style":{"spacing":{"padding":{"top":"4rem","bottom":"4rem"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group" style="padding-top:4rem;padding-bottom:4rem"><!-- wp:heading {"textAlign":"center","level":1,"style":{"typography":{"fontSize":"3rem","fontWeight":"700"}}} -->
