@@ -1430,7 +1430,8 @@ class Admin {
 					"SELECT date, generations_count, tokens_used, cost 
 					FROM $table_usage 
 					WHERE user_id = %d AND date >= %s AND date <= %s
-					ORDER BY date ASC",
+					ORDER BY date ASC
+					LIMIT 10000",
 					$user_id,
 					$start_date,
 					$end_date
@@ -1462,7 +1463,8 @@ class Admin {
 						error_message
 					FROM $table_generations 
 					WHERE user_id = %d AND created_at >= %s AND created_at <= %s
-					ORDER BY created_at DESC",
+					ORDER BY created_at DESC
+					LIMIT 10000",
 					$user_id,
 					$start_date . ' 00:00:00',
 					$end_date . ' 23:59:59'
